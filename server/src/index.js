@@ -7,6 +7,9 @@ import mongoose from 'mongoose';
 import './models/Producto.js';
 import './models/Combo.js';
 
+// Rutas
+import productoRoutes from './routes/productoRoutes.js';
+
 
 // Configurar variables de entorno
 dotenv.config();
@@ -22,6 +25,9 @@ app.use(express.json()); // Permite recibir JSON en el body de las peticiones
 app.get('/', (req, res) => {
   res.send('API de Le Pan funcionando correctamente');
 });
+
+// Rutas de la API
+app.use('/api/productos', productoRoutes);
 
 // Conexión a MongoDB
 mongoose
