@@ -1,0 +1,111 @@
+.navbar {
+  /* Fondo ámbar más opaco en lugar de blanco puro, como el borde dibujado en la ref */
+  background-color: var(--color-white); 
+  border-bottom: 2px solid var(--color-primary); 
+  /* Borde curvo sutil para simular el top curvo del dibujo */
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  padding: 12px 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 8px; /* Separación del banner */
+}
+
+.navbar-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.navbar-menu-btn {
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity var(--transition);
+}
+
+.navbar-menu-btn:hover {
+  opacity: 0.8;
+}
+
+.navbar-menu-btn svg {
+  width: 28px;
+  height: 28px;
+}
+
+.navbar-logo {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.logo-placeholder {
+  font-weight: 800;
+  font-size: 22px;
+  letter-spacing: -0.5px;
+  color: var(--color-dark);
+  text-transform: uppercase;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Simulación de la espiga de trigo con pseudoelementos por ahora */
+.logo-placeholder::before {
+  content: "🥖"; 
+  font-size: 18px;
+  margin-bottom: -4px;
+}
+
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  color: var(--color-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition);
+  position: relative;
+}
+
+.icon-btn:hover {
+  color: var(--color-primary);
+}
+
+.icon-btn svg {
+  width: 24px;
+  height: 24px;
+}
+
+.cart-btn {
+  position: relative;
+}
+
+.cart-badge {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  font-size: 11px;
+  font-weight: 700;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 2px solid var(--color-white);
+}
