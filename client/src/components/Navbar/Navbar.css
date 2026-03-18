@@ -1,66 +1,86 @@
-.navbar {
-  /* Fondo ámbar más opaco en lugar de blanco puro, como el borde dibujado en la ref */
-  background-color: var(--color-white); 
-  border-bottom: 2px solid var(--color-primary); 
-  /* Borde curvo sutil para simular el top curvo del dibujo */
-  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
-  padding: 12px 0;
-  position: sticky;
-  top: 0;
-  z-index: 100;
+.navbar-wrapper {
+  width: 100%;
+  position: relative; /* Removes sticky to allow hero to be directly under. Or can be sticky if desired */
+  z-index: 1000;
   box-shadow: var(--shadow-sm);
-  margin-bottom: 8px; /* Separación del banner */
+  background: var(--color-white);
 }
 
-.navbar-container {
+/* Nivel Superior Oscuro */
+.navbar-top {
+  background-color: var(--color-dark); /* como #1A1A1A */
+  padding: 12px 0;
+}
+
+.navbar-top-container {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap; /* Permitir apilar en móvil */
+  gap: 16px;
 }
 
-.navbar-menu-btn {
-  background: none;
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  color: var(--color-white);
+  font-weight: 800;
+  font-style: italic; /* Similar al logo Maximus anguloso */
+  font-size: 24px;
+  letter-spacing: -0.5px;
+}
+
+.navbar-logo .logo-icon {
+  margin-right: 8px;
+  font-style: normal;
+}
+
+.navbar-logo .logo-text {
+  color: var(--color-gold);
+}
+
+.navbar-search {
+  flex-grow: 1;
+  max-width: 500px;
+  display: flex;
+  align-items: center;
+  background-color: #2a2a2a; /* Fondo oscuro del input */
+  border: 1px solid #333;
+  border-radius: 4px;
+  padding: 0 4px 0 16px;
+  height: 40px;
+  order: 3; /* Mandar abajo en móvil */
+  width: 100%;
+}
+
+.navbar-search input {
+  flex-grow: 1;
+  background: transparent;
   border: none;
-  color: var(--color-primary);
+  color: var(--color-white);
+  outline: none;
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.navbar-search input::placeholder {
+  color: #888;
+}
+
+.navbar-search .search-btn {
+  background: transparent;
+  color: var(--color-primary); /* Lupa Naranja */
+  border: none;
   width: 32px;
   height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: opacity var(--transition);
 }
 
-.navbar-menu-btn:hover {
-  opacity: 0.8;
-}
-
-.navbar-menu-btn svg {
-  width: 28px;
-  height: 28px;
-}
-
-.navbar-logo {
-  flex-grow: 1;
-  display: flex;
-  justify-content: center;
-}
-
-.logo-placeholder {
-  font-weight: 800;
-  font-size: 22px;
-  letter-spacing: -0.5px;
-  color: var(--color-dark);
-  text-transform: uppercase;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-/* Simulación de la espiga de trigo con pseudoelementos por ahora */
-.logo-placeholder::before {
-  content: "🥖"; 
-  font-size: 18px;
-  margin-bottom: -4px;
+.navbar-search .search-btn svg {
+  width: 18px;
+  height: 18px;
 }
 
 .navbar-actions {
@@ -69,43 +89,118 @@
   gap: 16px;
 }
 
-.icon-btn {
+.action-link {
   background: none;
   border: none;
-  color: var(--color-dark);
+  color: var(--color-white);
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
   transition: color var(--transition);
-  position: relative;
 }
 
-.icon-btn:hover {
+.action-link:hover {
   color: var(--color-primary);
 }
 
-.icon-btn svg {
+.action-link svg {
+  width: 20px;
+  height: 20px;
+}
+
+.cart-badge-inline {
+  background-color: var(--color-primary); /* Badge Naranja de cantidad como Maximus (verde) */
+  color: var(--color-dark);
+  font-weight: 800;
+  font-size: 12px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Nivel Inferior Blanco */
+.navbar-bottom {
+  background-color: var(--color-white);
+  border-bottom: 2px solid var(--color-primary); /* Línea naranja divisoria */
+  padding: 8px 0;
+}
+
+.navbar-bottom-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.navbar-menu-btn {
+  background: none;
+  border: none;
+  color: var(--color-dark);
+}
+
+.navbar-menu-btn svg {
   width: 24px;
   height: 24px;
 }
 
-.cart-btn {
-  position: relative;
+.navbar-links {
+  display: none; /* Oculto en móvil */
+  align-items: center;
+  gap: 20px;
 }
 
-.cart-badge {
-  position: absolute;
-  top: -6px;
-  right: -8px;
-  background-color: var(--color-primary);
-  color: var(--color-white);
-  font-size: 11px;
-  font-weight: 700;
-  width: 18px;
-  height: 18px;
+.navbar-links a {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--color-dark);
+  text-transform: uppercase;
+  transition: color var(--transition);
+}
+
+.navbar-links a:hover {
+  color: var(--color-primary);
+}
+
+.navbar-links a.highlight {
+  color: var(--color-primary);
+}
+
+.navbar-theme-toggle {
   display: flex;
   align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  border: 2px solid var(--color-white);
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-gray);
+  cursor: pointer;
+}
+
+.navbar-theme-toggle svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Responsive Desktop */
+@media (min-width: 768px) {
+  .navbar-top-container {
+    flex-wrap: nowrap;
+  }
+  
+  .navbar-search {
+    order: unset; /* Vuelve al centro */
+    margin: 0 40px;
+    border: 1px solid var(--color-primary); /* Borde naranja notorio */
+  }
+
+  .navbar-menu-btn {
+    display: none; /* Ocultar hamburguesa si no hay sidebar global */
+  }
+
+  .navbar-links {
+    display: flex; /* Mostrar categorías */
+  }
 }

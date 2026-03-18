@@ -71,3 +71,26 @@
   color: var(--color-gray);
   margin-top: 8px;
 }
+
+@media (min-width: 768px) {
+  .footer-curve {
+    padding: 60px 0 32px;
+    margin-top: 80px;
+  }
+  .footer-content {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .footer-social {
+    order: 2;
+  }
+  .footer-links {
+    order: 1;
+    font-size: 15px;
+  }
+  .footer-copy {
+    order: 3;
+    margin-top: 0;
+  }
+}

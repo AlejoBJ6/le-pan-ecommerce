@@ -4,6 +4,21 @@
   min-height: 100vh;
 }
 
-main {
+.main-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.main-content {
   flex-grow: 1;
+  min-width: 0; /* Evitar overflow en flex */
+}
+
+@media (min-width: 768px) {
+  .main-grid {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 40px;
+  }
 }

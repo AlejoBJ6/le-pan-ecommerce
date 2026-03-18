@@ -32,3 +32,19 @@
   gap: 16px;
   width: max-content;
 }
+
+@media (min-width: 768px) {
+  .section-title {
+    font-size: 28px;
+    margin-bottom: 24px;
+  }
+  .product-section {
+    margin-bottom: 56px;
+  }
+  .product-scroll-track {
+    gap: 24px;
+  }
+  .product-scroll-container {
+    padding-bottom: 16px;
+  }
+}

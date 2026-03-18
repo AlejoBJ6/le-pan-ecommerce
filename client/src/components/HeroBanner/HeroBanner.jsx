@@ -4,37 +4,30 @@ import './HeroBanner.css';
 const slides = [
   {
     id: 1,
-    title: "Equipamiento Industrial",
-    subtitle: "La mejor calidad para tu panadería",
-    image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=800&auto=format&fit=crop" // Imagen temporal (Pan)
+    title: "# RENOVÁ TU PANADERÍA",
+    subtitle: "Maquinaria con tecnología de punta",
+    image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=1200&auto=format&fit=crop" 
   },
   {
     id: 2,
-    title: "Hornos Convectores",
+    title: "OFERTAS EN HORNOS",
     subtitle: "Cocción perfecta garantizada",
-    image: "https://images.unsplash.com/photo-1586529723049-74f76231bd76?q=80&w=800&auto=format&fit=crop" // Imagen temporal (Horneado)
-  },
-  {
-    id: 3,
-    title: "Amasadoras",
-    subtitle: "Rendimiento y durabilidad",
-    image: "https://images.unsplash.com/photo-1620916297397-a4a5402a3c6c?q=80&w=800&auto=format&fit=crop" // Imagen temporal (Masa)
+    image: "https://images.unsplash.com/photo-1586529723049-74f76231bd76?q=80&w=1200&auto=format&fit=crop" 
   }
 ];
 
 const HeroBanner = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  // Auto-play
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
-    }, 4000);
+    }, 5000);
     return () => clearInterval(timer);
   }, []);
 
   return (
-    <div className="hero-banner-container container">
+    <div className="hero-banner-container">
       <div className="hero-banner">
         {slides.map((slide, index) => (
           <div 
@@ -60,6 +53,13 @@ const HeroBanner = () => {
               aria-label={`Ir al slide ${index + 1}`}
             ></button>
           ))}
+        </div>
+
+        {/* Side Info Badges (Estilo E-commerce Maximus) */}
+        <div className="banner-badges">
+          <div className="badge badge-primary">💸 FINALIZÁ EN CUOTAS</div>
+          <div className="badge badge-dark">🚚 ENVÍOS A TODO EL PAÍS</div>
+          <div className="badge badge-dark">💡 SOPORTE TÉCNICO VITALICIO</div>
         </div>
       </div>
     </div>

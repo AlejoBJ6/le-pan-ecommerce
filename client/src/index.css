@@ -68,7 +68,13 @@ ul, ol {
 /* ─── Utilidades ─────────────────────────────────── */
 .container {
   width: 100%;
-  max-width: 480px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 0 16px;
+}
+
+@media (min-width: 768px) {
+  .container {
+    padding: 0 32px;
+  }
 }
