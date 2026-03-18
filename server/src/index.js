@@ -3,6 +3,11 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 
+// Modelos
+import './models/Producto.js';
+import './models/Combo.js';
+
+
 // Configurar variables de entorno
 dotenv.config();
 
