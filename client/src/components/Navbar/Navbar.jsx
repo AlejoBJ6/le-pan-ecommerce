@@ -11,8 +11,15 @@ const Navbar = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isMobileSearchOpen) {
+      document.getElementById('mobile-search-input')?.focus();
+    }
+  }, [isMobileSearchOpen]);
 
   // Efecto para tema oscuro
   useEffect(() => {
@@ -68,10 +75,10 @@ const Navbar = () => {
   return (
     <header className="navbar-wrapper">
       <div className="navbar-top">
-        <div className="container navbar-top-container">
+        <div className={`container navbar-top-container ${isMobileSearchOpen ? 'mobile-search-active' : ''}`}>
 
           {/* Lado Izquierdo: Hamburguesa + Logo */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div className="navbar-left" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <button
               className="navbar-menu-btn"
               aria-label="Abrir menú móvil"
@@ -92,7 +99,21 @@ const Navbar = () => {
 
           {/* Centro: Barra de Búsqueda */}
           <form className="navbar-search" onSubmit={handleSearch}>
+            {isMobileSearchOpen && (
+              <button
+                type="button"
+                className="search-close-btn"
+                onClick={() => setIsMobileSearchOpen(false)}
+                aria-label="Cerrar búsqueda"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            )}
             <input
+              id="mobile-search-input"
               type="text"
               placeholder="Buscar productos"
               value={searchTerm}
@@ -100,7 +121,17 @@ const Navbar = () => {
               onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
               onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
             />
-            <button type="submit" className="search-btn" aria-label="Buscar">
+            <button 
+              type="submit" 
+              className="search-btn" 
+              aria-label="Buscar"
+              onClick={(e) => {
+                if (window.innerWidth <= 768 && !isMobileSearchOpen) {
+                  e.preventDefault();
+                  setIsMobileSearchOpen(true);
+                }
+              }}
+            >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="11" cy="11" r="8"></circle>
                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -122,7 +153,7 @@ const Navbar = () => {
           {/* Lado Derecho: Acciones y Tema */}
           <div className="navbar-actions">
 
-            <div className="navbar-theme-toggle" onClick={toggleTheme}>
+            <div className="navbar-theme-toggle desktop-only-theme" onClick={toggleTheme}>
               {isDarkMode ? (
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="12" cy="12" r="5"></circle>
@@ -194,6 +225,37 @@ const Navbar = () => {
             <li><a href="/combos">Combos armados</a></li>
             <li><a href="/arma-combo">Armá tu combo</a></li>
             <li><a href="/contacto">Contacto</a></li>
+            <li className="mobile-only-theme">
+              <button 
+                onClick={toggleTheme} 
+                className="submenu-toggle"
+                style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+              >
+                {isDarkMode ? (
+                  <>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="5"></circle>
+                      <line x1="12" y1="1" x2="12" y2="3"></line>
+                      <line x1="12" y1="21" x2="12" y2="23"></line>
+                      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                      <line x1="1" y1="12" x2="3" y2="12"></line>
+                      <line x1="21" y1="12" x2="23" y2="12"></line>
+                      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                    <span>Modo Claro</span>
+                  </>
+                ) : (
+                  <>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <span>Modo Oscuro</span>
+                  </>
+                )}
+              </button>
+            </li>
           </ul>
         </div>
       </div>

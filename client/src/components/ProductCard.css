@@ -140,3 +140,31 @@
 .btn-add-cart:disabled::after {
   display: none;
 }
+
+@media (max-width: 575px) {
+  .product-info {
+    padding: 12px 10px;
+  }
+  .product-name {
+    font-size: 1rem;
+    margin-bottom: 4px;
+  }
+  .product-category {
+    font-size: 0.75rem;
+    margin-bottom: 8px;
+  }
+  .product-price {
+    font-size: 1.15rem;
+    margin-bottom: 12px;
+  }
+  .btn-add-cart {
+    padding: 10px;
+    font-size: 0.85rem;
+  }
+  .product-badge {
+    top: 10px;
+    right: 10px;
+    padding: 4px 10px;
+    font-size: 0.65rem;
+  }
+}
