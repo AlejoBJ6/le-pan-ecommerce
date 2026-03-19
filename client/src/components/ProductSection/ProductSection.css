@@ -1,0 +1,50 @@
+.product-section {
+  margin-bottom: 32px;
+}
+
+.section-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-dark);
+  margin-bottom: 16px;
+  letter-spacing: -0.3px;
+  /* El estilo "escrito a mano" de la ref */
+  font-family: var(--font-family);
+}
+
+.product-scroll-container {
+  width: 100%;
+  overflow-x: auto;
+  /* Ocultar barra de scroll estándar pero mantener funcionalidad */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+  padding-bottom: 8px; /* Espacio para la sombra de las cards */
+  margin: 0 -16px; /* Bleed to edges on mobile */
+  padding: 0 16px 12px 16px;
+}
+
+.product-scroll-container::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+.product-scroll-track {
+  display: flex;
+  gap: 16px;
+  width: max-content;
+}
+
+@media (min-width: 768px) {
+  .section-title {
+    font-size: 28px;
+    margin-bottom: 24px;
+  }
+  .product-section {
+    margin-bottom: 56px;
+  }
+  .product-scroll-track {
+    gap: 24px;
+  }
+  .product-scroll-container {
+    padding-bottom: 16px;
+  }
+}

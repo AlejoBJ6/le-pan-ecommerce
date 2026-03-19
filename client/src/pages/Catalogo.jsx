@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import productoService from '../services/productoService';
 import ProductCard from '../components/ProductCard';
 import './Catalogo.css';
 
 const Catalogo = () => {
+  const location = useLocation();
   const [productos, setProductos] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
@@ -11,6 +13,25 @@ const Catalogo = () => {
   // Estados de filtros
   const [busqueda, setBusqueda] = useState('');
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState('Todas');
+
+  // Sincronizar parámetro 'categoria' y 'busqueda' de la URL con el estado local
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const urlCategoria = searchParams.get('categoria');
+    const urlBusqueda = searchParams.get('busqueda');
+    
+    if (urlCategoria) {
+      setCategoriaSeleccionada(urlCategoria);
+    } else {
+      setCategoriaSeleccionada('Todas');
+    }
+
+    if (urlBusqueda) {
+      setBusqueda(urlBusqueda);
+    } else {
+      setBusqueda('');
+    }
+  }, [location.search]);
 
   useEffect(() => {
     const fetchProductos = async () => {
@@ -63,16 +84,9 @@ const Catalogo = () => {
       </div>
       
       <div className="catalogo-filters-container">
-        <div className="catalogo-filters">
-          <input 
-            type="text" 
-            placeholder="Buscar rodillos, hornos, amasadoras..." 
-            className="search-input"
-            value={busqueda}
-            onChange={(e) => setBusqueda(e.target.value)}
-          />
+        <div className="catalogo-filters" style={{ justifyContent: 'center' }}>
           <div className="category-filters">
-            {['Todas', 'Hornos', 'Amasadoras', 'Sobadoras', 'Complementos'].map((cat) => (
+            {['Todas', 'Amasadoras', 'Hornos', 'Laminadoras', 'Batidoras', 'Sobadoras', 'Complementos'].map((cat) => (
               <button 
                 key={cat}
                 className={`category-pill ${categoriaSeleccionada === cat ? 'active' : ''}`}

@@ -1,0 +1,88 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+/* ─── Variables ─────────────────────────────────── */
+:root {
+  --color-primary:    #E8820C;
+  --color-primary-hover: #cf7009;
+  --color-gold:       #DCA71B; /* Mostaza según requerimiento */
+  --color-gold-light: #FDF3CC;
+  --color-dark:       #1A1A1A;
+  --color-dark-2:     #2C2C2C;
+  --color-gray:       #6B6B6B;
+  --color-gray-light: #F5F5F5;
+  --color-white:      #FFFFFF;
+  --color-whatsapp:   #25D366;
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+  --radius-xl: 30px;
+
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.12);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.16);
+
+  --font-family: 'Inter', sans-serif;
+  --transition: 0.2s ease;
+}
+
+body.dark-theme {
+  --color-dark:       #F5F5F5; /* Textos claros en modo oscuro */
+  --color-dark-2:     #E0E0E0;
+  --color-white:      #121212; /* Fondos oscuros */
+  --color-gray-light: #2A2A2A; /* Fondos secundarios */
+  --color-gray:       #A0A0A0;
+}
+
+/* ─── Reset ─────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--color-white);
+  color: var(--color-dark);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  font-family: var(--font-family);
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+ul, ol {
+  list-style: none;
+}
+
+/* ─── Utilidades ─────────────────────────────────── */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+@media (min-width: 768px) {
+  .container {
+    padding: 0 32px;
+  }
+}
