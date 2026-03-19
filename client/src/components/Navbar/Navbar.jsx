@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import productoService from '../../services/productoService.js';
 import './Navbar.css';
 
 const Navbar = () => {
@@ -6,7 +8,13 @@ const Navbar = () => {
   const [isCatalogoOpen, setIsCatalogoOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
 
-  // Efecto para aplicar/quitar la clase 'dark-theme' en el body cuando cambie 'isDarkMode'
+  const [searchTerm, setSearchTerm] = useState('');
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  const navigate = useNavigate();
+
+  // Efecto para tema oscuro
   useEffect(() => {
     if (isDarkMode) {
       document.body.classList.add('dark-theme');
@@ -19,30 +27,121 @@ const Navbar = () => {
     setIsDarkMode(!isDarkMode);
   };
 
+  // Efecto para autocompletado de búsqueda con Debounce
+  useEffect(() => {
+    if (searchTerm.trim().length > 1) {
+      const fetchSuggestions = async () => {
+        try {
+          const data = await productoService.obtenerProductos({ nombre: searchTerm });
+          setSuggestions(data.slice(0, 5)); // Máximo 5 sugerencias
+          setShowSuggestions(true);
+        } catch (e) {
+          console.error("Error al obtener sugerencias", e);
+        }
+      };
+
+      const debounce = setTimeout(fetchSuggestions, 300);
+      return () => clearTimeout(debounce);
+    } else {
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
+  }, [searchTerm]);
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      navigate(`/productos?busqueda=${encodeURIComponent(searchTerm.trim())}`);
+    } else {
+      navigate('/productos');
+    }
+    setShowSuggestions(false);
+    setIsMenuOpen(false);
+  };
+
+  const handeSuggestionClick = (name) => {
+    navigate(`/productos?busqueda=${encodeURIComponent(name)}`);
+    setSearchTerm('');
+    setShowSuggestions(false);
+  };
+
   return (
     <header className="navbar-wrapper">
-      {/* Nivel Superior Oscuro */}
       <div className="navbar-top">
         <div className="container navbar-top-container">
-          {/* Logo */}
-          <div className="navbar-logo">
-            <span className="logo-icon">🥖</span>
-            <span className="logo-text">LÉ PAN</span>
+
+          {/* Lado Izquierdo: Hamburguesa + Logo */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <button
+              className="navbar-menu-btn"
+              aria-label="Abrir menú móvil"
+              onClick={() => setIsMenuOpen(true)}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+              </svg>
+            </button>
+
+            <a href="/" className="navbar-logo" style={{ textDecoration: 'none' }}>
+              <span className="logo-icon">🥖</span>
+              <span className="logo-text">LÉ PAN</span>
+            </a>
           </div>
 
-          {/* Barra de Búsqueda */}
-          <div className="navbar-search">
-            <input type="text" placeholder="Buscar productos" />
-            <button className="search-btn" aria-label="Buscar">
+          {/* Centro: Barra de Búsqueda */}
+          <form className="navbar-search" onSubmit={handleSearch}>
+            <input
+              type="text"
+              placeholder="Buscar productos"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
+              onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+            />
+            <button type="submit" className="search-btn" aria-label="Buscar">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="11" cy="11" r="8"></circle>
                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
               </svg>
             </button>
-          </div>
 
-          {/* Acciones derecha */}
+            {/* Sugerencias Autocompletado */}
+            {showSuggestions && suggestions.length > 0 && (
+              <ul className="search-suggestions">
+                {suggestions.map(s => (
+                  <li key={s._id} onClick={() => handeSuggestionClick(s.nombre)}>
+                    {s.nombre}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </form>
+
+          {/* Lado Derecho: Acciones y Tema */}
           <div className="navbar-actions">
+
+            <div className="navbar-theme-toggle" onClick={toggleTheme}>
+              {isDarkMode ? (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="5"></circle>
+                  <line x1="12" y1="1" x2="12" y2="3"></line>
+                  <line x1="12" y1="21" x2="12" y2="23"></line>
+                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                  <line x1="1" y1="12" x2="3" y2="12"></line>
+                  <line x1="21" y1="12" x2="23" y2="12"></line>
+                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                </svg>
+              ) : (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+              )}
+            </div>
+
             <button className="action-link">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -63,51 +162,9 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Nivel Inferior Blanco */}
-      <nav className="navbar-bottom">
-        <div className="container navbar-bottom-container">
-          <button 
-            className="navbar-menu-btn" 
-            aria-label="Abrir menú móvil"
-            onClick={() => setIsMenuOpen(true)}
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="3" y1="12" x2="21" y2="12"></line>
-              <line x1="3" y1="6" x2="21" y2="6"></line>
-              <line x1="3" y1="18" x2="21" y2="18"></line>
-            </svg>
-          </button>
-          
-          <ul className="navbar-links">
-            {/* Los enlaces fueron movidos al menú hamburguesa */}
-          </ul>
-
-          <div className="navbar-theme-toggle" onClick={toggleTheme}>
-            <span>{isDarkMode ? 'MODO CLARO' : 'MODO OSCURO'}</span>
-            {isDarkMode ? (
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="5"></circle>
-                <line x1="12" y1="1" x2="12" y2="3"></line>
-                <line x1="12" y1="21" x2="12" y2="23"></line>
-                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                <line x1="1" y1="12" x2="3" y2="12"></line>
-                <line x1="21" y1="12" x2="23" y2="12"></line>
-                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-              </svg>
-            ) : (
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-              </svg>
-            )}
-          </div>
-        </div>
-      </nav>
-
       {/* Menú Hamburguesa Drawer */}
-      <div 
-        className={`navbar-drawer-overlay ${isMenuOpen ? 'open' : ''}`} 
+      <div
+        className={`navbar-drawer-overlay ${isMenuOpen ? 'open' : ''}`}
         onClick={() => setIsMenuOpen(false)}
       ></div>
       <div className={`navbar-drawer ${isMenuOpen ? 'open' : ''}`}>
@@ -117,8 +174,8 @@ const Navbar = () => {
             <li><a href="/">Inicio</a></li>
             <li><a href="/cuenta">Cuenta / Crear cuenta</a></li>
             <li className="drawer-submenu">
-              <button 
-                onClick={() => setIsCatalogoOpen(!isCatalogoOpen)} 
+              <button
+                onClick={() => setIsCatalogoOpen(!isCatalogoOpen)}
                 className="submenu-toggle"
               >
                 Catálogo

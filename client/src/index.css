@@ -4,7 +4,7 @@
 :root {
   --color-primary:    #E8820C;
   --color-primary-hover: #cf7009;
-  --color-gold:       #F5C842;
+  --color-gold:       #DCA71B; /* Mostaza según requerimiento */
   --color-gold-light: #FDF3CC;
   --color-dark:       #1A1A1A;
   --color-dark-2:     #2C2C2C;

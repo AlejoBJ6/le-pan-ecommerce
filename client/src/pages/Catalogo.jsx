@@ -14,14 +14,22 @@ const Catalogo = () => {
   const [busqueda, setBusqueda] = useState('');
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState('Todas');
 
-  // Sincronizar parámetro 'categoria' de la URL con el estado local
+  // Sincronizar parámetro 'categoria' y 'busqueda' de la URL con el estado local
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const urlCategoria = searchParams.get('categoria');
+    const urlBusqueda = searchParams.get('busqueda');
+    
     if (urlCategoria) {
       setCategoriaSeleccionada(urlCategoria);
     } else {
       setCategoriaSeleccionada('Todas');
+    }
+
+    if (urlBusqueda) {
+      setBusqueda(urlBusqueda);
+    } else {
+      setBusqueda('');
     }
   }, [location.search]);
 
