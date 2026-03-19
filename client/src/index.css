@@ -26,6 +26,14 @@
   --transition: 0.2s ease;
 }
 
+body.dark-theme {
+  --color-dark:       #F5F5F5; /* Textos claros en modo oscuro */
+  --color-dark-2:     #E0E0E0;
+  --color-white:      #121212; /* Fondos oscuros */
+  --color-gray-light: #2A2A2A; /* Fondos secundarios */
+  --color-gray:       #A0A0A0;
+}
+
 /* ─── Reset ─────────────────────────────────────── */
 *, *::before, *::after {
   box-sizing: border-box;

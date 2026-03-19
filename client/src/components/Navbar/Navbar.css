@@ -1,14 +1,17 @@
 .navbar-wrapper {
   width: 100%;
-  position: relative; /* Removes sticky to allow hero to be directly under. Or can be sticky if desired */
+  position: sticky;
+  top: 0;
+  /* Removes sticky to allow hero to be directly under. Or can be sticky if desired */
   z-index: 1000;
   box-shadow: var(--shadow-sm);
   background: var(--color-white);
 }
 
-/* Nivel Superior Oscuro */
+/* Nivel Superior Dorado */
 .navbar-top {
-  background-color: var(--color-dark); /* como #1A1A1A */
+  background-color: var(--color-gold);
+  /* Dorado brillante */
   padding: 12px 0;
 }
 
@@ -16,16 +19,18 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap; /* Permitir apilar en móvil */
+  flex-wrap: wrap;
+  /* Permitir apilar en móvil */
   gap: 16px;
 }
 
 .navbar-logo {
   display: flex;
   align-items: center;
-  color: var(--color-white);
+  color: var(--color-dark);
   font-weight: 800;
-  font-style: italic; /* Similar al logo Maximus anguloso */
+  font-style: italic;
+  /* Similar al logo Maximus anguloso */
   font-size: 24px;
   letter-spacing: -0.5px;
 }
@@ -36,7 +41,7 @@
 }
 
 .navbar-logo .logo-text {
-  color: var(--color-gold);
+  color: var(--color-dark);
 }
 
 .navbar-search {
@@ -44,12 +49,14 @@
   max-width: 500px;
   display: flex;
   align-items: center;
-  background-color: #2a2a2a; /* Fondo oscuro del input */
+  background-color: #2a2a2a;
+  /* Fondo oscuro del input */
   border: 1px solid #333;
   border-radius: 4px;
   padding: 0 4px 0 16px;
   height: 40px;
-  order: 3; /* Mandar abajo en móvil */
+  order: 3;
+  /* Mandar abajo en móvil */
   width: 100%;
 }
 
@@ -57,19 +64,20 @@
   flex-grow: 1;
   background: transparent;
   border: none;
-  color: var(--color-white);
+  color: var(--color-dark);
   outline: none;
   font-family: inherit;
   font-size: 14px;
 }
 
 .navbar-search input::placeholder {
-  color: #888;
+  color: rgba(0, 0, 0, 0.6);
 }
 
 .navbar-search .search-btn {
   background: transparent;
-  color: var(--color-primary); /* Lupa Naranja */
+  color: var(--color-dark);
+  /* Lupa oscura */
   border: none;
   width: 32px;
   height: 32px;
@@ -92,7 +100,7 @@
 .action-link {
   background: none;
   border: none;
-  color: var(--color-white);
+  color: var(--color-dark);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -102,7 +110,7 @@
 }
 
 .action-link:hover {
-  color: var(--color-primary);
+  color: var(--color-dark-2);
 }
 
 .action-link svg {
@@ -111,8 +119,9 @@
 }
 
 .cart-badge-inline {
-  background-color: var(--color-primary); /* Badge Naranja de cantidad como Maximus (verde) */
-  color: var(--color-dark);
+  background-color: var(--color-dark);
+  /* Badge Oscuro de cantidad */
+  color: var(--color-gold);
   font-weight: 800;
   font-size: 12px;
   width: 20px;
@@ -126,7 +135,8 @@
 /* Nivel Inferior Blanco */
 .navbar-bottom {
   background-color: var(--color-white);
-  border-bottom: 2px solid var(--color-primary); /* Línea naranja divisoria */
+  border-bottom: 2px solid var(--color-primary);
+  /* Línea naranja divisoria */
   padding: 8px 0;
 }
 
@@ -140,6 +150,10 @@
   background: none;
   border: none;
   color: var(--color-dark);
+  cursor: pointer;
+  display: flex; /* Ahora siempre visible */
+  align-items: center;
+  justify-content: center;
 }
 
 .navbar-menu-btn svg {
@@ -148,7 +162,7 @@
 }
 
 .navbar-links {
-  display: none; /* Oculto en móvil */
+  display: none;
   align-items: center;
   gap: 20px;
 }
@@ -184,23 +198,142 @@
   height: 16px;
 }
 
+/* --------------------
+   DRAWER STYLES
+--------------------- */
+.navbar-drawer-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.5);
+  visibility: hidden;
+  opacity: 0;
+  transition: all 0.3s ease;
+  z-index: 2000;
+}
+
+.navbar-drawer-overlay.open {
+  visibility: visible;
+  opacity: 1;
+}
+
+.navbar-drawer {
+  position: fixed;
+  top: 0;
+  left: -320px; /* Hidden start */
+  width: 280px;
+  height: 100vh;
+  background: var(--color-white, #fff);
+  box-shadow: 2px 0 8px rgba(0,0,0,0.2);
+  z-index: 2001;
+  transition: left 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.navbar-drawer.open {
+  left: 0;
+}
+
+.drawer-close {
+  align-self: flex-end;
+  background: none;
+  border: none;
+  font-size: 24px;
+  padding: 16px;
+  cursor: pointer;
+  color: var(--color-dark, #333);
+}
+
+.drawer-content {
+  padding: 0 20px 20px 20px;
+  overflow-y: auto;
+}
+
+.drawer-menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.drawer-menu > li {
+  border-bottom: 1px solid #eee;
+}
+
+.drawer-menu a, .submenu-toggle {
+  display: flex;
+  width: 100%;
+  padding: 16px 0;
+  font-size: 16px;
+  color: var(--color-dark, #333);
+  text-decoration: none;
+  font-weight: 600;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+  align-items: center;
+}
+
+.submenu-toggle {
+  justify-content: space-between;
+}
+
+.submenu-toggle .arrow {
+  font-size: 12px;
+  transition: transform 0.3s ease;
+}
+
+.submenu-toggle .arrow.open {
+  transform: rotate(180deg);
+}
+
+.submenu-list {
+  list-style: none;
+  padding: 0 0 10px 16px;
+  margin: 0;
+}
+
+.submenu-list li {
+  border: none;
+}
+
+.submenu-list a {
+  padding: 10px 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+  width: 100%;
+}
+
+.submenu-list a:hover {
+  color: var(--color-primary, #e25822);
+}
+
 /* Responsive Desktop */
 @media (min-width: 768px) {
   .navbar-top-container {
     flex-wrap: nowrap;
   }
-  
+
   .navbar-search {
-    order: unset; /* Vuelve al centro */
+    order: unset;
+    /* Vuelve al centro */
     margin: 0 40px;
-    border: 1px solid var(--color-primary); /* Borde naranja notorio */
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    /* Borde sutil oscuro */
+    background-color: rgba(255, 255, 255, 0.6);
   }
 
   .navbar-menu-btn {
-    display: none; /* Ocultar hamburguesa si no hay sidebar global */
+    display: flex;
   }
 
   .navbar-links {
-    display: flex; /* Mostrar categorías */
+    display: flex;
+    /* Todavía existe si se quiere usar */
   }
 }

@@ -55,12 +55,6 @@ const HeroBanner = () => {
           ))}
         </div>
 
-        {/* Side Info Badges (Estilo E-commerce Maximus) */}
-        <div className="banner-badges">
-          <div className="badge badge-primary">💸 FINALIZÁ EN CUOTAS</div>
-          <div className="badge badge-dark">🚚 ENVÍOS A TODO EL PAÍS</div>
-          <div className="badge badge-dark">💡 SOPORTE TÉCNICO VITALICIO</div>
-        </div>
       </div>
     </div>
   );

@@ -5,7 +5,32 @@ import Producto from '../models/Producto.js';
 // @access  Public
 export const obtenerProductos = async (req, res) => {
   try {
-    const productos = await Producto.find({});
+    const { nombre, categoria, destacado, limit } = req.query;
+    
+    // Construir objeto de consulta
+    let query = {};
+    
+    if (nombre) {
+      // Búsqueda parcial insensible a mayúsculas
+      query.nombre = { $regex: nombre, $options: 'i' };
+    }
+    
+    if (categoria && categoria !== 'Todas') {
+      query.categoria = categoria;
+    }
+    
+    if (destacado) {
+      query.destacado = destacado === 'true';
+    }
+    
+    // Ejecutar consulta Mongoose
+    let dbQuery = Producto.find(query);
+    
+    if (limit) {
+      dbQuery = dbQuery.limit(Number(limit));
+    }
+    
+    const productos = await dbQuery;
     res.json(productos);
   } catch (error) {
     res.status(500).json({ message: 'Error al obtener los productos', error: error.message });
