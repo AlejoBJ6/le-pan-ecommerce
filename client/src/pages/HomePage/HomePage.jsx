@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import HeroBanner from '../../components/HeroBanner/HeroBanner.jsx';
-import WhatsAppButton from '../../components/WhatsAppButton/WhatsAppButton.jsx';
 import './HomePage.css';
 
 // Importamos el servicio y la tarjeta "libre" construida por el compañero
@@ -114,8 +113,6 @@ const HomePage = () => {
 
         </main>
       </div>
-
-      <WhatsAppButton />
     </div>
   );
 };
