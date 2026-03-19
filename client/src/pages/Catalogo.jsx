@@ -8,10 +8,18 @@ const Catalogo = () => {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
 
+  // Estados de filtros
+  const [busqueda, setBusqueda] = useState('');
+  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState('Todas');
+
   useEffect(() => {
     const fetchProductos = async () => {
+      setCargando(true);
       try {
-        const data = await productoService.obtenerProductos();
+        const data = await productoService.obtenerProductos({
+          nombre: busqueda,
+          categoria: categoriaSeleccionada
+        });
         setProductos(data);
         setCargando(false);
       } catch (err) {
@@ -22,7 +30,7 @@ const Catalogo = () => {
     };
 
     fetchProductos();
-  }, []);
+  }, [busqueda, categoriaSeleccionada]);
 
   // Mock temporal para mostrar el diseño si no hay productos reales o hay fallo de API
   const mockProductos = [
@@ -32,7 +40,18 @@ const Catalogo = () => {
     { _id: 'm4', nombre: 'Macarons Surtidos', categoria: 'Pastelería', precio: 4500, stock: 0, disponible: false, destacado: true, imagenes: ['https://images.unsplash.com/photo-1569864358642-9d1684040f43?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'] }
   ];
   
-  const productosAMostrar = productos.length > 0 ? productos : mockProductos;
+  // Como usamos mockLocal temporalmente, si hacemos búsqueda sobre el mock debemos filtrarlo manualmente
+  // Esto es sólo necesario porque estamos mockeando en frontend cuando la BD está vacía.
+  const isMockActive = productos.length === 0 && !error && !cargando;
+  let productosAMostrar = productos.length > 0 ? productos : mockProductos;
+  
+  if (isMockActive) {
+     productosAMostrar = mockProductos.filter(p => {
+       const matchNombre = p.nombre.toLowerCase().includes(busqueda.toLowerCase());
+       const matchCat = categoriaSeleccionada === 'Todas' || p.categoria === categoriaSeleccionada;
+       return matchNombre && matchCat;
+     });
+  }
 
   return (
     <div className="catalogo-page">
@@ -40,6 +59,29 @@ const Catalogo = () => {
         <div className="hero-content">
           <h1>Nuestro Catálogo</h1>
           <p>Descubre nuestra selección de maravillas artesanales</p>
+        </div>
+      </div>
+      
+      <div className="catalogo-filters-container">
+        <div className="catalogo-filters">
+          <input 
+            type="text" 
+            placeholder="Buscar productos..." 
+            className="search-input"
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+          />
+          <div className="category-filters">
+            {['Todas', 'Panadería', 'Pastelería', 'Panes'].map((cat) => (
+              <button 
+                key={cat}
+                className={`category-pill ${categoriaSeleccionada === cat ? 'active' : ''}`}
+                onClick={() => setCategoriaSeleccionada(cat)}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
       
