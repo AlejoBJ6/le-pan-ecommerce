@@ -32,12 +32,12 @@ const Catalogo = () => {
     fetchProductos();
   }, [busqueda, categoriaSeleccionada]);
 
-  // Mock temporal para mostrar el diseño si no hay productos reales o hay fallo de API
+  // Mock temporal para mostrar el diseño de maquinaria si no hay productos reales o hay fallo de API
   const mockProductos = [
-    { _id: 'm1', nombre: 'Croissant de Mantequilla', categoria: 'Panadería', precio: 2500, stock: 12, disponible: true, destacado: true, imagenes: ['https://images.unsplash.com/photo-1555507036-ab1e4006aaeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'] },
-    { _id: 'm2', nombre: 'Tarta de Frutos Rojos', categoria: 'Pastelería', precio: 8500, stock: 5, disponible: true, destacado: false, imagenes: ['https://images.unsplash.com/photo-1464305795204-6f5bbfc7fb81?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'] },
-    { _id: 'm3', nombre: 'Pan de Masa Madre', categoria: 'Panes', precio: 3200, stock: 8, disponible: true, destacado: false, imagenes: ['https://images.unsplash.com/photo-1586444248902-2f64eddc13df?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'] },
-    { _id: 'm4', nombre: 'Macarons Surtidos', categoria: 'Pastelería', precio: 4500, stock: 0, disponible: false, destacado: true, imagenes: ['https://images.unsplash.com/photo-1569864358642-9d1684040f43?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'] }
+    { _id: 'm1', nombre: 'Horno Rotativo 15 Bandejas', categoria: 'Hornos', precio: 3200000, stock: 2, disponible: true, destacado: true, imagenes: ['https://images.unsplash.com/photo-1590846406792-0adc7f928f1e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'] },
+    { _id: 'm2', nombre: 'Amasadora Rápida 50kg', categoria: 'Amasadoras', precio: 850000, stock: 5, disponible: true, destacado: false, imagenes: ['https://images.unsplash.com/photo-1580975874880-9519199d690a?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'] },
+    { _id: 'm3', nombre: 'Sobadora de Pie Industrial', categoria: 'Sobadoras', precio: 520000, stock: 3, disponible: true, destacado: false, imagenes: ['https://images.unsplash.com/photo-1587314168485-3236d6710814?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'] },
+    { _id: 'm4', nombre: 'Ralladora de Pan Inox', categoria: 'Complementos', precio: 150000, stock: 0, disponible: false, destacado: true, imagenes: ['https://images.unsplash.com/photo-1621535492984-babb78e7278d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'] }
   ];
   
   // Como usamos mockLocal temporalmente, si hacemos búsqueda sobre el mock debemos filtrarlo manualmente
@@ -57,8 +57,8 @@ const Catalogo = () => {
     <div className="catalogo-page">
       <div className="hero-banner">
         <div className="hero-content">
-          <h1>Nuestro Catálogo</h1>
-          <p>Descubre nuestra selección de maravillas artesanales</p>
+          <h1>Equipamiento Industrial</h1>
+          <p>Maquinaria profesional de alta durabilidad para llevar tu panadería al siguiente nivel</p>
         </div>
       </div>
       
@@ -66,13 +66,13 @@ const Catalogo = () => {
         <div className="catalogo-filters">
           <input 
             type="text" 
-            placeholder="Buscar productos..." 
+            placeholder="Buscar rodillos, hornos, amasadoras..." 
             className="search-input"
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
           />
           <div className="category-filters">
-            {['Todas', 'Panadería', 'Pastelería', 'Panes'].map((cat) => (
+            {['Todas', 'Hornos', 'Amasadoras', 'Sobadoras', 'Complementos'].map((cat) => (
               <button 
                 key={cat}
                 className={`category-pill ${categoriaSeleccionada === cat ? 'active' : ''}`}
