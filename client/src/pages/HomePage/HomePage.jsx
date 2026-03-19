@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import HeroBanner from '../../components/HeroBanner/HeroBanner.jsx';
 import './HomePage.css';
 
@@ -67,9 +68,9 @@ const HomePage = () => {
               <h2 className="section-title" style={{ fontSize: '1.8rem', fontWeight: '800', margin: 0 }}>
                 Productos Destacados
               </h2>
-              <a href="/productos" style={{ color: 'var(--color-primary)', fontWeight: '600', textDecoration: 'none', fontSize: '0.9rem', transition: 'var(--transition)' }}>
+              <Link to="/productos" style={{ color: 'var(--color-primary)', fontWeight: '600', textDecoration: 'none', fontSize: '0.9rem', transition: 'var(--transition)' }}>
                 Ver catálogo completo →
-              </a>
+              </Link>
             </div>
             {loading ? (
               <p style={{ textAlign: 'center' }}>Cargando productos destacados...</p>

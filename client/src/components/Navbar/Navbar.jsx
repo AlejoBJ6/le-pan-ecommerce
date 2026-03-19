@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import productoService from '../../services/productoService.js';
 import './Navbar.css';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCatalogoOpen, setIsCatalogoOpen] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    return localStorage.getItem('theme') === 'dark';
+  });
 
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestions, setSuggestions] = useState([]);
@@ -31,7 +33,9 @@ const Navbar = () => {
   }, [isDarkMode]);
 
   const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
+    const newMode = !isDarkMode;
+    setIsDarkMode(newMode);
+    localStorage.setItem('theme', newMode ? 'dark' : 'light');
   };
 
   // Efecto para autocompletado de búsqueda con Debounce
@@ -91,10 +95,10 @@ const Navbar = () => {
               </svg>
             </button>
 
-            <a href="/" className="navbar-logo" style={{ textDecoration: 'none' }}>
+            <Link to="/" className="navbar-logo" style={{ textDecoration: 'none' }}>
               <span className="logo-icon">🥖</span>
               <span className="logo-text">LÉ PAN</span>
-            </a>
+            </Link>
           </div>
 
           {/* Centro: Barra de Búsqueda */}
@@ -202,8 +206,8 @@ const Navbar = () => {
         <button className="drawer-close" onClick={() => setIsMenuOpen(false)}>✕</button>
         <div className="drawer-content">
           <ul className="drawer-menu">
-            <li><a href="/">Inicio</a></li>
-            <li><a href="/cuenta">Cuenta / Crear cuenta</a></li>
+            <li><Link to="/">Inicio</Link></li>
+            <li><Link to="/cuenta">Cuenta / Crear cuenta</Link></li>
             <li className="drawer-submenu">
               <button
                 onClick={() => setIsCatalogoOpen(!isCatalogoOpen)}
@@ -214,17 +218,17 @@ const Navbar = () => {
               </button>
               {isCatalogoOpen && (
                 <ul className="submenu-list">
-                  <li><a href="/productos">Ver Todo</a></li>
-                  <li><a href="/productos?categoria=Amasadoras">Amasadoras</a></li>
-                  <li><a href="/productos?categoria=Hornos">Hornos</a></li>
-                  <li><a href="/productos?categoria=Laminadoras">Laminadoras</a></li>
-                  <li><a href="/productos?categoria=Batidoras">Batidoras</a></li>
+                  <li><Link to="/productos">Ver Todo</Link></li>
+                  <li><Link to="/productos?categoria=Amasadoras">Amasadoras</Link></li>
+                  <li><Link to="/productos?categoria=Hornos">Hornos</Link></li>
+                  <li><Link to="/productos?categoria=Laminadoras">Laminadoras</Link></li>
+                  <li><Link to="/productos?categoria=Batidoras">Batidoras</Link></li>
                 </ul>
               )}
             </li>
-            <li><a href="/combos">Combos armados</a></li>
-            <li><a href="/arma-combo">Armá tu combo</a></li>
-            <li><a href="/contacto">Contacto</a></li>
+            <li><Link to="/combos">Combos armados</Link></li>
+            <li><Link to="/arma-combo">Armá tu combo</Link></li>
+            <li><Link to="/contacto">Contacto</Link></li>
             <li className="mobile-only-theme">
               <button 
                 onClick={toggleTheme} 

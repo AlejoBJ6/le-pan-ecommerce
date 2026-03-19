@@ -32,7 +32,7 @@ const CombosPage = () => {
       </div>
       
       <div className="catalogo-content-wrapper">
-        <h2 className="section-title" style={{ textAlign: 'center', marginBottom: '40px', fontSize: '2rem', color: '#3E2723' }}>
+        <h2 className="section-title" style={{ textAlign: 'center', marginBottom: '40px', fontSize: '2rem', color: 'var(--color-dark)' }}>
           Elegí tu Combo Ideal
         </h2>
         {cargando ? (
