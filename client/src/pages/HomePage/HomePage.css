@@ -22,3 +22,18 @@
     gap: 40px;
   }
 }
+
+.productos-grid {
+  display: grid;
+  /* 2 columnas en mobile */
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+@media (min-width: 576px) {
+  .productos-grid {
+    /* 1 columna ancha auto-fill en screens más grandes */
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 20px;
+  }
+}

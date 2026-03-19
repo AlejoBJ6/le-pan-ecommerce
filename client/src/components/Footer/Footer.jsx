@@ -1,4 +1,4 @@
-import React from 'react';
+import { Link } from 'react-router-dom';
 import './Footer.css';
 
 const Footer = () => {
@@ -21,8 +21,8 @@ const Footer = () => {
         </div>
         
         <div className="footer-links">
-          <a href="#">Términos y condiciones</a>
-          <a href="#">Contacto</a>
+          <Link to="#">Términos y condiciones</Link>
+          <Link to="/contacto">Contacto</Link>
         </div>
         
         <p className="footer-copy">© 2026 LÉ PAN. Todos los derechos reservados.</p>

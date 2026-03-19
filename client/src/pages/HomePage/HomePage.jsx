@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import HeroBanner from '../../components/HeroBanner/HeroBanner.jsx';
-import WhatsAppButton from '../../components/WhatsAppButton/WhatsAppButton.jsx';
 import './HomePage.css';
 
 // Importamos el servicio y la tarjeta "libre" construida por el compañero
@@ -68,21 +68,14 @@ const HomePage = () => {
               <h2 className="section-title" style={{ fontSize: '1.8rem', fontWeight: '800', margin: 0 }}>
                 Productos Destacados
               </h2>
-              <a href="/productos" style={{ color: 'var(--color-primary)', fontWeight: '600', textDecoration: 'none', fontSize: '0.9rem', transition: 'var(--transition)' }}>
+              <Link to="/productos" style={{ color: 'var(--color-primary)', fontWeight: '600', textDecoration: 'none', fontSize: '0.9rem', transition: 'var(--transition)' }}>
                 Ver catálogo completo →
-              </a>
+              </Link>
             </div>
             {loading ? (
               <p style={{ textAlign: 'center' }}>Cargando productos destacados...</p>
             ) : productosDestacados.length > 0 ? (
-              <div 
-                className="productos-grid" 
-                style={{ 
-                  display: 'grid', 
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))', 
-                  gap: '20px' 
-                }}
-              >
+              <div className="productos-grid">
                 {productosDestacados.map((producto) => (
                   <ProductCard 
                     key={producto._id || producto.id} 
@@ -100,7 +93,7 @@ const HomePage = () => {
             <h2 className="section-title" style={{ marginBottom: '30px', fontSize: '1.6rem', fontWeight: '800', textAlign: 'left', borderBottom: '2px solid var(--color-gold)', paddingBottom: '10px' }}>
               Los Mejores en Amasadoras
             </h2>
-            <div className="productos-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))', gap: '20px' }}>
+            <div className="productos-grid">
               {mockAmasadoras.map((producto) => (
                 <ProductCard key={producto._id} producto={producto} />
               ))}
@@ -112,7 +105,7 @@ const HomePage = () => {
             <h2 className="section-title" style={{ marginBottom: '30px', fontSize: '1.6rem', fontWeight: '800', textAlign: 'left', borderBottom: '2px solid var(--color-gold)', paddingBottom: '10px' }}>
               Ofertas en Hornos
             </h2>
-            <div className="productos-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))', gap: '20px' }}>
+            <div className="productos-grid">
               {mockHornos.map((producto) => (
                 <ProductCard key={producto._id} producto={producto} />
               ))}
@@ -121,8 +114,6 @@ const HomePage = () => {
 
         </main>
       </div>
-
-      <WhatsAppButton />
     </div>
   );
 };

@@ -353,6 +353,10 @@
   color: var(--color-primary, #e25822);
 }
 
+.mobile-only-theme {
+  display: none;
+}
+
 
 /* Responsive Desktop */
 @media (min-width: 768px) {
@@ -381,9 +385,16 @@
 
 /* Responsive Mobile Override: Single Line */
 @media (max-width: 768px) {
+  .desktop-only-theme {
+    display: none !important;
+  }
+  .mobile-only-theme {
+    display: block;
+  }
+
   .navbar-top-container {
     flex-wrap: nowrap;
-    gap: 8px;
+    gap: 16px;
     padding: 0 10px;
   }
 
@@ -410,10 +421,53 @@
     padding: 0;
     margin: 0;
     max-width: none;
+    order: unset;
+    justify-content: flex-end;
   }
 
   .navbar-search input {
     display: none;
+  }
+
+  /* Cuando la búsqueda está activa en móvil, ocultar los demás elementos */
+  .navbar-top-container.mobile-search-active .navbar-left,
+  .navbar-top-container.mobile-search-active .navbar-actions {
+    display: none !important;
+  }
+
+  /* Expandir la barra de búsqueda */
+  .navbar-top-container.mobile-search-active .navbar-search {
+    flex-grow: 1;
+    background-color: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    padding: 0 8px;
+    height: 40px;
+    justify-content: flex-start;
+  }
+
+  .navbar-top-container.mobile-search-active .navbar-search input {
+    display: block;
+    width: 100%;
+    color: var(--color-dark);
+    padding: 0 8px;
+  }
+
+  /* Estilos para el botón de cerrar */
+  .search-close-btn {
+    background: transparent;
+    border: none;
+    color: var(--color-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    cursor: pointer;
+  }
+
+  .search-close-btn svg {
+    width: 20px;
+    height: 20px;
   }
 
   .navbar-search .search-btn {
