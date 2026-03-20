@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import './ProductDetail.css';
 
 // Mock data adaptada a maquinarias de panadería
@@ -31,9 +31,15 @@ const MOCK_PRODUCT = {
 
 const ProductDetail = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [producto, setProducto] = useState(MOCK_PRODUCT);
   const [imagenActiva, setImagenActiva] = useState(MOCK_PRODUCT.imagenes[0]);
   const [cantidad, setCantidad] = useState(1);
+  
+  const [showZoom, setShowZoom] = useState(false);
+  const [zoomStyle, setZoomStyle] = useState({});
+  const [lensStyle, setLensStyle] = useState({});
+  const [isMobileModalOpen, setIsMobileModalOpen] = useState(false);
 
   useEffect(() => {
     // Scroll to top upon rendering
@@ -41,6 +47,53 @@ const ProductDetail = () => {
   }, [id]);
 
   const precioFormat = (precio) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(precio);
+
+  const handleMouseMove = (e) => {
+    if (window.innerWidth <= 768) return;
+    
+    const container = e.currentTarget;
+    const { left, top, width, height } = container.getBoundingClientRect();
+    const x = e.clientX - left;
+    const y = e.clientY - top;
+
+    const lensSize = 150; // Tamaño del recuadro de zoom
+    
+    let lensX = x - lensSize / 2;
+    let lensY = y - lensSize / 2;
+    
+    // Restringir el lente dentro del contenedor
+    if (lensX < 0) lensX = 0;
+    if (lensY < 0) lensY = 0;
+    if (lensX > width - lensSize) lensX = width - lensSize;
+    if (lensY > height - lensSize) lensY = height - lensSize;
+
+    setLensStyle({
+      left: `${lensX}px`,
+      top: `${lensY}px`,
+      width: `${lensSize}px`,
+      height: `${lensSize}px`,
+    });
+
+    const ratioX = lensX / (width - lensSize);
+    const ratioY = lensY / (height - lensSize);
+
+    setZoomStyle({
+      backgroundImage: `url(${imagenActiva})`,
+      backgroundPosition: `${ratioX * 100}% ${ratioY * 100}%`
+    });
+  };
+
+  const handleMouseEnter = () => {
+    if (window.innerWidth > 768) setShowZoom(true);
+  };
+
+  const handleMouseLeave = () => {
+    if (window.innerWidth > 768) setShowZoom(false);
+  };
+
+  const handleImageClick = () => {
+    setIsMobileModalOpen(true);
+  };
 
   return (
     <div className="product-page bg-gray-light">
@@ -73,9 +126,17 @@ const ProductDetail = () => {
                     </div>
                   ))}
                 </div>
-                <div className="gallery-main-image">
+                <div 
+                  className="gallery-main-image"
+                  onMouseMove={handleMouseMove}
+                  onMouseEnter={handleMouseEnter}
+                  onMouseLeave={handleMouseLeave}
+                  onClick={handleImageClick}
+                >
                   <img src={imagenActiva} alt={producto.nombre} />
+                  {showZoom && <div className="zoom-lens" style={lensStyle}></div>}
                 </div>
+                {showZoom && <div className="zoom-window card-box-shadow" style={zoomStyle}></div>}
               </div>
 
               {/* Info Section */}
@@ -167,8 +228,8 @@ const ProductDetail = () => {
               </div>
 
               <div className="purchase-actions">
-                <button className="btn-buy-now">Comprar ahora</button>
-                <button className="btn-add-cart">Agregar al carrito</button>
+                <button className="btn-buy-now" onClick={() => navigate('/carrito')}>Comprar ahora</button>
+                <button className="btn-add-cart" onClick={() => navigate('/carrito')}>Agregar al carrito</button>
               </div>
 
               <div className="purchase-guarantees">
@@ -180,6 +241,14 @@ const ProductDetail = () => {
 
         </div>
       </div>
+      
+      {/* Modal móvil a pantalla completa */}
+      {isMobileModalOpen && (
+        <div className="mobile-image-modal" onClick={() => setIsMobileModalOpen(false)}>
+          <button className="close-mobile-modal" onClick={() => setIsMobileModalOpen(false)}>×</button>
+          <img src={imagenActiva} alt={producto.nombre} onClick={(e) => e.stopPropagation()} />
+        </div>
+      )}
     </div>
   );
 };

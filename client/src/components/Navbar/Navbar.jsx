@@ -184,14 +184,14 @@ const Navbar = () => {
               </svg>
               <span>Ingresar</span>
             </button>
-            <button className="action-link cart-link">
+            <button className="action-link cart-link" onClick={() => navigate('/carrito')}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="9" cy="21" r="1"></circle>
                 <circle cx="20" cy="21" r="1"></circle>
                 <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
               </svg>
               <span>Mi carrito</span>
-              <span className="cart-badge-inline">0</span>
+              <span className="cart-badge-inline">2</span>
             </button>
           </div>
         </div>
