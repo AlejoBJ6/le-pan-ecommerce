@@ -177,7 +177,7 @@ const Navbar = () => {
               )}
             </div>
 
-            <button className="action-link">
+            <button className="action-link" onClick={() => navigate('/login')}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                 <circle cx="12" cy="7" r="4"></circle>
@@ -207,7 +207,7 @@ const Navbar = () => {
         <div className="drawer-content">
           <ul className="drawer-menu">
             <li><Link to="/">Inicio</Link></li>
-            <li><Link to="/cuenta">Cuenta / Crear cuenta</Link></li>
+            <li><Link to="/login" onClick={() => setIsMenuOpen(false)}>Cuenta / Iniciar sesión</Link></li>
             <li className="drawer-submenu">
               <button
                 onClick={() => setIsCatalogoOpen(!isCatalogoOpen)}
