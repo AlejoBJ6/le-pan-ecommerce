@@ -14,6 +14,16 @@ const Navbar = () => {
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const [bumpCart, setBumpCart] = useState(false);
+
+  useEffect(() => {
+    const handleCartAdd = () => {
+      setBumpCart(true);
+      setTimeout(() => setBumpCart(false), 300);
+    };
+    window.addEventListener('cart-added', handleCartAdd);
+    return () => window.removeEventListener('cart-added', handleCartAdd);
+  }, []);
 
   const navigate = useNavigate();
 
@@ -87,6 +97,7 @@ const Navbar = () => {
               className="navbar-menu-btn"
               aria-label="Abrir menú móvil"
               onClick={() => setIsMenuOpen(true)}
+              style={{ visibility: isMenuOpen ? 'hidden' : 'visible' }}
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="3" y1="12" x2="21" y2="12"></line>
@@ -183,14 +194,14 @@ const Navbar = () => {
               </svg>
               <span>Ingresar</span>
             </button>
-            <button className="action-link cart-link" onClick={() => navigate('/carrito')}>
+            <button className={`action-link cart-link ${bumpCart ? 'cart-bump' : ''}`} onClick={() => navigate('/carrito')}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="9" cy="21" r="1"></circle>
                 <circle cx="20" cy="21" r="1"></circle>
                 <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
               </svg>
               <span>Mi carrito</span>
-              <span className="cart-badge-inline">2</span>
+              <span className={`cart-badge-inline ${bumpCart ? 'bounce' : ''}`}>2</span>
             </button>
           </div>
         </div>
@@ -205,7 +216,7 @@ const Navbar = () => {
         <button className="drawer-close" onClick={() => setIsMenuOpen(false)}>✕</button>
         <div className="drawer-content">
           <ul className="drawer-menu">
-            <li><Link to="/">Inicio</Link></li>
+            <li><Link to="/" onClick={() => setIsMenuOpen(false)}>Inicio</Link></li>
             <li><Link to="/login" onClick={() => setIsMenuOpen(false)}>Cuenta / Iniciar sesión</Link></li>
             <li className="drawer-submenu">
               <button
@@ -217,17 +228,17 @@ const Navbar = () => {
               </button>
               {isCatalogoOpen && (
                 <ul className="submenu-list">
-                  <li><Link to="/productos">Ver Todo</Link></li>
-                  <li><Link to="/productos?categoria=Amasadoras">Amasadoras</Link></li>
-                  <li><Link to="/productos?categoria=Hornos">Hornos</Link></li>
-                  <li><Link to="/productos?categoria=Laminadoras">Laminadoras</Link></li>
-                  <li><Link to="/productos?categoria=Batidoras">Batidoras</Link></li>
+                  <li><Link to="/productos" onClick={() => setIsMenuOpen(false)}>Ver Todo</Link></li>
+                  <li><Link to="/productos?categoria=Amasadoras" onClick={() => setIsMenuOpen(false)}>Amasadoras</Link></li>
+                  <li><Link to="/productos?categoria=Hornos" onClick={() => setIsMenuOpen(false)}>Hornos</Link></li>
+                  <li><Link to="/productos?categoria=Laminadoras" onClick={() => setIsMenuOpen(false)}>Laminadoras</Link></li>
+                  <li><Link to="/productos?categoria=Batidoras" onClick={() => setIsMenuOpen(false)}>Batidoras</Link></li>
                 </ul>
               )}
             </li>
-            <li><Link to="/combos">Combos armados</Link></li>
-            <li><Link to="/arma-combo">Armá tu combo</Link></li>
-            <li><Link to="/contacto">Contacto</Link></li>
+            <li><Link to="/combos" onClick={() => setIsMenuOpen(false)}>Combos armados</Link></li>
+            <li><Link to="/arma-combo" onClick={() => setIsMenuOpen(false)}>Armá tu combo</Link></li>
+            <li><Link to="/contacto" onClick={() => setIsMenuOpen(false)}>Contacto</Link></li>
             <li className="mobile-only-theme">
               <button
                 onClick={toggleTheme}

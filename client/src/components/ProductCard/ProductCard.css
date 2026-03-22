@@ -105,6 +105,14 @@
   opacity: 1;
 }
 
+.product-card-btn.btn-added {
+  background-color: var(--color-whatsapp) !important;
+  color: white !important;
+  transform: scale(1.05);
+  box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4) !important;
+  opacity: 1 !important;
+}
+
 @media (min-width: 768px) {
   .product-card {
     min-width: 220px;

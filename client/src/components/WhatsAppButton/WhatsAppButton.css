@@ -11,7 +11,8 @@
   align-items: center;
   justify-content: center;
   box-shadow: var(--shadow-md);
-  z-index: 9999; /* Always on top */
+  z-index: 9999;
+  /* Always on top */
   transition: transform var(--transition);
 }
 
@@ -22,4 +23,19 @@
 .whatsapp-btn svg {
   width: 32px;
   height: 32px;
+}
+
+/* Modificación para celulares: subir el botón para no tapar elementos como el carrito en ArmaCombo */
+@media (max-width: 768px) {
+  .whatsapp-btn {
+    bottom: 24px;
+    right: 16px;
+    width: 48px;
+    height: 48px;
+    z-index: 2005;
+  }
+  
+  .whatsapp-btn.whatsapp-btn-arma {
+    bottom: 220px; /* Ajustado para quedar más cerca del cuadro pero sin entrar a él */
+  }
 }

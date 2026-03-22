@@ -1,8 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import './ProductCard.css';
 
 const ProductCard = ({ product, actionText = "Añadir" }) => {
+  const [isAdded, setIsAdded] = useState(false);
+
+  const handleAddToCart = (e) => {
+    e.preventDefault();
+    if (isAdded) return;
+    setIsAdded(true);
+    window.dispatchEvent(new CustomEvent('cart-added'));
+    setTimeout(() => setIsAdded(false), 2000);
+  };
+
   return (
     <div className="product-card">
       <Link to={`/producto/${product._id || product.id || 1}`} style={{ display: 'block' }}>
@@ -22,8 +32,12 @@ const ProductCard = ({ product, actionText = "Añadir" }) => {
           )}
           <p className="product-card-price">$ {product.price.toLocaleString('es-AR')}</p>
         </div>
-        <button className="product-card-btn" aria-label={`${actionText} ${product.name}`}>
-          {actionText}
+        <button 
+          className={`product-card-btn ${isAdded ? 'btn-added' : ''}`} 
+          aria-label={`${actionText} ${product.name}`}
+          onClick={handleAddToCart}
+        >
+          {isAdded ? '¡Añadido! ✓' : actionText}
         </button>
       </div>
     </div>
