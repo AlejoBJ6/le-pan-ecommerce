@@ -2,46 +2,63 @@
   width: 100%;
   position: sticky;
   top: 0;
-  /* Removes sticky to allow hero to be directly under. Or can be sticky if desired */
-  z-index: 1000;
+  z-index: 2000; /* Increased to stay above everything */
   box-shadow: var(--shadow-sm);
   background: var(--color-white);
 }
 
 /* Nivel Superior Dorado */
 .navbar-top {
-  background-color: var(--color-gold);
-  /* Dorado brillante */
-  padding: 18px 0;
+  background-color: var(--color-dark); /* Dark background for better logo contrast */
+  color: var(--color-white);
+  padding: 8px 0;
+  min-height: 100px;
+  display: flex;
+  align-items: center;
 }
 
 .navbar-top-container {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap;
-  /* Permitir apilar en móvil */
-  gap: 16px;
+  flex-wrap: nowrap;
+  gap: 24px;
+}
+
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex: 1;
+  /* Permite que el área del logo crezca */
 }
 
 .navbar-logo {
   display: flex;
   align-items: center;
-  color: var(--color-dark);
-  font-weight: 800;
-  font-style: italic;
-  /* Similar al logo Maximus anguloso */
-  font-size: 24px;
-  letter-spacing: -0.5px;
+  height: auto;
 }
 
-.navbar-logo .logo-icon {
-  margin-right: 8px;
-  font-style: normal;
+.logo-img {
+  height: 115px; /* Scaled down slightly to fit better */
+  width: auto;
+  max-width: 400px;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+  display: block;
+  margin: -10px 0; /* Subtler overflow */
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3)); /* Stronger shadow for the dark bg */
 }
 
-.navbar-logo .logo-text {
-  color: var(--color-dark);
+.logo-img:hover {
+  transform: scale(1.02);
+}
+
+@media (max-width: 768px) {
+  .logo-img {
+    height: 70px; /* Reduced to avoid overflow/cut-off */
+    margin: -10px 0;
+  }
 }
 
 .navbar-search {
@@ -49,14 +66,12 @@
   max-width: 500px;
   display: flex;
   align-items: center;
-  background-color: #2a2a2a;
-  /* Fondo oscuro del input */
-  border: 1px solid #333;
+  background-color: var(--color-white); /* White background as requested */
+  border: 1px solid rgba(0,0,0,0.1);
   border-radius: 4px;
   padding: 0 4px 0 16px;
   height: 40px;
   order: 3;
-  /* Mandar abajo en móvil */
   width: 100%;
 }
 
@@ -64,20 +79,19 @@
   flex-grow: 1;
   background: transparent;
   border: none;
-  color: var(--color-dark);
+  color: #1a1a1a; /* Dark text for white background */
   outline: none;
   font-family: inherit;
   font-size: 14px;
 }
 
 .navbar-search input::placeholder {
-  color: rgba(0, 0, 0, 0.6);
+  color: rgba(0, 0, 0, 0.5); /* Dark placeholder for white background */
 }
 
 .navbar-search .search-btn {
   background: transparent;
-  color: var(--color-dark);
-  /* Lupa oscura */
+  color: #1a1a1a; /* Dark icon for white background */
   border: none;
   width: 32px;
   height: 32px;
@@ -132,17 +146,18 @@
 .action-link {
   background: none;
   border: none;
-  color: var(--color-dark);
+  color: var(--color-white); /* White text for dark background */
   display: flex;
   align-items: center;
   gap: 8px;
   font-size: 14px;
   font-weight: 500;
-  transition: color var(--transition);
+  transition: opacity var(--transition);
 }
 
 .action-link:hover {
-  color: var(--color-dark-2);
+  opacity: 0.8;
+  color: var(--color-white);
 }
 
 .action-link svg {
@@ -181,10 +196,9 @@
 .navbar-menu-btn {
   background: none;
   border: none;
-  color: var(--color-dark);
+  color: var(--color-gold); /* Gold hamburger for visibility */
   cursor: pointer;
   display: flex;
-  /* Ahora siempre visible */
   align-items: center;
   justify-content: center;
 }
@@ -220,7 +234,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-dark);
+  color: var(--color-white); /* White icons for dark background */
   cursor: pointer;
   padding: 4px;
   transition: var(--transition);
@@ -389,6 +403,7 @@
   .desktop-only-theme {
     display: none !important;
   }
+
   .mobile-only-theme {
     display: block;
   }
@@ -403,7 +418,7 @@
   .action-link span:not(.cart-badge-inline) {
     display: none;
   }
-  
+
   /* Ocultar texto de MODO OSCURO */
   .navbar-theme-toggle span {
     display: none;
@@ -475,5 +490,6 @@
     position: static;
     width: 32px;
     height: 32px;
+    color: var(--color-gold); /* Gold for visibility on dark nav */
   }
 }
