@@ -35,6 +35,7 @@ const ProductDetail = () => {
   const [producto, setProducto] = useState(MOCK_PRODUCT);
   const [imagenActiva, setImagenActiva] = useState(MOCK_PRODUCT.imagenes[0]);
   const [cantidad, setCantidad] = useState(1);
+  const [isAdded, setIsAdded] = useState(false);
   
   const [showZoom, setShowZoom] = useState(false);
   const [zoomStyle, setZoomStyle] = useState({});
@@ -45,6 +46,13 @@ const ProductDetail = () => {
     // Scroll to top upon rendering
     window.scrollTo(0, 0);
   }, [id]);
+
+  const handleAddToCart = () => {
+    if (isAdded) return;
+    setIsAdded(true);
+    window.dispatchEvent(new CustomEvent('cart-added'));
+    setTimeout(() => setIsAdded(false), 2000);
+  };
 
   const precioFormat = (precio) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(precio);
 
@@ -229,7 +237,12 @@ const ProductDetail = () => {
 
               <div className="purchase-actions">
                 <button className="btn-buy-now" onClick={() => navigate('/carrito')}>Comprar ahora</button>
-                <button className="btn-add-cart" onClick={() => navigate('/carrito')}>Agregar al carrito</button>
+                <button 
+                  className={`btn-add-cart ${isAdded ? 'btn-added' : ''}`} 
+                  onClick={handleAddToCart}
+                >
+                  {isAdded ? '¡Añadido al carrito! ✓' : 'Agregar al carrito'}
+                </button>
               </div>
 
               <div className="purchase-guarantees">
