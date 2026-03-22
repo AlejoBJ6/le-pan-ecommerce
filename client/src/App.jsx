@@ -12,10 +12,12 @@ import Carrito from './pages/Carrito/Carrito.jsx';
 import Navbar from './components/Navbar/Navbar.jsx';
 import Footer from './components/Footer/Footer.jsx';
 import WhatsAppButton from './components/WhatsAppButton/WhatsAppButton.jsx';
+import ScrollToTop from './components/ScrollToTop.jsx';
 
 function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Navbar />
       <Routes>
         <Route path="/" element={<HomePage />} />
