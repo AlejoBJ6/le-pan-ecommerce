@@ -82,7 +82,7 @@ const Navbar = () => {
         <div className={`container navbar-top-container ${isMobileSearchOpen ? 'mobile-search-active' : ''}`}>
 
           {/* Lado Izquierdo: Hamburguesa + Logo */}
-          <div className="navbar-left" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div className="navbar-left">
             <button
               className="navbar-menu-btn"
               aria-label="Abrir menú móvil"
@@ -95,9 +95,8 @@ const Navbar = () => {
               </svg>
             </button>
 
-            <Link to="/" className="navbar-logo" style={{ textDecoration: 'none' }}>
-              <span className="logo-icon">🥖</span>
-              <span className="logo-text">LÉ PAN</span>
+            <Link to="/" className="navbar-logo">
+              <img src="/images/logos/image-removebg-preview.png" alt="Lé Pan Logo" className="logo-img" />
             </Link>
           </div>
 
@@ -125,9 +124,9 @@ const Navbar = () => {
               onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
               onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
             />
-            <button 
-              type="submit" 
-              className="search-btn" 
+            <button
+              type="submit"
+              className="search-btn"
               aria-label="Buscar"
               onClick={(e) => {
                 if (window.innerWidth <= 768 && !isMobileSearchOpen) {
@@ -230,8 +229,8 @@ const Navbar = () => {
             <li><Link to="/arma-combo">Armá tu combo</Link></li>
             <li><Link to="/contacto">Contacto</Link></li>
             <li className="mobile-only-theme">
-              <button 
-                onClick={toggleTheme} 
+              <button
+                onClick={toggleTheme}
                 className="submenu-toggle"
                 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
               >

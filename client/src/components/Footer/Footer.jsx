@@ -19,13 +19,16 @@ const Footer = () => {
             </svg>
           </a>
         </div>
-        
+
         <div className="footer-links">
           <Link to="#">Términos y condiciones</Link>
           <Link to="/contacto">Contacto</Link>
         </div>
-        
-        <p className="footer-copy">© 2026 LÉ PAN. Todos los derechos reservados.</p>
+
+        <div className="footer-brand">
+          <img src="/images/logos/image-removebg-preview.png" alt="Lé Pan Logo" className="footer-logo" />
+          <p className="footer-copy">© 2026 LÉ PAN. Todos los derechos reservados.</p>
+        </div>
       </div>
     </footer>
   );
