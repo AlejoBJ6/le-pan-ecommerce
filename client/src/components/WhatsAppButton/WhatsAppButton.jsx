@@ -1,11 +1,15 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import './WhatsAppButton.css';
 
 const WhatsAppButton = () => {
+  const location = useLocation();
+  const isArmaCombo = location.pathname === '/arma-combo';
+
   return (
     <a 
       href="https://wa.me/5491100000000" 
-      className="whatsapp-btn" 
+      className={`whatsapp-btn ${isArmaCombo ? 'whatsapp-btn-arma' : ''}`} 
       target="_blank" 
       rel="noopener noreferrer"
       aria-label="Contactar por WhatsApp"

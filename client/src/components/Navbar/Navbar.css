@@ -2,21 +2,23 @@
   width: 100%;
   position: sticky;
   top: 0;
-  z-index: 2000; /* Increased to stay above everything */
+  z-index: 2000;
+  /* Increased to stay above everything */
   box-shadow: var(--shadow-sm);
   background: var(--color-white);
 
   /* Override dark mode variables to keep original colors */
-  --color-dark:       #1A1A1A;
-  --color-dark-2:     #2C2C2C;
-  --color-gray:       #6B6B6B;
+  --color-dark: #1A1A1A;
+  --color-dark-2: #2C2C2C;
+  --color-gray: #6B6B6B;
   --color-gray-light: #F5F5F5;
-  --color-white:      #FFFFFF;
+  --color-white: #FFFFFF;
 }
 
 /* Nivel Superior Dorado */
 .navbar-top {
-  background-color: var(--color-dark); /* Dark background for better logo contrast */
+  background-color: var(--color-dark);
+  /* Dark background for better logo contrast */
   color: var(--color-white);
   padding: 8px 0;
   min-height: 100px;
@@ -44,17 +46,22 @@
   display: flex;
   align-items: center;
   height: auto;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .logo-img {
-  height: 115px; /* Scaled down slightly to fit better */
+  height: 115px;
+  /* Scaled down slightly to fit better */
   width: auto;
   max-width: 400px;
   object-fit: contain;
   transition: transform 0.3s ease;
   display: block;
-  margin: -10px 0; /* Subtler overflow */
-  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3)); /* Stronger shadow for the dark bg */
+  margin: -10px 0;
+  /* Subtler overflow */
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+  /* Stronger shadow for the dark bg */
 }
 
 .logo-img:hover {
@@ -63,7 +70,8 @@
 
 @media (max-width: 768px) {
   .logo-img {
-    height: 70px; /* Reduced to avoid overflow/cut-off */
+    height: 70px;
+    /* Reduced to avoid overflow/cut-off */
     margin: -10px 0;
   }
 }
@@ -73,8 +81,9 @@
   max-width: 500px;
   display: flex;
   align-items: center;
-  background-color: var(--color-white); /* White background as requested */
-  border: 1px solid rgba(0,0,0,0.1);
+  background-color: var(--color-white);
+  /* White background as requested */
+  border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 4px;
   padding: 0 4px 0 16px;
   height: 40px;
@@ -86,19 +95,22 @@
   flex-grow: 1;
   background: transparent;
   border: none;
-  color: #1a1a1a; /* Dark text for white background */
+  color: #1a1a1a;
+  /* Dark text for white background */
   outline: none;
   font-family: inherit;
   font-size: 14px;
 }
 
 .navbar-search input::placeholder {
-  color: rgba(0, 0, 0, 0.5); /* Dark placeholder for white background */
+  color: rgba(0, 0, 0, 0.5);
+  /* Dark placeholder for white background */
 }
 
 .navbar-search .search-btn {
   background: transparent;
-  color: #1a1a1a; /* Dark icon for white background */
+  color: #1a1a1a;
+  /* Dark icon for white background */
   border: none;
   width: 32px;
   height: 32px;
@@ -153,7 +165,8 @@
 .action-link {
   background: none;
   border: none;
-  color: var(--color-white); /* White text for dark background */
+  color: var(--color-white);
+  /* White text for dark background */
   display: flex;
   align-items: center;
   gap: 8px;
@@ -180,7 +193,8 @@
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  border: 1.5px solid #1A1A1A; /* matches dark header background to cut out */
+  border: 1.5px solid #1A1A1A;
+  /* matches dark header background to cut out */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -211,7 +225,8 @@
 .navbar-menu-btn {
   background: none;
   border: none;
-  color: var(--color-gold); /* Gold hamburger for visibility */
+  color: var(--color-gold);
+  /* Gold hamburger for visibility */
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -249,7 +264,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-white); /* White icons for dark background */
+  color: var(--color-white);
+  /* White icons for dark background */
   cursor: pointer;
   padding: 4px;
   transition: var(--transition);
@@ -301,11 +317,11 @@
   flex-direction: column;
 
   /* Override dark mode variables to keep original colors */
-  --color-dark:       #1A1A1A;
-  --color-dark-2:     #2C2C2C;
-  --color-gray:       #6B6B6B;
+  --color-dark: #1A1A1A;
+  --color-dark-2: #2C2C2C;
+  --color-gray: #6B6B6B;
   --color-gray-light: #F5F5F5;
-  --color-white:      #FFFFFF;
+  --color-white: #FFFFFF;
 }
 
 .navbar-drawer.open {
@@ -512,6 +528,7 @@
     position: static;
     width: 32px;
     height: 32px;
-    color: var(--color-gold); /* Gold for visibility on dark nav */
+    color: var(--color-gold);
+    /* Gold for visibility on dark nav */
   }
 }
