@@ -173,17 +173,25 @@
 }
 
 .cart-badge-inline {
-  background-color: var(--color-dark);
-  /* Badge Oscuro de cantidad */
-  color: var(--color-gold);
+  background-color: var(--color-primary);
+  color: var(--color-white);
   font-weight: 800;
-  font-size: 12px;
-  width: 20px;
-  height: 20px;
+  font-size: 11px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
+  border: 1.5px solid #1A1A1A; /* matches dark header background to cut out */
   display: flex;
   align-items: center;
   justify-content: center;
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  box-sizing: content-box;
+}
+
+.cart-link {
+  position: relative;
 }
 
 /* Nivel Inferior Blanco */

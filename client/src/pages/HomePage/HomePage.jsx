@@ -90,9 +90,14 @@ const HomePage = () => {
 
           {/* Sección extra: Amasadoras */}
           <section className="productos-extra-section" style={{ marginTop: '60px' }}>
-            <h2 className="section-title" style={{ marginBottom: '30px', fontSize: '1.6rem', fontWeight: '800', textAlign: 'left', borderBottom: '2px solid var(--color-gold)', paddingBottom: '10px' }}>
-              Los Mejores en Amasadoras
-            </h2>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderBottom: '2px solid var(--color-gold)', paddingBottom: '10px', marginBottom: '30px' }}>
+              <h2 className="section-title" style={{ fontSize: '1.6rem', fontWeight: '800', margin: 0, textAlign: 'left' }}>
+                Los Mejores en Amasadoras
+              </h2>
+              <Link to="/productos?categoria=Amasadoras" style={{ color: 'var(--color-primary)', fontWeight: '600', textDecoration: 'none', fontSize: '0.9rem', transition: 'var(--transition)' }}>
+                Ver catálogo amasadoras →
+              </Link>
+            </div>
             <div className="productos-grid">
               {mockAmasadoras.map((producto) => (
                 <ProductCard key={producto._id} producto={producto} />
@@ -102,9 +107,14 @@ const HomePage = () => {
 
           {/* Sección extra: Hornos */}
           <section className="productos-extra-section" style={{ marginTop: '60px' }}>
-            <h2 className="section-title" style={{ marginBottom: '30px', fontSize: '1.6rem', fontWeight: '800', textAlign: 'left', borderBottom: '2px solid var(--color-gold)', paddingBottom: '10px' }}>
-              Ofertas en Hornos
-            </h2>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderBottom: '2px solid var(--color-gold)', paddingBottom: '10px', marginBottom: '30px' }}>
+              <h2 className="section-title" style={{ fontSize: '1.6rem', fontWeight: '800', margin: 0, textAlign: 'left' }}>
+                Ofertas en Hornos
+              </h2>
+              <Link to="/productos?categoria=Hornos" style={{ color: 'var(--color-primary)', fontWeight: '600', textDecoration: 'none', fontSize: '0.9rem', transition: 'var(--transition)' }}>
+                Ver catálogo hornos →
+              </Link>
+            </div>
             <div className="productos-grid">
               {mockHornos.map((producto) => (
                 <ProductCard key={producto._id} producto={producto} />
