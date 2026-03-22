@@ -87,6 +87,7 @@ const Navbar = () => {
               className="navbar-menu-btn"
               aria-label="Abrir menú móvil"
               onClick={() => setIsMenuOpen(true)}
+              style={{ visibility: isMenuOpen ? 'hidden' : 'visible' }}
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="3" y1="12" x2="21" y2="12"></line>
@@ -205,7 +206,7 @@ const Navbar = () => {
         <button className="drawer-close" onClick={() => setIsMenuOpen(false)}>✕</button>
         <div className="drawer-content">
           <ul className="drawer-menu">
-            <li><Link to="/">Inicio</Link></li>
+            <li><Link to="/" onClick={() => setIsMenuOpen(false)}>Inicio</Link></li>
             <li><Link to="/login" onClick={() => setIsMenuOpen(false)}>Cuenta / Iniciar sesión</Link></li>
             <li className="drawer-submenu">
               <button
@@ -217,17 +218,17 @@ const Navbar = () => {
               </button>
               {isCatalogoOpen && (
                 <ul className="submenu-list">
-                  <li><Link to="/productos">Ver Todo</Link></li>
-                  <li><Link to="/productos?categoria=Amasadoras">Amasadoras</Link></li>
-                  <li><Link to="/productos?categoria=Hornos">Hornos</Link></li>
-                  <li><Link to="/productos?categoria=Laminadoras">Laminadoras</Link></li>
-                  <li><Link to="/productos?categoria=Batidoras">Batidoras</Link></li>
+                  <li><Link to="/productos" onClick={() => setIsMenuOpen(false)}>Ver Todo</Link></li>
+                  <li><Link to="/productos?categoria=Amasadoras" onClick={() => setIsMenuOpen(false)}>Amasadoras</Link></li>
+                  <li><Link to="/productos?categoria=Hornos" onClick={() => setIsMenuOpen(false)}>Hornos</Link></li>
+                  <li><Link to="/productos?categoria=Laminadoras" onClick={() => setIsMenuOpen(false)}>Laminadoras</Link></li>
+                  <li><Link to="/productos?categoria=Batidoras" onClick={() => setIsMenuOpen(false)}>Batidoras</Link></li>
                 </ul>
               )}
             </li>
-            <li><Link to="/combos">Combos armados</Link></li>
-            <li><Link to="/arma-combo">Armá tu combo</Link></li>
-            <li><Link to="/contacto">Contacto</Link></li>
+            <li><Link to="/combos" onClick={() => setIsMenuOpen(false)}>Combos armados</Link></li>
+            <li><Link to="/arma-combo" onClick={() => setIsMenuOpen(false)}>Armá tu combo</Link></li>
+            <li><Link to="/contacto" onClick={() => setIsMenuOpen(false)}>Contacto</Link></li>
             <li className="mobile-only-theme">
               <button
                 onClick={toggleTheme}

@@ -5,6 +5,13 @@
   z-index: 2000; /* Increased to stay above everything */
   box-shadow: var(--shadow-sm);
   background: var(--color-white);
+
+  /* Override dark mode variables to keep original colors */
+  --color-dark:       #1A1A1A;
+  --color-dark-2:     #2C2C2C;
+  --color-gray:       #6B6B6B;
+  --color-gray-light: #F5F5F5;
+  --color-white:      #FFFFFF;
 }
 
 /* Nivel Superior Dorado */
@@ -284,6 +291,13 @@
   transition: left 0.3s ease;
   display: flex;
   flex-direction: column;
+
+  /* Override dark mode variables to keep original colors */
+  --color-dark:       #1A1A1A;
+  --color-dark-2:     #2C2C2C;
+  --color-gray:       #6B6B6B;
+  --color-gray-light: #F5F5F5;
+  --color-white:      #FFFFFF;
 }
 
 .navbar-drawer.open {
