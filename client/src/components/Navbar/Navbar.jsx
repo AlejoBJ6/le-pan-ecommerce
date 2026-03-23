@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { AuthContext } from '../../context/AuthContext';
 import productoService from '../../services/productoService.js';
 import './Navbar.css';
 
 const Navbar = () => {
+  const { user, logout } = useContext(AuthContext);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCatalogoOpen, setIsCatalogoOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -187,13 +189,36 @@ const Navbar = () => {
               )}
             </div>
 
-            <button className="action-link" onClick={() => navigate('/login')}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                <circle cx="12" cy="7" r="4"></circle>
-              </svg>
-              <span>Ingresar</span>
-            </button>
+            {user ? (
+              <>
+                {user.rol === 'admin' && (
+                  <button className="action-link" onClick={() => navigate('/admin')} title="Panel Admin">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                      <line x1="3" y1="9" x2="21" y2="9"></line>
+                      <line x1="9" y1="21" x2="9" y2="9"></line>
+                    </svg>
+                    <span>Admin</span>
+                  </button>
+                )}
+                
+                <button className="action-link" onClick={() => navigate('/perfil')} title="Mi Perfil">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                  <span>Mí Perfil</span>
+                </button>
+              </>
+            ) : (
+              <button className="action-link" onClick={() => navigate('/login')}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                <span>Ingresar</span>
+              </button>
+            )}
             <button className={`action-link cart-link ${bumpCart ? 'cart-bump' : ''}`} onClick={() => navigate('/carrito')}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="9" cy="21" r="1"></circle>
@@ -217,7 +242,17 @@ const Navbar = () => {
         <div className="drawer-content">
           <ul className="drawer-menu">
             <li><Link to="/" onClick={() => setIsMenuOpen(false)}>Inicio</Link></li>
-            <li><Link to="/login" onClick={() => setIsMenuOpen(false)}>Cuenta / Iniciar sesión</Link></li>
+            {user ? (
+              <>
+                <li><span style={{color: 'var(--color-primary)', fontWeight: 600, padding: '12px 16px', display: 'block'}}>Hola, {user.nombre}</span></li>
+                <li><Link to="/perfil" onClick={() => setIsMenuOpen(false)} style={{padding: '12px 16px', display: 'block', textDecoration: 'none'}}>👤 Mi Perfil</Link></li>
+                {user.rol === 'admin' && (
+                  <li><Link to="/admin" onClick={() => setIsMenuOpen(false)} style={{padding: '12px 16px', display: 'block', textDecoration: 'none'}}>🛠️ Panel Admin</Link></li>
+                )}
+              </>
+            ) : (
+              <li><Link to="/login" onClick={() => setIsMenuOpen(false)}>Cuenta / Iniciar sesión</Link></li>
+            )}
             <li className="drawer-submenu">
               <button
                 onClick={() => setIsCatalogoOpen(!isCatalogoOpen)}

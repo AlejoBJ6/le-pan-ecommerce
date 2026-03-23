@@ -13,25 +13,68 @@ import Navbar from './components/Navbar/Navbar.jsx';
 import Footer from './components/Footer/Footer.jsx';
 import WhatsAppButton from './components/WhatsAppButton/WhatsAppButton.jsx';
 import ScrollToTop from './components/ScrollToTop.jsx';
+import AdminRoute from './components/AdminRoute.jsx';
+import PrivateRoute from './components/PrivateRoute.jsx';
+import AdminLayout from './pages/Admin/AdminLayout.jsx';
+import AdminDashboard from './pages/Admin/AdminDashboard.jsx';
+import AdminProductos from './pages/Admin/AdminProductos.jsx';
+import AdminProductoForm from './pages/Admin/AdminProductoForm.jsx';
+import AdminCombos from './pages/Admin/AdminCombos.jsx';
+import AdminComboBuilder from './pages/Admin/AdminComboBuilder.jsx';
+import Perfil from './pages/Perfil/Perfil.jsx';
+import ResetPassword from './pages/ResetPassword/ResetPassword.jsx';
+
+// Componente Wrapper para Layout Público
+const PublicLayout = ({ children }) => (
+  <>
+    <Navbar />
+    {children}
+    <Footer />
+    <WhatsAppButton />
+  </>
+);
 
 function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
-      <Navbar />
       <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/productos" element={<Catalogo />} />
-        <Route path="/combos" element={<CombosPage />} />
-        <Route path="/arma-combo" element={<ArmaCombo />} />
-        <Route path="/contacto" element={<Contacto />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/registro" element={<Registro />} />
-        <Route path="/producto/:id" element={<ProductDetail />} />
-        <Route path="/carrito" element={<Carrito />} />
+        {/* Rutas Públicas */}
+        <Route path="/*" element={
+          <PublicLayout>
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/productos" element={<Catalogo />} />
+              <Route path="/combos" element={<CombosPage />} />
+              <Route path="/arma-combo" element={<ArmaCombo />} />
+              <Route path="/contacto" element={<Contacto />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/registro" element={<Registro />} />
+              <Route path="/reset-password/:token" element={<ResetPassword />} />
+              <Route path="/producto/:id" element={<ProductDetail />} />
+              <Route path="/carrito" element={<Carrito />} />
+              
+              {/* Ruta Privada de Cliente */}
+              <Route path="/perfil" element={<PrivateRoute />}>
+                <Route index element={<Perfil />} />
+              </Route>
+            </Routes>
+          </PublicLayout>
+        } />
+
+        {/* Rutas Privadas / Admin */}
+        <Route path="/admin" element={<AdminRoute />}>
+          <Route element={<AdminLayout />}>
+            <Route index element={<AdminDashboard />} />
+            <Route path="productos" element={<AdminProductos />} />
+            <Route path="productos/nuevo" element={<AdminProductoForm />} />
+            <Route path="productos/:id/editar" element={<AdminProductoForm />} />
+            <Route path="combos" element={<AdminCombos />} />
+            <Route path="combos/nuevo" element={<AdminComboBuilder />} />
+            <Route path="combos/:id/editar" element={<AdminProductoForm isCombo={true} />} />
+          </Route>
+        </Route>
       </Routes>
-      <Footer />
-      <WhatsAppButton />
     </BrowserRouter>
   );
 }

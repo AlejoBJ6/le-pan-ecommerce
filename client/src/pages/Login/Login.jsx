@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../../context/AuthContext';
+import authService from '../../services/authService';
 import './Login.css';
 
 const Login = () => {
@@ -7,19 +9,35 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const navigate = useNavigate();
+  const { login, error } = useContext(AuthContext);
 
-  const handleSubmit = (e) => {
+  const [forgotMessage, setForgotMessage] = useState('');
+  const [forgotError, setForgotError] = useState('');
+  const [loadingForgot, setLoadingForgot] = useState(false);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Temporary logic to bypass backend connection
-    console.log("Login form submitted:", { email, password });
-    // After successful login, redirect to home
-    navigate('/');
+    try {
+      await login({ email, password });
+      navigate('/');
+    } catch (err) {
+      console.error('Login error:', err);
+    }
   };
 
-  const handleForgotSubmit = (e) => {
+  const handleForgotSubmit = async (e) => {
     e.preventDefault();
-    alert("Te hemos enviado un correo con instrucciones para recuperar tu contraseña.");
-    setIsForgotPassword(false);
+    setLoadingForgot(true);
+    setForgotMessage('');
+    setForgotError('');
+    try {
+      const data = await authService.forgotPassword(email);
+      setForgotMessage(data.message);
+      setLoadingForgot(false);
+    } catch (err) {
+      setForgotError(err.response?.data?.message || 'Error al solicitar el borrado de clave');
+      setLoadingForgot(false);
+    }
   };
 
   return (
@@ -37,6 +55,8 @@ const Login = () => {
               <div className="auth-header">
                 <h2>Recuperar Contraseña</h2>
                 <p>Ingresa tu correo asociado y te enviaremos instrucciones.</p>
+                {forgotMessage && <div style={{ color: 'green', marginTop: '10px', fontSize: '0.9rem', backgroundColor: '#d4edda', padding: '10px', borderRadius: '4px' }}>{forgotMessage}</div>}
+                {forgotError && <div style={{ color: 'red', marginTop: '10px', fontSize: '0.9rem', backgroundColor: '#f8d7da', padding: '10px', borderRadius: '4px' }}>{forgotError}</div>}
               </div>
               
               <form className="auth-form" onSubmit={handleForgotSubmit}>
@@ -52,7 +72,9 @@ const Login = () => {
                   />
                 </div>
                 
-                <button type="submit" className="auth-btn" style={{ marginTop: '10px' }}>Enviar Instrucciones</button>
+                <button type="submit" className="auth-btn" style={{ marginTop: '10px' }} disabled={loadingForgot}>
+                  {loadingForgot ? 'Enviando...' : 'Enviar Instrucciones'}
+                </button>
                 <button 
                   type="button" 
                   className="auth-btn" 
@@ -68,6 +90,7 @@ const Login = () => {
               <div className="auth-header">
                 <h2>Iniciar Sesión</h2>
                 <p>Ingresa tus credenciales para acceder a tu cuenta.</p>
+                {error && <div style={{ color: 'red', marginTop: '10px', fontSize: '0.9rem' }}>{error}</div>}
               </div>
               
               <form className="auth-form" onSubmit={handleSubmit}>

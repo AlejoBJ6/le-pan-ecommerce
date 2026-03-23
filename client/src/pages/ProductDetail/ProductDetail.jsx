@@ -1,41 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import productoService from '../../services/productoService';
 import './ProductDetail.css';
 
-// Mock data adaptada a maquinarias de panadería
-const MOCK_PRODUCT = {
-  id: '1',
-  nombre: 'Amasadora Rápida Industrial 50 Kg Acero Inoxidable',
-  precio: 1250000,
-  precioAnterior: 1400000,
-  cuotas: 6,
-  imagenes: [
-    'https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=1472&auto=format&fit=crop', // Panadería genérica de prueba
-    'https://images.unsplash.com/photo-1517686469429-8bdb88b9f907?q=80&w=1470&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1549929424-df3991eb8f45?q=80&w=1527&auto=format&fit=crop'
-  ],
-  categoria: 'Amasadoras',
+const fallbackData = {
   ventas: 124,
   estrellas: 4.8,
   opiniones: 31,
+  cuotas: 6,
   caracteristicas: [
-    { nombre: 'Capacidad', valor: '50 Kg' },
-    { nombre: 'Material', valor: 'Acero Inoxidable 304' },
-    { nombre: 'Voltaje', valor: '380V Trifásica' },
-    { nombre: 'Potencia', valor: '4 HP' },
-    { nombre: 'Tipo de uso', valor: 'Industrial Pesado' }
-  ],
-  descripcion: 'La Amasadora Rápida Industrial de 50 Kg está diseñada para panaderías de alta producción. Su cuba y espiral de acero inoxidable garantizan durabilidad y máxima higiene en el amasado. Cuenta con dos velocidades y reloj temporizador, optimizando la creación de masas hidratadas, franceses, pizzas y repostería en general.',
-  stock: 5,
+    { nombre: 'Garantía', valor: '12 meses' },
+    { nombre: 'Envío', valor: 'A convenir' }
+  ]
 };
 
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [producto, setProducto] = useState(MOCK_PRODUCT);
-  const [imagenActiva, setImagenActiva] = useState(MOCK_PRODUCT.imagenes[0]);
+  const [producto, setProducto] = useState(null);
+  const [imagenActiva, setImagenActiva] = useState(null);
   const [cantidad, setCantidad] = useState(1);
   const [isAdded, setIsAdded] = useState(false);
+  const [loading, setLoading] = useState(true);
   
   const [showZoom, setShowZoom] = useState(false);
   const [zoomStyle, setZoomStyle] = useState({});
@@ -43,8 +29,19 @@ const ProductDetail = () => {
   const [isMobileModalOpen, setIsMobileModalOpen] = useState(false);
 
   useEffect(() => {
-    // Scroll to top upon rendering
     window.scrollTo(0, 0);
+    const fetchProd = async () => {
+      try {
+        const prodData = await productoService.obtenerProductoPorId(id);
+        setProducto({ ...fallbackData, ...prodData });
+        setImagenActiva(prodData.imagenes?.length > 0 ? prodData.imagenes[0] : 'https://via.placeholder.com/300x300?text=No+Image');
+      } catch (err) {
+        console.error("Error cargando detalles del producto", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProd();
   }, [id]);
 
   const handleAddToCart = () => {
@@ -103,6 +100,9 @@ const ProductDetail = () => {
     setIsMobileModalOpen(true);
   };
 
+  if (loading) return <div className="product-page bg-gray-light" style={{padding: '100px', textAlign: 'center'}}><h2>Cargando detalles del producto...</h2></div>;
+  if (!producto) return <div className="product-page bg-gray-light" style={{padding: '100px', textAlign: 'center'}}><h2>El producto no fue encontrado.</h2><Link to="/productos">Volver al catálogo</Link></div>;
+
   return (
     <div className="product-page bg-gray-light">
       <div className="container product-container">
@@ -124,7 +124,7 @@ const ProductDetail = () => {
               {/* Gallery Section */}
               <div className="product-gallery">
                 <div className="gallery-thumbnails">
-                  {producto.imagenes.map((img, idx) => (
+                  {producto.imagenes && producto.imagenes.map((img, idx) => (
                     <div 
                       key={idx} 
                       className={`thumbnail ${imagenActiva === img ? 'active' : ''}`}
