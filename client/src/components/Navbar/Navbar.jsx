@@ -190,14 +190,26 @@ const Navbar = () => {
             </div>
 
             {user ? (
-              <button className="action-link" onClick={() => { logout(); navigate('/'); }} title="Cerrar sesión">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                  <polyline points="16 17 21 12 16 7"></polyline>
-                  <line x1="21" y1="12" x2="9" y2="12"></line>
-                </svg>
-                <span>Salir ({user.nombre.split(' ')[0]})</span>
-              </button>
+              <>
+                {user.rol === 'admin' && (
+                  <button className="action-link" onClick={() => navigate('/admin')} title="Panel Admin">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                      <line x1="3" y1="9" x2="21" y2="9"></line>
+                      <line x1="9" y1="21" x2="9" y2="9"></line>
+                    </svg>
+                    <span>Admin</span>
+                  </button>
+                )}
+                <button className="action-link" onClick={() => { logout(); navigate('/'); }} title="Cerrar sesión">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                  </svg>
+                  <span>Salir ({user.nombre.split(' ')[0]})</span>
+                </button>
+              </>
             ) : (
               <button className="action-link" onClick={() => navigate('/login')}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -233,6 +245,9 @@ const Navbar = () => {
             {user ? (
               <>
                 <li><span style={{color: 'var(--color-primary)', fontWeight: 600, padding: '12px 16px', display: 'block'}}>Hola, {user.nombre}</span></li>
+                {user.rol === 'admin' && (
+                  <li><Link to="/admin" onClick={() => setIsMenuOpen(false)} style={{padding: '12px 16px', display: 'block', textDecoration: 'none'}}>🛠️ Panel Admin</Link></li>
+                )}
                 <li><button onClick={() => { logout(); setIsMenuOpen(false); navigate('/'); }} style={{background: 'none', border: 'none', padding: '12px 16px', textAlign: 'left', width: '100%', fontSize: '1.1rem', cursor: 'pointer', fontFamily: 'inherit', color: 'inherit'}}>Cerrar Sesión</button></li>
               </>
             ) : (
