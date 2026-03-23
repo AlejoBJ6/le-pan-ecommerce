@@ -1,8 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import './ProductCard.css';
 
 const ProductCard = ({ producto }) => {
+  const [isAdded, setIsAdded] = useState(false);
+
+  const handleAddToCart = (e) => {
+    // Prevent Link click if it's placed inside one, though here it's independent
+    if (e) e.preventDefault();
+    if (!producto.stock || producto.stock === 0 || !producto.disponible || isAdded) return;
+    setIsAdded(true);
+    window.dispatchEvent(new CustomEvent('cart-added'));
+    setTimeout(() => setIsAdded(false), 2000);
+  };
+
   return (
     <div className="product-card">
       <Link to={`/producto/${producto._id || 1}`} style={{ display: 'block' }}>
@@ -24,10 +35,11 @@ const ProductCard = ({ producto }) => {
         <p className="product-price">${producto.precio}</p>
         <div className="product-actions">
           <button 
-            className="btn-add-cart" 
+            className={`btn-add-cart ${isAdded ? 'btn-added' : ''}`} 
             disabled={!producto.stock || producto.stock === 0 || !producto.disponible}
+            onClick={handleAddToCart}
           >
-            {producto.stock > 0 && producto.disponible ? 'Añadir al carrito' : 'Agotado'}
+            {isAdded ? '¡Añadido! ✓' : (producto.stock > 0 && producto.disponible ? 'Añadir al carrito' : 'Agotado')}
           </button>
         </div>
       </div>

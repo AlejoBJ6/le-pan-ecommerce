@@ -141,6 +141,18 @@
   display: none;
 }
 
+.btn-add-cart.btn-added {
+  background-color: var(--color-whatsapp) !important;
+  color: white !important;
+  transform: scale(1.05);
+  box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4) !important;
+  opacity: 1 !important;
+}
+
+.btn-add-cart.btn-added::after {
+  display: none;
+}
+
 @media (max-width: 575px) {
   .product-info {
     padding: 12px 10px;
