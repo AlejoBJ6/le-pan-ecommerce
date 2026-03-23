@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../../context/AuthContext';
 import './Login.css';
 
 const Login = () => {
@@ -7,13 +8,16 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const navigate = useNavigate();
+  const { login, error } = useContext(AuthContext);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Temporary logic to bypass backend connection
-    console.log("Login form submitted:", { email, password });
-    // After successful login, redirect to home
-    navigate('/');
+    try {
+      await login({ email, password });
+      navigate('/');
+    } catch (err) {
+      console.error('Login error:', err);
+    }
   };
 
   const handleForgotSubmit = (e) => {
@@ -68,6 +72,7 @@ const Login = () => {
               <div className="auth-header">
                 <h2>Iniciar Sesión</h2>
                 <p>Ingresa tus credenciales para acceder a tu cuenta.</p>
+                {error && <div style={{ color: 'red', marginTop: '10px', fontSize: '0.9rem' }}>{error}</div>}
               </div>
               
               <form className="auth-form" onSubmit={handleSubmit}>

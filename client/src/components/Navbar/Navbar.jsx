@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { AuthContext } from '../../context/AuthContext';
 import productoService from '../../services/productoService.js';
 import './Navbar.css';
 
 const Navbar = () => {
+  const { user, logout } = useContext(AuthContext);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCatalogoOpen, setIsCatalogoOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -187,13 +189,24 @@ const Navbar = () => {
               )}
             </div>
 
-            <button className="action-link" onClick={() => navigate('/login')}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                <circle cx="12" cy="7" r="4"></circle>
-              </svg>
-              <span>Ingresar</span>
-            </button>
+            {user ? (
+              <button className="action-link" onClick={() => { logout(); navigate('/'); }} title="Cerrar sesión">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                  <polyline points="16 17 21 12 16 7"></polyline>
+                  <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+                <span>Salir ({user.nombre.split(' ')[0]})</span>
+              </button>
+            ) : (
+              <button className="action-link" onClick={() => navigate('/login')}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                <span>Ingresar</span>
+              </button>
+            )}
             <button className={`action-link cart-link ${bumpCart ? 'cart-bump' : ''}`} onClick={() => navigate('/carrito')}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="9" cy="21" r="1"></circle>
@@ -217,7 +230,14 @@ const Navbar = () => {
         <div className="drawer-content">
           <ul className="drawer-menu">
             <li><Link to="/" onClick={() => setIsMenuOpen(false)}>Inicio</Link></li>
-            <li><Link to="/login" onClick={() => setIsMenuOpen(false)}>Cuenta / Iniciar sesión</Link></li>
+            {user ? (
+              <>
+                <li><span style={{color: 'var(--color-primary)', fontWeight: 600, padding: '12px 16px', display: 'block'}}>Hola, {user.nombre}</span></li>
+                <li><button onClick={() => { logout(); setIsMenuOpen(false); navigate('/'); }} style={{background: 'none', border: 'none', padding: '12px 16px', textAlign: 'left', width: '100%', fontSize: '1.1rem', cursor: 'pointer', fontFamily: 'inherit', color: 'inherit'}}>Cerrar Sesión</button></li>
+              </>
+            ) : (
+              <li><Link to="/login" onClick={() => setIsMenuOpen(false)}>Cuenta / Iniciar sesión</Link></li>
+            )}
             <li className="drawer-submenu">
               <button
                 onClick={() => setIsCatalogoOpen(!isCatalogoOpen)}

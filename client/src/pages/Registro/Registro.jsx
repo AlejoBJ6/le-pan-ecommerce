@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../../context/AuthContext';
 import '../Login/Login.css'; // Reusing the same auth styles
 
 const Registro = () => {
@@ -10,6 +11,7 @@ const Registro = () => {
     confirmPassword: ''
   });
   const navigate = useNavigate();
+  const { register, error, setError } = useContext(AuthContext);
 
   const handleChange = (e) => {
     setFormData({
@@ -18,16 +20,23 @@ const Registro = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Temporary logic to bypass backend connection
     if(formData.password !== formData.confirmPassword) {
-      alert('Las contraseñas no coinciden');
+      setError('Las contraseñas no coinciden');
       return;
     }
-    console.log("Register form submitted:", formData);
-    // After successful registration, redirect to home or login
-    navigate('/login');
+    
+    try {
+      await register({
+        nombre: formData.nombre,
+        email: formData.email,
+        password: formData.password
+      });
+      navigate('/'); // Redirect to home or dashboard after successful registration
+    } catch (err) {
+      console.error('Registration error:', err);
+    }
   };
 
   return (
@@ -43,6 +52,7 @@ const Registro = () => {
           <div className="auth-header">
             <h2>Crear Cuenta</h2>
             <p>Completa tus datos para registrarte.</p>
+            {error && <div style={{ color: 'red', marginTop: '10px', fontSize: '0.9rem' }}>{error}</div>}
           </div>
           
           <form className="auth-form" onSubmit={handleSubmit}>
