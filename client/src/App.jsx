@@ -14,10 +14,13 @@ import Footer from './components/Footer/Footer.jsx';
 import WhatsAppButton from './components/WhatsAppButton/WhatsAppButton.jsx';
 import ScrollToTop from './components/ScrollToTop.jsx';
 import AdminRoute from './components/AdminRoute.jsx';
+import PrivateRoute from './components/PrivateRoute.jsx';
 import AdminLayout from './pages/Admin/AdminLayout.jsx';
 import AdminDashboard from './pages/Admin/AdminDashboard.jsx';
 import AdminProductos from './pages/Admin/AdminProductos.jsx';
 import AdminProductoForm from './pages/Admin/AdminProductoForm.jsx';
+import Perfil from './pages/Perfil/Perfil.jsx';
+import ResetPassword from './pages/ResetPassword/ResetPassword.jsx';
 
 // Componente Wrapper para Layout Público
 const PublicLayout = ({ children }) => (
@@ -45,8 +48,14 @@ function App() {
               <Route path="/contacto" element={<Contacto />} />
               <Route path="/login" element={<Login />} />
               <Route path="/registro" element={<Registro />} />
+              <Route path="/reset-password/:token" element={<ResetPassword />} />
               <Route path="/producto/:id" element={<ProductDetail />} />
               <Route path="/carrito" element={<Carrito />} />
+              
+              {/* Ruta Privada de Cliente */}
+              <Route path="/perfil" element={<PrivateRoute />}>
+                <Route index element={<Perfil />} />
+              </Route>
             </Routes>
           </PublicLayout>
         } />

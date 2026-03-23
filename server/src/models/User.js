@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 
 const userSchema = new mongoose.Schema({
   nombre: {
@@ -25,7 +26,9 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ['cliente', 'admin'],
     default: 'cliente'
-  }
+  },
+  resetPasswordToken: String,
+  resetPasswordExpire: Date,
 }, {
   timestamps: true
 });
@@ -45,6 +48,24 @@ userSchema.pre('save', async function() {
 // Método para verificar si la contraseña ingresada coincide con la hasheada
 userSchema.methods.matchPassword = async function(enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
+};
+
+// Generar y setear token para recuperar contraseña
+userSchema.methods.getResetPasswordToken = function() {
+  // Generar token aleatorio
+  const resetToken = crypto.randomBytes(20).toString('hex');
+
+  // Hashear el token y setearlo en el campo para la base de datos
+  this.resetPasswordToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+
+  // Expiración: 10 minutos
+  this.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
+
+  // Se devuelve el token plano para el email
+  return resetToken;
 };
 
 const User = mongoose.model('User', userSchema);

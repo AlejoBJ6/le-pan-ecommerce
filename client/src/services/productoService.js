@@ -51,10 +51,23 @@ const eliminarProducto = async (id) => {
   return response.data;
 };
 
+const uploadImage = async (file) => {
+  const formData = new FormData();
+  formData.append('image', file);
+
+  const config = getAuthHeaders();
+  config.headers['Content-Type'] = 'multipart/form-data';
+
+  // Subir la imagen al endpoint principal de nuestro servidor
+  const response = await axios.post('http://localhost:5000/api/upload', formData, config);
+  return response.data;
+};
+
 export default {
   obtenerProductos,
   obtenerProductoPorId,
   crearProducto,
   actualizarProducto,
-  eliminarProducto
+  eliminarProducto,
+  uploadImage
 };

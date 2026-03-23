@@ -201,13 +201,13 @@ const Navbar = () => {
                     <span>Admin</span>
                   </button>
                 )}
-                <button className="action-link" onClick={() => { logout(); navigate('/'); }} title="Cerrar sesión">
+                
+                <button className="action-link" onClick={() => navigate('/perfil')} title="Mi Perfil">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                    <polyline points="16 17 21 12 16 7"></polyline>
-                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
                   </svg>
-                  <span>Salir ({user.nombre.split(' ')[0]})</span>
+                  <span>Mí Perfil</span>
                 </button>
               </>
             ) : (
@@ -245,10 +245,10 @@ const Navbar = () => {
             {user ? (
               <>
                 <li><span style={{color: 'var(--color-primary)', fontWeight: 600, padding: '12px 16px', display: 'block'}}>Hola, {user.nombre}</span></li>
+                <li><Link to="/perfil" onClick={() => setIsMenuOpen(false)} style={{padding: '12px 16px', display: 'block', textDecoration: 'none'}}>👤 Mi Perfil</Link></li>
                 {user.rol === 'admin' && (
                   <li><Link to="/admin" onClick={() => setIsMenuOpen(false)} style={{padding: '12px 16px', display: 'block', textDecoration: 'none'}}>🛠️ Panel Admin</Link></li>
                 )}
-                <li><button onClick={() => { logout(); setIsMenuOpen(false); navigate('/'); }} style={{background: 'none', border: 'none', padding: '12px 16px', textAlign: 'left', width: '100%', fontSize: '1.1rem', cursor: 'pointer', fontFamily: 'inherit', color: 'inherit'}}>Cerrar Sesión</button></li>
               </>
             ) : (
               <li><Link to="/login" onClick={() => setIsMenuOpen(false)}>Cuenta / Iniciar sesión</Link></li>
