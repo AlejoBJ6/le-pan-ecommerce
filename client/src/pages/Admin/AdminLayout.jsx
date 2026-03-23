@@ -25,7 +25,12 @@ const AdminLayout = () => {
                 Catálogo de Productos
               </Link>
             </li>
-            <li style={{ marginTop: 'auto' }}>
+            <li>
+              <Link to="/admin/combos" className={location.pathname.includes('/admin/combos') ? 'active' : ''}>
+                Armar Combos
+              </Link>
+            </li>
+            <li>
               <Link to="/" className="back-link">
                 ← Volver a la Tienda
               </Link>

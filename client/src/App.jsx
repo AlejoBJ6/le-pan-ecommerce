@@ -19,6 +19,8 @@ import AdminLayout from './pages/Admin/AdminLayout.jsx';
 import AdminDashboard from './pages/Admin/AdminDashboard.jsx';
 import AdminProductos from './pages/Admin/AdminProductos.jsx';
 import AdminProductoForm from './pages/Admin/AdminProductoForm.jsx';
+import AdminCombos from './pages/Admin/AdminCombos.jsx';
+import AdminComboBuilder from './pages/Admin/AdminComboBuilder.jsx';
 import Perfil from './pages/Perfil/Perfil.jsx';
 import ResetPassword from './pages/ResetPassword/ResetPassword.jsx';
 
@@ -67,6 +69,9 @@ function App() {
             <Route path="productos" element={<AdminProductos />} />
             <Route path="productos/nuevo" element={<AdminProductoForm />} />
             <Route path="productos/:id/editar" element={<AdminProductoForm />} />
+            <Route path="combos" element={<AdminCombos />} />
+            <Route path="combos/nuevo" element={<AdminComboBuilder />} />
+            <Route path="combos/:id/editar" element={<AdminProductoForm isCombo={true} />} />
           </Route>
         </Route>
       </Routes>

@@ -17,6 +17,11 @@ const productoSchema = new mongoose.Schema(
       required: [true, 'El precio es obligatorio'],
       min: [0, 'El precio no puede ser negativo'],
     },
+    precioAnterior: {
+      type: Number,
+      default: 0,
+      min: [0, 'El precio anterior no puede ser negativo'],
+    },
     categoria: {
       type: String,
       required: [true, 'La categoría es obligatoria'],
@@ -29,6 +34,7 @@ const productoSchema = new mongoose.Schema(
         'Cámaras de fermentación',
         'Cortadoras',
         'Accesorios',
+        'Combos',
         'Otro',
       ],
     },
