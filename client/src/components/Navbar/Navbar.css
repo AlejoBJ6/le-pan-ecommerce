@@ -89,6 +89,7 @@
   height: 40px;
   order: 3;
   width: 100%;
+  position: relative;
 }
 
 .navbar-search input {
@@ -149,6 +150,11 @@
   cursor: pointer;
   transition: background var(--transition);
   text-align: left;
+  border-bottom: 1px solid var(--color-gray-light);
+}
+
+.search-suggestions li:last-child {
+  border-bottom: none;
 }
 
 .search-suggestions li:hover {

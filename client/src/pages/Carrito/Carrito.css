@@ -74,6 +74,33 @@ body.dark-theme .card-box-shadow {
 .cart-items-header {
   padding: 20px 24px;
   border-bottom: 1px solid var(--color-gray-light);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.btn-clear-cart {
+  background: none;
+  border: none;
+  color: #e53e3e;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s;
+}
+
+.btn-clear-cart:hover {
+  color: #c53030;
+  text-decoration: underline;
+}
+
+body.dark-theme .btn-clear-cart {
+  color: #fc8181;
+}
+
+body.dark-theme .btn-clear-cart:hover {
+  color: #feb2b2;
 }
 
 body.dark-theme .cart-items-header {

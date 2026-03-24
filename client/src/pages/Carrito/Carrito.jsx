@@ -4,7 +4,7 @@ import { CartContext } from '../../context/CartContext.jsx';
 import './Carrito.css';
 
 const Carrito = () => {
-  const { cart, updateQuantity, removeFromCart, getCartTotal } = useContext(CartContext);
+  const { cart, updateQuantity, removeFromCart, clearCart, getCartTotal } = useContext(CartContext);
 
   const formatPrice = (price) => 
     new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(price);
@@ -42,6 +42,7 @@ const Carrito = () => {
             <div className="cart-items-section card-box-shadow">
               <div className="cart-items-header">
                 <h3>Productos</h3>
+                <button className="btn-clear-cart" onClick={clearCart}>Vaciar carrito</button>
               </div>
               
               <ul className="cart-items-list">
