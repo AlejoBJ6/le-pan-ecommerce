@@ -23,17 +23,44 @@
   }
 }
 
-.productos-grid {
-  display: grid;
-  /* 2 columnas en mobile */
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+.home-productos-slider {
+  display: flex;
+  overflow-x: auto;
+  gap: 16px;
+  padding-bottom: 24px; /* Espacio para la barra de scroll y sombra */
+  padding-top: 8px; /* Espacio para sombra superior si la hubiera */
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  margin: 0 -10px; /* Sacar un poco de margen para que no se corte cortante */
+  padding-left: 10px;
+  padding-right: 10px;
 }
 
-@media (min-width: 576px) {
-  .productos-grid {
-    /* 1 columna ancha auto-fill en screens más grandes */
-    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-    gap: 20px;
+/* Ocultar barra de scroll o hacerla sutil */
+.home-productos-slider::-webkit-scrollbar {
+  height: 8px;
+}
+.home-productos-slider::-webkit-scrollbar-track {
+  background: var(--color-gray-light);
+  border-radius: 4px;
+}
+.home-productos-slider::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 4px;
+}
+.home-productos-slider::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary);
+}
+
+.home-productos-slider > div {
+  flex: 0 0 auto;
+  width: 260px; /* Ancho fijo para cada tarjeta de producto */
+  scroll-snap-align: start;
+}
+
+@media (max-width: 576px) {
+  .home-productos-slider > div {
+    width: 220px; /* Tarjetas ligeramente mas pequeñas en móvil */
   }
 }

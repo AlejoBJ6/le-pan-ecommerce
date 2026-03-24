@@ -55,7 +55,7 @@ const HomePage = () => {
             {loading ? (
               <p style={{ textAlign: 'center' }}>Cargando productos destacados...</p>
             ) : productosDestacados.length > 0 ? (
-              <div className="productos-grid">
+              <div className="home-productos-slider">
                 {productosDestacados.map((producto) => (
                   <ProductCard 
                     key={producto._id || producto.id} 
@@ -79,7 +79,7 @@ const HomePage = () => {
                   Ver catálogo amasadoras →
                 </Link>
               </div>
-              <div className="productos-grid">
+              <div className="home-productos-slider">
                 {amasadoras.map((producto) => (
                   <ProductCard key={producto._id} producto={producto} />
                 ))}
@@ -98,7 +98,7 @@ const HomePage = () => {
                   Ver catálogo hornos →
                 </Link>
               </div>
-              <div className="productos-grid">
+              <div className="home-productos-slider">
                 {hornos.map((producto) => (
                   <ProductCard key={producto._id} producto={producto} />
                 ))}

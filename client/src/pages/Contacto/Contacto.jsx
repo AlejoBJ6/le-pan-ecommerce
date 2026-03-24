@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import contactoService from '../../services/contactoService';
 import './Contacto.css';
 
 const Contacto = () => {
@@ -8,7 +9,7 @@ const Contacto = () => {
     asunto: '',
     mensaje: ''
   });
-  const [enviado, setEnviado] = useState(false);
+  const [estado, setEstado] = useState({ loading: false, success: false, error: null });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -18,17 +19,22 @@ const Contacto = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Acá iría la lógica para enviar el mail al backend
-    console.log('Mensaje enviado:', formData);
-    setEnviado(true);
-    setFormData({ nombre: '', email: '', asunto: '', mensaje: '' });
+    setEstado({ loading: true, success: false, error: null });
     
-    // Ocultar el mensaje de éxito después de unos segundos
-    setTimeout(() => {
-      setEnviado(false);
-    }, 5000);
+    try {
+      await contactoService.enviarMensaje(formData);
+      setEstado({ loading: false, success: true, error: null });
+      setFormData({ nombre: '', email: '', asunto: '', mensaje: '' });
+      
+      // Ocultar el mensaje de éxito después de unos segundos
+      setTimeout(() => {
+        setEstado(prev => ({ ...prev, success: false }));
+      }, 5000);
+    } catch (error) {
+      setEstado({ loading: false, success: false, error: 'Ocurrió un error al enviar el mensaje. Inténtalo de nuevo.' });
+    }
   };
 
   return (
@@ -36,52 +42,23 @@ const Contacto = () => {
       <div className="contacto-hero-banner">
         <div className="contacto-hero-content">
           <h1>Contacto</h1>
-          <p>Estamos acá para asesorarte. Escribinos ante cualquier duda sobre nuestros equipos.</p>
+          <p>Estamos acá para asesorarte. Dejanos tu consulta y te responderemos a la brevedad.</p>
         </div>
       </div>
 
-      <div className="container contacto-container">
-        <div className="contacto-info-wrapper">
-          <div className="contacto-info-card">
-            <h2>Nuestra Ubicación</h2>
-            <p className="info-item">
-              <strong><span role="img" aria-label="pin">📍</span> Dirección:</strong> 
-              Av. Corrientes 1234, CABA, Argentina
-            </p>
-            <p className="info-item">
-              <strong><span role="img" aria-label="clock">⏰</span> Horarios:</strong> 
-              Lunes a Viernes de 9:00 a 18:00 hs
-            </p>
-            <p className="info-item">
-              <strong><span role="img" aria-label="phone">📞</span> Teléfono:</strong> 
-              +54 11 1234 5678
-            </p>
-            <p className="info-item">
-              <strong><span role="img" aria-label="mail">✉️</span> Email:</strong> 
-              ventas@lepan.com.ar
-            </p>
-            
-            <div className="map-container">
-              {/* Mapa embebido genérico de Google Maps apuntando a CABA */}
-              <iframe 
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d13136.066927954995!2d-58.39343729999999!3d-34.6037389!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4aa9f0a6da5edb%3A0x11be22d1c31fa2c2!2sBuenos%20Aires%2C%20CABA!5e0!3m2!1ses-419!2sar!4v1700000000000!5m2!1ses-419!2sar" 
-                width="100%" 
-                height="250" 
-                style={{ border: 0, borderRadius: '12px', marginTop: '20px' }} 
-                allowFullScreen="" 
-                loading="lazy" 
-                referrerPolicy="no-referrer-when-downgrade"
-                title="Mapa de ubicación LÉ PAN"
-              ></iframe>
+      <div className="container contacto-container" style={{ justifyContent: 'center' }}>
+        <div className="contacto-form-wrapper" style={{ maxWidth: '700px', flex: 'none', width: '100%' }}>
+          <h2 className="form-title" style={{ textAlign: 'center' }}>Envíanos tu Mensaje</h2>
+          
+          {estado.error && (
+            <div style={{ backgroundColor: '#f8d7da', color: '#721c24', padding: '15px', borderRadius: '8px', marginBottom: '20px', textAlign: 'center' }}>
+              {estado.error}
             </div>
-          </div>
-        </div>
+          )}
 
-        <div className="contacto-form-wrapper">
-          <h2 className="form-title">Envianos tu Consulta</h2>
-          {enviado ? (
+          {estado.success ? (
             <div className="mensaje-exito">
-              ¡Gracias por tu mensaje! Nos pondremos en contacto a la brevedad.
+              ¡Gracias por tu mensaje! Lo recibimos correctamente y te estaremos respondiendo a la brevedad a tu correo.
             </div>
           ) : (
             <form className="contacto-form" onSubmit={handleSubmit}>
@@ -95,6 +72,7 @@ const Contacto = () => {
                   onChange={handleChange} 
                   required 
                   placeholder="Ej: Juan Pérez"
+                  disabled={estado.loading}
                 />
               </div>
               <div className="form-group">
@@ -107,18 +85,19 @@ const Contacto = () => {
                   onChange={handleChange} 
                   required 
                   placeholder="ejemplo@correo.com"
+                  disabled={estado.loading}
                 />
               </div>
               <div className="form-group">
-                <label htmlFor="asunto">Asunto</label>
+                <label htmlFor="asunto">Asunto (Opcional)</label>
                 <input 
                   type="text" 
                   id="asunto" 
                   name="asunto" 
                   value={formData.asunto} 
                   onChange={handleChange} 
-                  required 
-                  placeholder="Consulta sobre Amasadoras"
+                  placeholder="Consulta sobre Hornos"
+                  disabled={estado.loading}
                 />
               </div>
               <div className="form-group">
@@ -126,14 +105,22 @@ const Contacto = () => {
                 <textarea 
                   id="mensaje" 
                   name="mensaje" 
-                  rows="5" 
+                  rows="6" 
                   value={formData.mensaje} 
                   onChange={handleChange} 
                   required 
                   placeholder="Escribí aquí tus dudas..."
+                  disabled={estado.loading}
                 ></textarea>
               </div>
-              <button type="submit" className="btn-enviar">Enviar Mensaje</button>
+              <button 
+                type="submit" 
+                className="btn-enviar" 
+                style={{ opacity: estado.loading ? 0.7 : 1, cursor: estado.loading ? 'wait' : 'pointer' }}
+                disabled={estado.loading}
+              >
+                {estado.loading ? 'Enviando...' : 'Enviar Consulta'}
+              </button>
             </form>
           )}
         </div>

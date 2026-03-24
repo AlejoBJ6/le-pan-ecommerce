@@ -31,6 +31,11 @@ const AdminLayout = () => {
               </Link>
             </li>
             <li>
+              <Link to="/admin/mensajes" className={location.pathname.includes('/admin/mensajes') ? 'active' : ''}>
+                Mensajes ✉️
+              </Link>
+            </li>
+            <li>
               <Link to="/" className="back-link">
                 ← Volver a la Tienda
               </Link>
