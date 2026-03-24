@@ -75,8 +75,8 @@ const AdminCombos = () => {
                   </span>
                 </td>
                 <td style={{ padding: '15px' }}>
-                  <Link to={`/admin/combos/${combo._id}/editar`} style={{ marginRight: '15px', color: '#007bff', textDecoration: 'none', fontWeight: 600 }}>Editar</Link>
-                  <button onClick={() => handleDelete(combo._id)} style={{ color: '#dc3545', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600, padding: 0 }}>Borrar</button>
+                  <Link to={`/admin/combos/${combo._id}/editar`} className="admin-btn-edit">Editar</Link>
+                  <button onClick={() => handleDelete(combo._id)} className="admin-btn-delete">Borrar</button>
                 </td>
               </tr>
             ))}

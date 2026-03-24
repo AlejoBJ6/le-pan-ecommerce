@@ -22,7 +22,9 @@ export const CartProvider = ({ children }) => {
       
       if (existingProductIndex >= 0) {
         const updatedCart = [...prevCart];
-        updatedCart[existingProductIndex].quantity += quantity;
+        const updatedItem = { ...updatedCart[existingProductIndex] };
+        updatedItem.quantity += quantity;
+        updatedCart[existingProductIndex] = updatedItem;
         return updatedCart;
       } else {
         return [...prevCart, { ...product, quantity }];

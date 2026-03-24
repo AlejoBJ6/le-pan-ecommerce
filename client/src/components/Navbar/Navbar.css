@@ -534,8 +534,13 @@
     position: static;
     width: 32px;
     height: 32px;
-    color: var(--color-gold);
-    /* Gold for visibility on dark nav */
+    color: var(--color-white);
+    /* White when on dark nav background */
+  }
+
+  .navbar-top-container.mobile-search-active .navbar-search .search-btn {
+    color: var(--color-dark);
+    /* Dark when inside the expanded white search bar */
   }
 }
 
