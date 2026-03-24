@@ -10,7 +10,8 @@ import './models/Combo.js';
 // Rutas
 import productoRoutes from './routes/productoRoutes.js';
 import authRoutes from './routes/authRoutes.js';
-
+import uploadRoutes from './routes/uploadRoutes.js';
+import contactoRoutes from './routes/contactoRoutes.js';
 
 // Configurar variables de entorno
 dotenv.config();
@@ -30,6 +31,8 @@ app.get('/', (req, res) => {
 // Rutas de la API
 app.use('/api/productos', productoRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/upload', uploadRoutes);
+app.use('/api/contacto', contactoRoutes);
 
 // Conexión a MongoDB
 mongoose

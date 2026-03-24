@@ -53,26 +53,6 @@ const Catalogo = () => {
     fetchProductos();
   }, [busqueda, categoriaSeleccionada]);
 
-  // Mock temporal para mostrar el diseño de maquinaria si no hay productos reales o hay fallo de API
-  const mockProductos = [
-    { _id: 'm1', nombre: 'Horno Rotativo 15 Bandejas', categoria: 'Hornos', precio: 3200000, stock: 2, disponible: true, destacado: true, imagenes: ['https://images.unsplash.com/photo-1590846406792-0adc7f928f1e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'] },
-    { _id: 'm2', nombre: 'Amasadora Rápida 50kg', categoria: 'Amasadoras', precio: 850000, stock: 5, disponible: true, destacado: false, imagenes: ['https://images.unsplash.com/photo-1580975874880-9519199d690a?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'] },
-    { _id: 'm3', nombre: 'Sobadora de Pie Industrial', categoria: 'Sobadoras', precio: 520000, stock: 3, disponible: true, destacado: false, imagenes: ['https://images.unsplash.com/photo-1587314168485-3236d6710814?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'] },
-    { _id: 'm4', nombre: 'Ralladora de Pan Inox', categoria: 'Complementos', precio: 150000, stock: 0, disponible: false, destacado: true, imagenes: ['https://images.unsplash.com/photo-1621535492984-babb78e7278d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'] }
-  ];
-  
-  // Como usamos mockLocal temporalmente, si hacemos búsqueda sobre el mock debemos filtrarlo manualmente
-  // Esto es sólo necesario porque estamos mockeando en frontend cuando la BD está vacía.
-  const isMockActive = productos.length === 0 && !error && !cargando;
-  let productosAMostrar = productos.length > 0 ? productos : mockProductos;
-  
-  if (isMockActive) {
-     productosAMostrar = mockProductos.filter(p => {
-       const matchNombre = p.nombre.toLowerCase().includes(busqueda.toLowerCase());
-       const matchCat = categoriaSeleccionada === 'Todas' || p.categoria === categoriaSeleccionada;
-       return matchNombre && matchCat;
-     });
-  }
 
   return (
     <div className="catalogo-page">
@@ -106,18 +86,16 @@ const Catalogo = () => {
             <p>Cargando sabores exquisitos...</p>
           </div>
         ) : error && productos.length === 0 ? (
-          <div className="productos-grid">
-            {mockProductos.map((producto) => (
-              <ProductCard key={producto._id} producto={producto} />
-            ))}
+          <div className="catalogo-error">
+            <p>{error}</p>
           </div>
-        ) : productosAMostrar.length === 0 ? (
+        ) : productos.length === 0 ? (
           <div className="catalogo-empty">
             <p>Aún no hay productos en nuestro catálogo.</p>
           </div>
         ) : (
           <div className="productos-grid">
-            {productosAMostrar.map((producto) => (
+            {productos.map((producto) => (
               <ProductCard key={producto._id} producto={producto} />
             ))}
           </div>

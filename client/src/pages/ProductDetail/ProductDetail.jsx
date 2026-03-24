@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { CartContext } from '../../context/CartContext.jsx';
 import productoService from '../../services/productoService';
 import './ProductDetail.css';
 
@@ -22,7 +23,8 @@ const ProductDetail = () => {
   const [cantidad, setCantidad] = useState(1);
   const [isAdded, setIsAdded] = useState(false);
   const [loading, setLoading] = useState(true);
-  
+  const { addToCart } = useContext(CartContext);
+
   const [showZoom, setShowZoom] = useState(false);
   const [zoomStyle, setZoomStyle] = useState({});
   const [lensStyle, setLensStyle] = useState({});
@@ -46,8 +48,10 @@ const ProductDetail = () => {
 
   const handleAddToCart = () => {
     if (isAdded) return;
+
+    addToCart(producto, cantidad);
+
     setIsAdded(true);
-    window.dispatchEvent(new CustomEvent('cart-added'));
     setTimeout(() => setIsAdded(false), 2000);
   };
 
@@ -55,17 +59,17 @@ const ProductDetail = () => {
 
   const handleMouseMove = (e) => {
     if (window.innerWidth <= 768) return;
-    
+
     const container = e.currentTarget;
     const { left, top, width, height } = container.getBoundingClientRect();
     const x = e.clientX - left;
     const y = e.clientY - top;
 
     const lensSize = 150; // Tamaño del recuadro de zoom
-    
+
     let lensX = x - lensSize / 2;
     let lensY = y - lensSize / 2;
-    
+
     // Restringir el lente dentro del contenedor
     if (lensX < 0) lensX = 0;
     if (lensY < 0) lensY = 0;
@@ -100,13 +104,13 @@ const ProductDetail = () => {
     setIsMobileModalOpen(true);
   };
 
-  if (loading) return <div className="product-page bg-gray-light" style={{padding: '100px', textAlign: 'center'}}><h2>Cargando detalles del producto...</h2></div>;
-  if (!producto) return <div className="product-page bg-gray-light" style={{padding: '100px', textAlign: 'center'}}><h2>El producto no fue encontrado.</h2><Link to="/productos">Volver al catálogo</Link></div>;
+  if (loading) return <div className="product-page bg-gray-light" style={{ padding: '100px', textAlign: 'center' }}><h2>Cargando detalles del producto...</h2></div>;
+  if (!producto) return <div className="product-page bg-gray-light" style={{ padding: '100px', textAlign: 'center' }}><h2>El producto no fue encontrado.</h2><Link to="/productos">Volver al catálogo</Link></div>;
 
   return (
     <div className="product-page bg-gray-light">
       <div className="container product-container">
-        
+
         {/* Breadcrumb */}
         <div className="breadcrumb">
           <Link to="/">Volver</Link> <span className="separator">|</span>
@@ -116,17 +120,17 @@ const ProductDetail = () => {
         </div>
 
         <div className="product-main-layout">
-          
+
           {/* Main Left Section */}
           <div className="product-main-card card-box-shadow">
             <div className="product-grid">
-              
+
               {/* Gallery Section */}
               <div className="product-gallery">
                 <div className="gallery-thumbnails">
                   {producto.imagenes && producto.imagenes.map((img, idx) => (
-                    <div 
-                      key={idx} 
+                    <div
+                      key={idx}
                       className={`thumbnail ${imagenActiva === img ? 'active' : ''}`}
                       onClick={() => setImagenActiva(img)}
                     >
@@ -134,7 +138,7 @@ const ProductDetail = () => {
                     </div>
                   ))}
                 </div>
-                <div 
+                <div
                   className="gallery-main-image"
                   onMouseMove={handleMouseMove}
                   onMouseEnter={handleMouseEnter}
@@ -153,7 +157,7 @@ const ProductDetail = () => {
                   Nuevo | +{Math.floor(producto.ventas / 100) * 100} vendidos
                 </div>
                 <h1 className="product-title">{producto.nombre}</h1>
-                
+
                 <div className="product-rating">
                   <span className="stars">
                     ★★★★★
@@ -163,12 +167,12 @@ const ProductDetail = () => {
                 </div>
 
                 <div className="product-price-section">
-                  {producto.precioAnterior && (
+                  {producto.precioAnterior > producto.precio && (
                     <div className="old-price">{precioFormat(producto.precioAnterior)}</div>
                   )}
                   <div className="current-price-row">
                     <span className="current-price">{precioFormat(producto.precio)}</span>
-                    {producto.precioAnterior && (
+                    {producto.precioAnterior > producto.precio && (
                       <span className="discount-tag">
                         {Math.round((1 - producto.precio / producto.precioAnterior) * 100)}% OFF
                       </span>
@@ -202,7 +206,7 @@ const ProductDetail = () => {
           {/* Right Sidebar - Purchase Card */}
           <div className="product-sidebar">
             <div className="purchase-card card-box-shadow">
-              
+
               <div className="shipping-info">
                 <div className="shipping-icon">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
@@ -222,9 +226,9 @@ const ProductDetail = () => {
                 <h3>Stock disponible</h3>
                 <div className="quantity-selector">
                   <label htmlFor="qty">Cantidad:</label>
-                  <select 
-                    id="qty" 
-                    value={cantidad} 
+                  <select
+                    id="qty"
+                    value={cantidad}
                     onChange={(e) => setCantidad(Number(e.target.value))}
                   >
                     {[...Array(producto.stock).keys()].map(n => (
@@ -237,8 +241,8 @@ const ProductDetail = () => {
 
               <div className="purchase-actions">
                 <button className="btn-buy-now" onClick={() => navigate('/carrito')}>Comprar ahora</button>
-                <button 
-                  className={`btn-add-cart ${isAdded ? 'btn-added' : ''}`} 
+                <button
+                  className={`btn-add-cart ${isAdded ? 'btn-added' : ''}`}
                   onClick={handleAddToCart}
                 >
                   {isAdded ? '¡Añadido al carrito! ✓' : 'Agregar al carrito'}
@@ -254,7 +258,7 @@ const ProductDetail = () => {
 
         </div>
       </div>
-      
+
       {/* Modal móvil a pantalla completa */}
       {isMobileModalOpen && (
         <div className="mobile-image-modal" onClick={() => setIsMobileModalOpen(false)}>

@@ -77,8 +77,8 @@ const AdminProductos = () => {
                   </span>
                 </td>
                 <td style={{ padding: '15px' }}>
-                  <Link to={`/admin/productos/${prod._id}/editar`} style={{ marginRight: '15px', color: '#007bff', textDecoration: 'none', fontWeight: 600 }}>Editar</Link>
-                  <button onClick={() => handleDelete(prod._id)} style={{ color: '#dc3545', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600, padding: 0 }}>Borrar</button>
+                  <Link to={`/admin/productos/${prod._id}/editar`} className="admin-btn-edit">Editar</Link>
+                  <button onClick={() => handleDelete(prod._id)} className="admin-btn-delete">Borrar</button>
                 </td>
               </tr>
             ))}

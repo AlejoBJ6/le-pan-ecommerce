@@ -1,15 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Link } from 'react-router-dom';
+import { CartContext } from '../../context/CartContext.jsx';
 import './ProductCard.css';
 
 const ProductCard = ({ product, actionText = "Añadir" }) => {
   const [isAdded, setIsAdded] = useState(false);
+  const { addToCart } = useContext(CartContext);
 
   const handleAddToCart = (e) => {
     e.preventDefault();
     if (isAdded) return;
+    
+    addToCart(product, 1);
+    
     setIsAdded(true);
-    window.dispatchEvent(new CustomEvent('cart-added'));
     setTimeout(() => setIsAdded(false), 2000);
   };
 
@@ -27,7 +31,7 @@ const ProductCard = ({ product, actionText = "Añadir" }) => {
           <h3 className="product-card-name" style={{ transition: 'color 0.2s', cursor: 'pointer' }} onMouseOver={(e) => e.target.style.color = 'var(--color-primary)'} onMouseOut={(e) => e.target.style.color = 'inherit'}>{product.name}</h3>
         </Link>
         <div className="product-prices">
-          {product.oldPrice && (
+          {product.oldPrice > 0 && (
             <p className="product-card-old-price">${product.oldPrice.toLocaleString('es-AR')}</p>
           )}
           <p className="product-card-price">$ {product.price.toLocaleString('es-AR')}</p>

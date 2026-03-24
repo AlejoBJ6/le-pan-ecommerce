@@ -1,47 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import { CartContext } from '../../context/CartContext.jsx';
+import productoService from '../../services/productoService.js';
 import './ArmaCombo.css';
-
-const mockHornos = [
-  { 
-    _id: 'ho1', nombre: 'Horno Rotativo 15 Bandejas', precio: 3200000, 
-    imagenes: ['https://images.unsplash.com/photo-1590846406792-0adc7f928f1e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'],
-    descripcion: 'Horno rotativo ideal para alta producción ininterrumpida. Su cocción pareja garantiza productos uniformes.',
-    caracteristicas: [{nombre: 'Capacidad', valor: '15 Bandejas 60x40'}, {nombre: 'Alimentación', valor: 'Corriente Trifásica'}]
-  },
-  { 
-    _id: 'ho2', nombre: 'Horno Convector 4 Bandejas', precio: 850000, 
-    imagenes: ['https://images.unsplash.com/photo-1580975874880-9519199d690a?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'],
-    descripcion: 'Solución compacta para locales con espacio reducido. Cocción por convección forzada para dorados perfectos.',
-    caracteristicas: [{nombre: 'Capacidad', valor: '4 Bandejas 40x30'}, {nombre: 'Control', valor: 'Panel Digital'}, {nombre: 'Vapor', valor: 'Inyección manual'}]
-  },
-  { 
-    _id: 'ho3', nombre: 'Horno Pastelero a Gas', precio: 420000, 
-    imagenes: ['https://images.unsplash.com/photo-1587314168485-3236d6710814?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'],
-    descripcion: 'Horno clásico a gas de múltiples cámaras, especial para pastelería tradicional, pizzas y empanadas.',
-    caracteristicas: [{nombre: 'Pisos', valor: '3 Cámaras refractarias'}, {nombre: 'Gas', valor: 'Envasado / Natural'}]
-  },
-];
-
-const mockAmasadoras = [
-  { 
-    _id: 'a1', nombre: 'Amasadora Rápida 20kg', precio: 650000, 
-    imagenes: ['https://images.unsplash.com/photo-1580975874880-9519199d690a?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'],
-    descripcion: 'Máquina robusta que reduce el tiempo de amasado a la mitad comparado con amasadoras convencionales.',
-    caracteristicas: [{nombre: 'Capacidad', valor: '20kg de masa'}, {nombre: 'Motor', valor: '1.5 HP'}, {nombre: 'Material', valor: 'Acero Inoxidable'}]
-  },
-  { 
-    _id: 'a2', nombre: 'Amasadora Espiral 50kg', precio: 950000, 
-    imagenes: ['https://images.unsplash.com/photo-1590846406792-0adc7f928f1e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'],
-    descripcion: 'Sistema de espiral invertida para masas altamente hidratadas, perfecta para pan de masa madre y artesanales.',
-    caracteristicas: [{nombre: 'Capacidad', valor: '50kg de masa'}, {nombre: 'Velocidades', valor: '2 marchas + Reversa'}]
-  },
-  { 
-    _id: 'a3', nombre: 'Batidora Planetaria 30L', precio: 450000, 
-    imagenes: ['https://images.unsplash.com/photo-1591552599602-9907fbc4efb1?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'],
-    descripcion: 'Equipo multifuncional para batir cremas, montar claras y mezclar masas ligeras. Incluye 3 accesorios intercambiables.',
-    caracteristicas: [{nombre: 'Capacidad', valor: '30 Litros'}, {nombre: 'Accesorios', valor: 'Globo, Lira, Gancho'}]
-  },
-];
 
 const SelectableCard = ({ producto, isSelected, onSelect, onVerDetalle }) => (
   <div className={`selectable-card ${isSelected ? 'selected' : ''}`}>
@@ -69,22 +29,54 @@ const SelectableCard = ({ producto, isSelected, onSelect, onVerDetalle }) => (
 );
 
 const ArmaCombo = () => {
+  const [hornosData, setHornosData] = useState([]);
+  const [amasadorasData, setAmasadorasData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const [horno, setHorno] = useState(null);
   const [amasadora, setAmasadora] = useState(null);
   const [isAdded, setIsAdded] = useState(false);
   const [productoDetalle, setProductoDetalle] = useState(null); // Modal Quick View
 
-  const handleAddToCart = () => {
-    if (!discountEligible || isAdded) return;
-    setIsAdded(true);
-    window.dispatchEvent(new CustomEvent('cart-added'));
-    setTimeout(() => setIsAdded(false), 2000);
-  };
+  const { addToCart } = useContext(CartContext);
+
+  useEffect(() => {
+    const fetchOpciones = async () => {
+      try {
+        const [resHornos, resAmasadoras] = await Promise.all([
+          productoService.obtenerProductos({ categoria: 'Hornos' }),
+          productoService.obtenerProductos({ categoria: 'Amasadoras' })
+        ]);
+        setHornosData(resHornos || []);
+        setAmasadorasData(resAmasadoras || []);
+      } catch (err) {
+        console.error("Error cargando productos para combos", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchOpciones();
+  }, []);
 
   const subtotal = (horno?.precio || 0) + (amasadora?.precio || 0);
   const discountEligible = horno && amasadora;
   const discountAmount = discountEligible ? subtotal * 0.1 : 0;
   const total = subtotal - discountAmount;
+
+  const handleAddToCart = () => {
+    if (!discountEligible || isAdded) return;
+    
+    addToCart({
+      _id: `combo-dinamico-${horno._id}-${amasadora._id}`,
+      nombre: `Combo 10% OFF: ${horno.nombre} + ${amasadora.nombre}`,
+      precio: total,
+      imagenes: [horno.imagenes[0]],
+      categoria: 'Combo Armado'
+    }, 1);
+
+    setIsAdded(true);
+    setTimeout(() => setIsAdded(false), 2000);
+  };
 
   return (
     <div className="arma-combo-page">
@@ -102,7 +94,7 @@ const ArmaCombo = () => {
           <section className="arma-step" id="paso-1">
             <h2 className="step-title">Paso 1: Elegí tu Horno</h2>
             <div className="productos-grid">
-              {mockHornos.map(p => (
+              {loading ? <p>Cargando hornos...</p> : hornosData.map(p => (
                 <SelectableCard 
                   key={p._id} 
                   producto={p} 
@@ -128,7 +120,7 @@ const ArmaCombo = () => {
           <section className="arma-step" id="paso-2">
             <h2 className="step-title">Paso 2: Elegí tu Complemento</h2>
             <div className="productos-grid">
-              {mockAmasadoras.map(p => (
+              {loading ? <p>Cargando complementos...</p> : amasadorasData.map(p => (
                 <SelectableCard 
                   key={p._id} 
                   producto={p} 
@@ -223,7 +215,7 @@ const ArmaCombo = () => {
                 <button 
                   className="qv-select-btn"
                   onClick={() => {
-                    if (mockHornos.some(h => h._id === productoDetalle._id)) {
+                    if (hornosData.some(h => h._id === productoDetalle._id)) {
                       setHorno(productoDetalle);
                       setTimeout(() => {
                         const nextStep = document.getElementById('paso-2');

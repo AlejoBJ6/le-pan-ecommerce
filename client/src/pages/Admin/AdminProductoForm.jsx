@@ -23,6 +23,10 @@ const AdminProductoForm = ({ isCombo = false }) => {
   const [error, setError] = useState(null);
   const [subiendoImagen, setSubiendoImagen] = useState(false);
 
+  // Validation state
+  const [touched, setTouched] = useState({});
+  const [displayPrice, setDisplayPrice] = useState('');
+
   useEffect(() => {
     if (isEditMode) {
       const fetchProducto = async () => {
@@ -30,9 +34,11 @@ const AdminProductoForm = ({ isCombo = false }) => {
           const data = await productoService.obtenerProductoPorId(id);
           setFormData({
             ...data,
-            // Convertimos el array de imagenes a string separado por comas para el input de texto
             imagenes: data.imagenes ? data.imagenes.join(', ') : ''
           });
+          if (data.precio) {
+            setDisplayPrice(new Intl.NumberFormat('es-AR').format(data.precio));
+          }
         } catch (err) {
           setError('Error al cargar el producto para editar');
         }
@@ -49,17 +55,52 @@ const AdminProductoForm = ({ isCombo = false }) => {
     });
   };
 
+  const handleBlur = (e) => {
+    const { name } = e.target;
+    setTouched({ ...touched, [name]: true });
+  };
+
+  const handlePriceChange = (e) => {
+    // Solo permitir números
+    const rawValue = e.target.value.replace(/\D/g, '');
+    if (rawValue === '') {
+      setDisplayPrice('');
+      setFormData({ ...formData, precio: 0 });
+      return;
+    }
+    const numValue = parseInt(rawValue, 10);
+    // Format visual display (e.g. 1.500.000)
+    setDisplayPrice(new Intl.NumberFormat('es-AR').format(numValue));
+    setFormData({ ...formData, precio: numValue });
+  };
+
+  const isInvalid = (name) => {
+    return touched[name] && (!formData[name] || String(formData[name]).trim() === '');
+  };
+
+  const isInvalidNum = (name) => {
+    return touched[name] && (formData[name] === '' || formData[name] < 0);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Marcar todos como tocados para mostrar errores
+    const allTouched = { nombre: true, descripcion: true, precio: true, stock: true };
+    setTouched(allTouched);
+
+    if (!formData.nombre || !formData.descripcion || formData.precio < 0 || formData.stock < 0) {
+      setError('Por favor, completa correctamente todos los campos obligatorios.');
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
-    // Preparar los datos antes de enviar
     const productoData = {
       ...formData,
       precio: Number(formData.precio),
       stock: Number(formData.stock),
-      // Convertir string de vuelta a array
       imagenes: formData.imagenes.split(',').map(url => url.trim()).filter(url => url !== '')
     };
 
@@ -83,7 +124,6 @@ const AdminProductoForm = ({ isCombo = false }) => {
     setSubiendoImagen(true);
     try {
       const data = await productoService.uploadImage(file);
-      // Si todo va bien, sumamos o reemplazamos las URLs
       setFormData({
         ...formData,
         imagenes: formData.imagenes ? `${formData.imagenes}, ${data.imageUrl}` : data.imageUrl
@@ -97,97 +137,226 @@ const AdminProductoForm = ({ isCombo = false }) => {
   };
 
   return (
-    <div style={{ maxWidth: '800px', backgroundColor: 'var(--color-white)', padding: '30px', borderRadius: '8px', boxShadow: 'var(--shadow-sm)' }}>
+    <div style={{ maxWidth: '900px', margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
-        <h2 style={{ margin: 0, color: 'var(--color-dark)' }}>{isEditMode ? (isCombo ? 'Editar Combo' : 'Editar Producto') : (isCombo ? 'Crear Nuevo Combo' : 'Crear Nuevo Producto')}</h2>
-        <Link to={isCombo ? "/admin/combos" : "/admin/productos"} style={{ color: 'var(--color-gray)', textDecoration: 'none' }}>Cancelar</Link>
+        <h2 style={{ margin: 0, color: 'var(--color-dark)', fontSize: '1.8rem' }}>
+          {isEditMode ? (isCombo ? 'Editar Combo' : 'Editar Producto') : (isCombo ? 'Crear Nuevo Combo' : 'Crear Nuevo Producto')}
+        </h2>
+        <Link 
+          to={isCombo ? "/admin/combos" : "/admin/productos"} 
+          style={{ color: 'var(--color-dark)', textDecoration: 'underline', fontWeight: 600, fontSize: '1.05rem' }}
+        >
+          Cancelar
+        </Link>
       </div>
 
-      {error && <div style={{ backgroundColor: '#f8d7da', color: '#721c24', padding: '10px 15px', borderRadius: '4px', marginBottom: '20px' }}>{error}</div>}
+      {error && <div style={{ backgroundColor: '#fff8f8', color: '#dc3545', padding: '15px 20px', borderRadius: '6px', marginBottom: '24px', border: '1px solid #f5c2c7', fontWeight: 500 }}>⚠️ {error}</div>}
 
-      <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+      <form onSubmit={handleSubmit}>
         
-        <div style={{ gridColumn: '1 / -1' }}>
-          <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>Nombre del {isCombo ? 'Combo' : 'Producto'} *</label>
-          <input type="text" name="nombre" value={formData.nombre} onChange={handleChange} required style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid var(--color-gray)', backgroundColor: 'var(--color-gray-light)', color: 'var(--color-dark)' }} />
-        </div>
-
-        <div style={{ gridColumn: '1 / -1' }}>
-          <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>Descripción *</label>
-          <textarea name="descripcion" value={formData.descripcion} onChange={handleChange} required rows="4" style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid var(--color-gray)', backgroundColor: 'var(--color-gray-light)', color: 'var(--color-dark)' }}></textarea>
-        </div>
-
-        <div>
-           <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>Precio ($) *</label>
-           <input type="number" name="precio" value={formData.precio} onChange={handleChange} required min="0" style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid var(--color-gray)', backgroundColor: 'var(--color-gray-light)', color: 'var(--color-dark)' }} />
-        </div>
-
-        {isCombo ? (
-          <div>
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>Categoría *</label>
-            <input type="text" value="Combos" disabled style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid var(--color-gray)', backgroundColor: 'var(--color-gray-light)', color: 'var(--color-dark)', cursor: 'not-allowed' }} />
+        {/* SECCIÓN: INFORMACIÓN BÁSICA */}
+        <div className="admin-form-section">
+          <h3 className="admin-form-section-title">Información Básica</h3>
+          
+          <div className="admin-input-group full-width">
+            <label>Nombre del {isCombo ? 'Combo' : 'Producto'} *</label>
+            <input 
+              type="text" 
+              name="nombre" 
+              className={`admin-input-control ${isInvalid('nombre') ? 'has-error' : ''}`}
+              value={formData.nombre} 
+              onChange={handleChange} 
+              onBlur={handleBlur}
+              placeholder={`Ej: ${isCombo ? 'Combo Panadería Inicial' : 'Amasadora 20L'}`}
+            />
+            {isInvalid('nombre') && <span className="admin-input-error-msg">Este campo es obligatorio.</span>}
           </div>
-        ) : (
-          <div>
-             <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>Categoría *</label>
-             <select name="categoria" value={formData.categoria} onChange={handleChange} required style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid var(--color-gray)', backgroundColor: 'var(--color-gray-light)', color: 'var(--color-dark)' }}>
-               <option value="Hornos">Hornos</option>
-               <option value="Amasadoras">Amasadoras</option>
-               <option value="Laminadoras">Laminadoras</option>
-               <option value="Batidoras">Batidoras</option>
-               <option value="Varios">Varios</option>
-             </select>
+
+          <div className="admin-input-group full-width">
+            <label>Descripción *</label>
+            <textarea 
+              name="descripcion" 
+              className={`admin-input-control ${isInvalid('descripcion') ? 'has-error' : ''}`}
+              value={formData.descripcion} 
+              onChange={handleChange} 
+              onBlur={handleBlur}
+              rows="4" 
+              placeholder="Describe las características principales..."
+            ></textarea>
+            {isInvalid('descripcion') && <span className="admin-input-error-msg">Este campo es obligatorio.</span>}
           </div>
-        )}
 
-        <div>
-           <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>Marca</label>
-           <input type="text" name="marca" value={formData.marca} onChange={handleChange} style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid var(--color-gray)', backgroundColor: 'var(--color-gray-light)', color: 'var(--color-dark)' }} />
+          <div className="admin-input-group full-width">
+            <label>Categoría *</label>
+            {isCombo ? (
+              <input type="text" value="Combos" disabled className="admin-input-control" />
+            ) : (
+              <select 
+                name="categoria" 
+                className="admin-input-control"
+                value={formData.categoria} 
+                onChange={handleChange}
+              >
+                <option value="Hornos">Hornos</option>
+                <option value="Amasadoras">Amasadoras</option>
+                <option value="Laminadoras">Laminadoras</option>
+                <option value="Batidoras">Batidoras</option>
+                <option value="Varios">Varios</option>
+              </select>
+            )}
+          </div>
         </div>
 
-        <div>
-           <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>Modelo</label>
-           <input type="text" name="modelo" value={formData.modelo} onChange={handleChange} style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ddd' }} />
+        {/* SECCIÓN: INVENTARIO Y PRECIO */}
+        <div className="admin-form-section">
+          <h3 className="admin-form-section-title">Inventario y Precio</h3>
+          
+          <div className="admin-form-grid">
+            <div className="admin-input-group">
+              <label>Precio ($) *</label>
+              <div style={{ position: 'relative' }}>
+                <span style={{ position: 'absolute', left: '12px', top: '12px', color: 'var(--color-dark)', fontWeight: 600 }}>$</span>
+                <input 
+                  type="text" 
+                  name="precio" 
+                  className={`admin-input-control ${isInvalidNum('precio') ? 'has-error' : ''}`}
+                  value={displayPrice} 
+                  onChange={handlePriceChange} 
+                  onBlur={() => setTouched({ ...touched, precio: true })}
+                  style={{ paddingLeft: '28px' }}
+                  placeholder="0"
+                />
+              </div>
+              {isInvalidNum('precio') && <span className="admin-input-error-msg">Ingresa un precio válido.</span>}
+            </div>
+
+            <div className="admin-input-group">
+              <label>Stock *</label>
+              <input 
+                type="number" 
+                name="stock" 
+                className={`admin-input-control ${isInvalidNum('stock') ? 'has-error' : ''}`}
+                value={formData.stock} 
+                onChange={handleChange} 
+                onBlur={handleBlur}
+                min="0" 
+                step="1"
+              />
+              {isInvalidNum('stock') && <span className="admin-input-error-msg">Ingresa un stock válido.</span>}
+            </div>
+
+            {!isCombo && (
+              <>
+                <div className="admin-input-group">
+                  <label>Marca</label>
+                  <input 
+                    type="text" 
+                    name="marca" 
+                    className="admin-input-control"
+                    value={formData.marca} 
+                    onChange={handleChange} 
+                    placeholder="Ej: Argental"
+                  />
+                </div>
+
+                <div className="admin-input-group">
+                  <label>Modelo</label>
+                  <input 
+                    type="text" 
+                    name="modelo" 
+                    className="admin-input-control"
+                    value={formData.modelo} 
+                    onChange={handleChange} 
+                    placeholder="Ej: AM-20"
+                  />
+                </div>
+              </>
+            )}
+          </div>
         </div>
 
-        <div>
-           <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>Stock *</label>
-           <input type="number" name="stock" value={formData.stock} onChange={handleChange} required min="0" style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ddd' }} />
+        {/* SECCIÓN: ESTADO DEL PRODUCTO */}
+        <div className="admin-form-section">
+          <h3 className="admin-form-section-title">Visibilidad e Impulso</h3>
+          
+          <div className="admin-form-grid">
+            <label className="admin-checkbox-group">
+              <input type="checkbox" name="disponible" checked={formData.disponible} onChange={handleChange} />
+              <span>Activo / Disponible para venta</span>
+            </label>
+            
+            <label className="admin-checkbox-group" style={{ backgroundColor: formData.destacado ? 'rgba(226, 88, 34, 0.1)' : 'var(--color-gray-light)' }}>
+              <input type="checkbox" name="destacado" checked={formData.destacado} onChange={handleChange} />
+              <span>⭐ Destacar en portada</span>
+            </label>
+          </div>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '10px' }}>
-           <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-             <input type="checkbox" name="disponible" checked={formData.disponible} onChange={handleChange} />
-             Activo / Disponible
-           </label>
-           <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-             <input type="checkbox" name="destacado" checked={formData.destacado} onChange={handleChange} />
-             Destacar en portada
-           </label>
-        </div>
-
-        <div style={{ gridColumn: '1 / -1' }}>
-           <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>Imagen del {isCombo ? 'Combo' : 'Producto'}</label>
-           
-           <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '10px' }}>
-             <input type="file" onChange={uploadFileHandler} accept="image/*" style={{ padding: '8px', border: '1px solid var(--color-gray)', borderRadius: '4px', backgroundColor: 'var(--color-gray-light)', width: 'auto' }} />
-             {subiendoImagen && <span style={{ color: 'var(--color-primary)', fontWeight: 'bold' }}>Subiendo a Cloudinary... ⬆️</span>}
-           </div>
-           
-           <input type="text" name="imagenes" value={formData.imagenes} onChange={handleChange} placeholder="Opcional: O ingresa la URL manualmente..." style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid var(--color-gray)', backgroundColor: 'var(--color-gray-light)', color: 'var(--color-dark)' }} />
-           
-           {formData.imagenes && formData.imagenes.split(',').filter(u => u.trim() !== '').length > 0 && (
-             <div style={{ marginTop: '15px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-               <p style={{ width: '100%', fontSize: '0.9rem', color: 'var(--color-gray)', margin: 0 }}>Vista previa de las imágenes cargadas:</p>
-               {formData.imagenes.split(',').filter(url => url.trim() !== '').map((url, i) => (
-                 <img key={i} src={url.trim()} alt="preview" style={{ height: '80px', width: '80px', objectFit: 'cover', borderRadius: '6px', border: '1px solid var(--color-gray)' }} />
-               ))}
+        {/* SECCIÓN: MULTIMEDIA */}
+        <div className="admin-form-section">
+          <h3 className="admin-form-section-title">Multimedia</h3>
+          
+          <div className="admin-input-group full-width">
+             <label>Imagen del {isCombo ? 'Combo' : 'Producto'}</label>
+             
+             <div style={{ display: 'flex', gap: '15px', alignItems: 'center', marginBottom: '15px', flexWrap: 'wrap' }}>
+               <label style={{ margin: 0, padding: '10px 16px', backgroundColor: 'var(--color-dark)', color: '#fff', borderRadius: '6px', cursor: 'pointer', fontWeight: 600, display: 'inline-block' }}>
+                 Subir Archivo
+                 <input type="file" onChange={uploadFileHandler} accept="image/*" style={{ display: 'none' }} />
+               </label>
+               {subiendoImagen && <span style={{ color: 'var(--color-primary)', fontWeight: 'bold' }}>Subiendo a Cloudinary... ⬆️</span>}
+               <span style={{ color: 'var(--color-gray)', fontSize: '0.9rem' }}>o podés pegar una URL existente abajo</span>
              </div>
-           )}
+             
+             <input 
+               type="text" 
+               name="imagenes" 
+               className="admin-input-control"
+               value={formData.imagenes} 
+               onChange={handleChange} 
+               placeholder="Ej: https://midominio.com/imagen.jpg (separadas por coma)" 
+             />
+             
+             {formData.imagenes && formData.imagenes.split(',').filter(u => u.trim() !== '').length > 0 && (
+               <div style={{ marginTop: '20px', backgroundColor: 'var(--color-gray-light)', padding: '15px', borderRadius: '6px' }}>
+                 <p style={{ fontSize: '0.9rem', color: 'var(--color-dark)', margin: '0 0 10px 0', fontWeight: 600 }}>Vista previa:</p>
+                 <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                   {formData.imagenes.split(',').filter(url => url.trim() !== '').map((url, i) => (
+                     <div key={i} style={{ position: 'relative', width: '100px', height: '100px', borderRadius: '6px', overflow: 'hidden', border: '1px solid #ccc', backgroundColor: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <img 
+                          src={url.trim()} 
+                          alt="preview" 
+                          style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} 
+                          onError={(e) => { e.target.src = 'https://via.placeholder.com/100?text=Error'; }}
+                        />
+                     </div>
+                   ))}
+                 </div>
+               </div>
+             )}
+          </div>
         </div>
 
-        <div style={{ gridColumn: '1 / -1', marginTop: '20px' }}>
-          <button type="submit" disabled={loading} style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-dark)', padding: '12px 24px', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', width: '100%' }}>
+        <div style={{ marginTop: '30px', marginBottom: '40px' }}>
+          <button 
+            type="submit" 
+            disabled={loading} 
+            style={{ 
+              backgroundColor: 'var(--color-primary)', 
+              color: 'var(--color-white)', 
+              padding: '16px 24px', 
+              border: 'none', 
+              borderRadius: '6px', 
+              cursor: 'pointer', 
+              fontWeight: 'bold', 
+              fontSize: '1.1rem',
+              width: '100%',
+              boxShadow: '0 4px 12px rgba(226, 88, 34, 0.3)',
+              transition: 'transform 0.2s'
+            }}
+            onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'}
+            onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}
+          >
             {loading ? 'Guardando...' : (isEditMode ? (isCombo ? 'Actualizar Combo' : 'Actualizar Producto') : (isCombo ? 'Crear Combo' : 'Crear Producto'))}
           </button>
         </div>

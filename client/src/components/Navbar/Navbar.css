@@ -89,6 +89,7 @@
   height: 40px;
   order: 3;
   width: 100%;
+  position: relative;
 }
 
 .navbar-search input {
@@ -100,6 +101,16 @@
   outline: none;
   font-family: inherit;
   font-size: 14px;
+}
+
+/* Evita que el autocompletado ponga el fondo celeste o amarillo */
+.navbar-search input:-webkit-autofill,
+.navbar-search input:-webkit-autofill:hover, 
+.navbar-search input:-webkit-autofill:focus, 
+.navbar-search input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px white inset !important;
+  -webkit-text-fill-color: #1a1a1a !important;
+  transition: background-color 5000s ease-in-out 0s;
 }
 
 .navbar-search input::placeholder {
@@ -149,6 +160,11 @@
   cursor: pointer;
   transition: background var(--transition);
   text-align: left;
+  border-bottom: 1px solid var(--color-gray-light);
+}
+
+.search-suggestions li:last-child {
+  border-bottom: none;
 }
 
 .search-suggestions li:hover {
@@ -528,8 +544,13 @@
     position: static;
     width: 32px;
     height: 32px;
-    color: var(--color-gold);
-    /* Gold for visibility on dark nav */
+    color: var(--color-white);
+    /* White when on dark nav background */
+  }
+
+  .navbar-top-container.mobile-search-active .navbar-search .search-btn {
+    color: var(--color-dark);
+    /* Dark when inside the expanded white search bar */
   }
 }
 

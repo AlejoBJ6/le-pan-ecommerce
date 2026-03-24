@@ -4,37 +4,53 @@
   right: 24px;
   background-color: var(--color-whatsapp);
   color: var(--color-white);
-  width: 56px;
   height: 56px;
-  border-radius: 50%;
+  padding: 0 20px;
+  border-radius: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 10px;
   box-shadow: var(--shadow-md);
   z-index: 9999;
-  /* Always on top */
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1rem;
   transition: transform var(--transition);
 }
 
 .whatsapp-btn:hover {
-  transform: scale(1.1);
+  transform: scale(1.05);
+}
+
+.whatsapp-text {
+  display: inline-block;
+  white-space: nowrap;
 }
 
 .whatsapp-btn svg {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
 }
 
-/* Modificación para celulares: subir el botón para no tapar elementos como el carrito en ArmaCombo */
+/* Modificación para celulares: ajustar el botón */
 @media (max-width: 768px) {
   .whatsapp-btn {
     bottom: 24px;
     right: 16px;
-    width: 48px;
-    height: 48px;
+    height: 44px;
+    padding: 0 16px;
+    gap: 8px;
+    border-radius: 22px;
+    font-size: 0.9rem;
     z-index: 2005;
   }
   
+  .whatsapp-btn svg {
+    width: 20px;
+    height: 20px;
+  }
+
   .whatsapp-btn.whatsapp-btn-arma {
     bottom: 220px; /* Ajustado para quedar más cerca del cuadro pero sin entrar a él */
   }
