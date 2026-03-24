@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
+import { CartContext } from '../../context/CartContext.jsx';
 import productoService from '../../services/productoService.js';
 import './Navbar.css';
 
 const Navbar = () => {
   const { user, logout } = useContext(AuthContext);
+  const { getCartCount } = useContext(CartContext);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCatalogoOpen, setIsCatalogoOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -196,10 +198,9 @@ const Navbar = () => {
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                       <line x1="3" y1="9" x2="21" y2="9"></line>
-                      <line x1="9" y1="21" x2="9" y2="9"></line>
-                    </svg>
-                    <span>Admin</span>
-                  </button>
+                    <line x1="9" y1="21" x2="9" y2="9"></line>
+                  </svg>
+                </button>
                 )}
                 
                 <button className="action-link" onClick={() => navigate('/perfil')} title="Mi Perfil">
@@ -207,7 +208,6 @@ const Navbar = () => {
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                     <circle cx="12" cy="7" r="4"></circle>
                   </svg>
-                  <span>Mí Perfil</span>
                 </button>
               </>
             ) : (
@@ -216,7 +216,6 @@ const Navbar = () => {
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                   <circle cx="12" cy="7" r="4"></circle>
                 </svg>
-                <span>Ingresar</span>
               </button>
             )}
             <button className={`action-link cart-link ${bumpCart ? 'cart-bump' : ''}`} onClick={() => navigate('/carrito')}>
@@ -225,8 +224,9 @@ const Navbar = () => {
                 <circle cx="20" cy="21" r="1"></circle>
                 <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
               </svg>
-              <span>Mi carrito</span>
-              <span className={`cart-badge-inline ${bumpCart ? 'bounce' : ''}`}>2</span>
+              {getCartCount() > 0 && (
+                <span className={`cart-badge-inline ${bumpCart ? 'bounce' : ''}`}>{getCartCount()}</span>
+              )}
             </button>
           </div>
         </div>

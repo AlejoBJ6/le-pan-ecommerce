@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { CartContext } from '../../context/CartContext.jsx';
 import productoService from '../../services/productoService';
 import './ProductDetail.css';
 
@@ -22,6 +23,7 @@ const ProductDetail = () => {
   const [cantidad, setCantidad] = useState(1);
   const [isAdded, setIsAdded] = useState(false);
   const [loading, setLoading] = useState(true);
+  const { addToCart } = useContext(CartContext);
   
   const [showZoom, setShowZoom] = useState(false);
   const [zoomStyle, setZoomStyle] = useState({});
@@ -46,8 +48,10 @@ const ProductDetail = () => {
 
   const handleAddToCart = () => {
     if (isAdded) return;
+    
+    addToCart(producto, cantidad);
+    
     setIsAdded(true);
-    window.dispatchEvent(new CustomEvent('cart-added'));
     setTimeout(() => setIsAdded(false), 2000);
   };
 
@@ -163,12 +167,12 @@ const ProductDetail = () => {
                 </div>
 
                 <div className="product-price-section">
-                  {producto.precioAnterior && (
+                  {producto.precioAnterior > producto.precio && (
                     <div className="old-price">{precioFormat(producto.precioAnterior)}</div>
                   )}
                   <div className="current-price-row">
                     <span className="current-price">{precioFormat(producto.precio)}</span>
-                    {producto.precioAnterior && (
+                    {producto.precioAnterior > producto.precio && (
                       <span className="discount-tag">
                         {Math.round((1 - producto.precio / producto.precioAnterior) * 100)}% OFF
                       </span>

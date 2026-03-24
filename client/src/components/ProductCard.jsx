@@ -1,16 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Link } from 'react-router-dom';
+import { CartContext } from '../context/CartContext.jsx';
 import './ProductCard.css';
 
 const ProductCard = ({ producto }) => {
   const [isAdded, setIsAdded] = useState(false);
+  const { addToCart } = useContext(CartContext);
 
   const handleAddToCart = (e) => {
     // Prevent Link click if it's placed inside one, though here it's independent
     if (e) e.preventDefault();
     if (!producto.stock || producto.stock === 0 || !producto.disponible || isAdded) return;
+    
+    addToCart(producto, 1);
+    
     setIsAdded(true);
-    window.dispatchEvent(new CustomEvent('cart-added'));
     setTimeout(() => setIsAdded(false), 2000);
   };
 
@@ -34,7 +38,7 @@ const ProductCard = ({ producto }) => {
         <p className="product-category">{producto.categoria}</p>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', marginBottom: '10px' }}>
           <p className="product-price" style={{ margin: 0, fontWeight: 'bold', fontSize: '1.2rem', color: 'var(--color-dark)' }}>${producto.precio.toLocaleString('es-AR')}</p>
-          {producto.precioAnterior && producto.precioAnterior > producto.precio && (
+          {producto.precioAnterior > producto.precio && (
             <p style={{ margin: 0, textDecoration: 'line-through', color: 'var(--color-gray)', fontSize: '0.9rem' }}>
               ${producto.precioAnterior.toLocaleString('es-AR')}
             </p>

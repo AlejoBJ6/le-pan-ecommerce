@@ -1,52 +1,22 @@
-import React, { useState } from 'react';
+import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
+import { CartContext } from '../../context/CartContext.jsx';
 import './Carrito.css';
 
-// Mock data para probar el carrito visualmente
-const MOCK_CART = [
-  {
-    id: '1',
-    nombre: 'Amasadora Rápida Industrial 50 Kg Acero Inoxidable',
-    precio: 1250000,
-    cantidad: 1,
-    imagen: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=300&auto=format&fit=crop',
-    stock: 5,
-  },
-  {
-    id: '2',
-    nombre: 'Horno Convector Eléctrico 4 Bandejas',
-    precio: 850000,
-    cantidad: 2,
-    imagen: 'https://images.unsplash.com/photo-1580975874880-9519199d690a?q=80&w=300&auto=format&fit=crop',
-    stock: 10,
-  }
-];
-
 const Carrito = () => {
-  const [cartItems, setCartItems] = useState(MOCK_CART);
+  const { cart, updateQuantity, removeFromCart, getCartTotal } = useContext(CartContext);
 
   const formatPrice = (price) => 
     new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(price);
 
-  const updateQuantity = (id, delta) => {
-    setCartItems(cartItems.map(item => {
-      if (item.id === id) {
-        const newQuantity = item.cantidad + delta;
-        if (newQuantity >= 1 && newQuantity <= item.stock) {
-          return { ...item, cantidad: newQuantity };
-        }
-      }
-      return item;
-    }));
-  };
-
-  const removeItem = (id) => {
-    setCartItems(cartItems.filter(item => item.id !== id));
-  };
-
-  const subtotal = cartItems.reduce((acc, item) => acc + (item.precio * item.cantidad), 0);
+  const subtotal = getCartTotal();
   const envio = subtotal > 0 ? (subtotal > 2000000 ? 0 : 25000) : 0; // Envío gratis si supera 2M, si no 25000
   const total = subtotal + envio;
+
+  const handleCheckout = () => {
+    // Por el momento no redirecciona a WhatsApp según requested
+    alert("Función de checkout (pasarela de pago o confirmación de carrito) en construcción. Ya veremos esto más tarde.");
+  };
 
   return (
     <div className="cart-page bg-gray-light">
@@ -54,7 +24,7 @@ const Carrito = () => {
         
         <h1 className="cart-title">Tu Carrito</h1>
 
-        {cartItems.length === 0 ? (
+        {cart.length === 0 ? (
           <div className="cart-empty card-box-shadow">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="9" cy="21" r="1"></circle>
@@ -75,39 +45,46 @@ const Carrito = () => {
               </div>
               
               <ul className="cart-items-list">
-                {cartItems.map((item) => (
-                  <li key={item.id} className="cart-item">
-                    <div className="item-image">
-                      <img src={item.imagen} alt={item.nombre} />
-                    </div>
-                    
-                    <div className="item-details">
-                      <Link to={`/producto/${item.id}`} className="item-name">{item.nombre}</Link>
-                      <button className="btn-remove" onClick={() => removeItem(item.id)}>Eliminar</button>
-                    </div>
+                {cart.map((item) => {
+                  const itemId = item._id || item.id;
+                  const maxStock = item.stock || 99; // Si no hay límite explícito
+                  const images = item.imagenes || [];
+                  const imgSrc = images.length > 0 ? images[0] : (item.imagen || 'https://via.placeholder.com/150');
 
-                    <div className="item-quantity-wrapper">
-                      <div className="quantity-controls">
-                        <button 
-                          className="qty-btn" 
-                          onClick={() => updateQuantity(item.id, -1)}
-                          disabled={item.cantidad <= 1}
-                        >-</button>
-                        <span className="qty-value">{item.cantidad}</span>
-                        <button 
-                          className="qty-btn" 
-                          onClick={() => updateQuantity(item.id, 1)}
-                          disabled={item.cantidad >= item.stock}
-                        >+</button>
+                  return (
+                    <li key={itemId} className="cart-item">
+                      <div className="item-image">
+                        <img src={imgSrc} alt={item.nombre} />
                       </div>
-                      <span className="stock-hint">{item.stock} disponibles</span>
-                    </div>
+                      
+                      <div className="item-details">
+                        <Link to={`/producto/${itemId}`} className="item-name">{item.nombre}</Link>
+                        <button className="btn-remove" onClick={() => removeFromCart(itemId)}>Eliminar</button>
+                      </div>
 
-                    <div className="item-price">
-                      {formatPrice(item.precio * item.cantidad)}
-                    </div>
-                  </li>
-                ))}
+                      <div className="item-quantity-wrapper">
+                        <div className="quantity-controls">
+                          <button 
+                            className="qty-btn" 
+                            onClick={() => updateQuantity(itemId, item.quantity - 1)}
+                            disabled={item.quantity <= 1}
+                          >-</button>
+                          <span className="qty-value">{item.quantity}</span>
+                          <button 
+                            className="qty-btn" 
+                            onClick={() => updateQuantity(itemId, item.quantity + 1)}
+                            disabled={item.quantity >= maxStock}
+                          >+</button>
+                        </div>
+                        {item.stock && <span className="stock-hint">{item.stock} disponibles</span>}
+                      </div>
+
+                      <div className="item-price">
+                        {formatPrice((item.precio || item.price || 0) * item.quantity)}
+                      </div>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
 
@@ -117,7 +94,7 @@ const Carrito = () => {
                 <h3>Resumen de compra</h3>
                 
                 <div className="summary-row">
-                  <span>Productos ({cartItems.length})</span>
+                  <span>Productos ({cart.length})</span>
                   <span>{formatPrice(subtotal)}</span>
                 </div>
                 <div className="summary-row">
@@ -133,7 +110,7 @@ const Carrito = () => {
                 </div>
 
                 <div className="summary-actions">
-                  <button className="btn-primary btn-block">Continuar compra</button>
+                  <button className="btn-primary btn-block" onClick={handleCheckout}>Continuar compra</button>
                 </div>
               </div>
             </div>
