@@ -103,6 +103,16 @@
   font-size: 14px;
 }
 
+/* Evita que el autocompletado ponga el fondo celeste o amarillo */
+.navbar-search input:-webkit-autofill,
+.navbar-search input:-webkit-autofill:hover, 
+.navbar-search input:-webkit-autofill:focus, 
+.navbar-search input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px white inset !important;
+  -webkit-text-fill-color: #1a1a1a !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
 .navbar-search input::placeholder {
   color: rgba(0, 0, 0, 0.5);
   /* Dark placeholder for white background */

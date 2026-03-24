@@ -5,6 +5,7 @@ const AdminMensajes = () => {
   const [mensajes, setMensajes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [mensajeAEliminar, setMensajeAEliminar] = useState(null);
 
   useEffect(() => {
     cargarMensajes();
@@ -33,15 +34,24 @@ const AdminMensajes = () => {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm('¿Estás seguro de que deseas eliminar este mensaje de forma permanente?')) {
-      try {
-        await contactoService.eliminarMensaje(id);
-        setMensajes(prev => prev.filter(m => m._id !== id));
-      } catch (err) {
-        alert('Error al eliminar: ' + err.message);
-      }
+  const handleDeleteRequest = (id) => {
+    setMensajeAEliminar(id);
+  };
+
+  const confirmarEliminacion = async () => {
+    if (!mensajeAEliminar) return;
+    try {
+      await contactoService.eliminarMensaje(mensajeAEliminar);
+      setMensajes(prev => prev.filter(m => m._id !== mensajeAEliminar));
+      setMensajeAEliminar(null);
+    } catch (err) {
+      alert('Error al eliminar: ' + err.message);
+      setMensajeAEliminar(null);
     }
+  };
+
+  const cancelarEliminacion = () => {
+    setMensajeAEliminar(null);
   };
 
   const formatDate = (dateString) => {
@@ -50,7 +60,49 @@ const AdminMensajes = () => {
   };
 
   return (
-    <div style={{ padding: '20px' }}>
+    <div style={{ padding: '20px', position: 'relative' }}>
+      
+      {/* Modal de Confirmación */}
+      {mensajeAEliminar && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.6)', zIndex: 9999,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          backdropFilter: 'blur(3px)'
+        }}>
+          <div style={{
+            backgroundColor: 'var(--color-white)', padding: '30px',
+            borderRadius: '8px', maxWidth: '400px', width: '90%', textAlign: 'center',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
+            animation: 'fadeIn 0.2s ease-out'
+          }}>
+            <div style={{ fontSize: '3rem', marginBottom: '10px' }}>⚠️</div>
+            <h3 style={{ marginTop: 0, color: 'var(--color-dark)', fontSize: '1.4rem' }}>Eliminar Mensaje</h3>
+            <p style={{ color: 'var(--color-gray)', marginBottom: '24px', lineHeight: '1.5' }}>
+              ¿Estás seguro de que deseas eliminar este mensaje de forma permanente? Esta acción no se puede deshacer.
+            </p>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+              <button 
+                onClick={cancelarEliminacion} 
+                style={{ padding: '12px 24px', backgroundColor: 'var(--color-gray-light)', border: '1px solid #ddd', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', color: 'var(--color-dark)', transition: 'background 0.2s' }}
+                onMouseOver={(e) => e.target.style.backgroundColor = '#e9ecef'}
+                onMouseOut={(e) => e.target.style.backgroundColor = 'var(--color-gray-light)'}
+              >
+                Cancelar
+              </button>
+              <button 
+                onClick={confirmarEliminacion} 
+                style={{ padding: '12px 24px', backgroundColor: '#dc3545', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', color: 'white', transition: 'background 0.2s' }}
+                onMouseOver={(e) => e.target.style.backgroundColor = '#c82333'}
+                onMouseOut={(e) => e.target.style.backgroundColor = '#dc3545'}
+              >
+                Sí, Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <h2 style={{ color: 'var(--color-dark)', margin: 0 }}>Bandeja de Mensajes</h2>
         <button onClick={cargarMensajes} style={{ padding: '8px 16px', background: 'var(--color-gray-light)', border: '1px solid #ddd', borderRadius: '4px', cursor: 'pointer' }}>
@@ -101,7 +153,7 @@ const AdminMensajes = () => {
                     {mensaje.leido ? 'Marcar como no leído' : '✅ Marcar como leído'}
                   </button>
                   <button 
-                    onClick={() => handleDelete(mensaje._id)} 
+                    onClick={() => handleDeleteRequest(mensaje._id)} 
                     className="admin-btn-delete"
                   >
                     🗑️
