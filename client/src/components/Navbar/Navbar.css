@@ -369,6 +369,36 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* Saludo "Hola, Nombre" - con más respiración */
+.drawer-user-greeting {
+  padding: 20px 0 12px;
+}
+
+.drawer-user-greeting span {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-primary);
+  display: block;
+}
+
+/* Links de perfil y admin - perfectamente alineados */
+.drawer-user-link {
+  display: flex !important;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 0;
+  font-size: 16px;
+  color: var(--color-white);
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s ease;
+  cursor: pointer;
+}
+
+.drawer-user-link:hover {
+  color: var(--color-primary) !important;
+}
+
 .drawer-menu a,
 .submenu-toggle {
   display: flex;
