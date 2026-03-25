@@ -5,6 +5,7 @@ const Footer = () => {
   return (
     <footer className="footer-curve">
       <div className="footer-content container">
+        
         <div className="footer-social">
           <a href="#" className="social-icon instagram" aria-label="Instagram">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -28,7 +29,9 @@ const Footer = () => {
         <div className="footer-brand">
           <img src="/images/logos/image-removebg-preview.png" alt="Lé Pan Logo" className="footer-logo" />
           <p className="footer-copy">© 2026 LÉ PAN. Todos los derechos reservados.</p>
+          <p style={{ fontSize: '0.85rem', color: '#D4A373', marginTop: '4px', letterSpacing: '0.5px' }}>San Miguel de Tucumán, Argentina</p>
         </div>
+
       </div>
     </footer>
   );
