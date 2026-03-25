@@ -1,11 +1,9 @@
 .footer-curve {
   background-color: var(--color-dark);
   color: var(--color-white);
-  padding: 40px 0 24px;
+  padding: 40px 0 90px; /* Ampliado para que el botón de WhatsApp no tape el texto en mobile */
   margin-top: 40px;
   position: relative;
-  /* Simular el trazo "hand-drawn" oscuro o borde si fuera necesario, 
-     en modo dark la curva por sí sola funciona perfecto */
 }
 
 .footer-content {
@@ -13,12 +11,7 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 20px;
-}
-
-.footer-social {
-  display: flex;
-  gap: 24px;
+  gap: 30px;
 }
 
 .social-icon {
@@ -50,17 +43,20 @@
 
 .footer-links {
   display: flex;
-  gap: 16px;
-  font-size: 13px;
+  gap: 32px;
+  font-size: 14px;
   color: var(--color-gray-light);
+  order: 2;
 }
 
 .footer-links a {
-  transition: color var(--transition);
+  transition: all var(--transition);
+  padding: 8px 0; /* Incrementamos el área táctil */
 }
 
 .footer-links a:hover {
   color: var(--color-gold);
+  text-shadow: 0 0 12px rgba(212, 163, 115, 0.4);
 }
 
 .footer-brand {
@@ -68,6 +64,13 @@
   flex-direction: column;
   align-items: center;
   gap: 8px;
+  order: 1;
+}
+
+.footer-social {
+  display: flex;
+  gap: 24px;
+  order: 3;
 }
 
 .footer-logo {
@@ -79,8 +82,8 @@
 }
 
 .footer-copy {
-  font-size: 12px;
-  color: var(--color-gray);
+  font-size: 11px;
+  color: #888; /* Gris más suave para no competir */
 }
 
 @media (min-width: 768px) {

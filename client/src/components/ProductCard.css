@@ -9,7 +9,6 @@
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   display: flex;
   flex-direction: column;
-  height: 100%;
 }
 
 .product-card:hover {
@@ -70,6 +69,12 @@
   color: var(--color-dark);
   margin: 0 0 6px 0;
   font-family: 'Playfair Display', serif;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .product-category {
