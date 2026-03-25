@@ -46,7 +46,7 @@ const AdminLayout = () => {
 
       <main className="admin-main-content">
         <div className="admin-topbar">
-          <h3 style={{margin: 0}}>Gestión de E-Commerce</h3>
+          <h3 style={{ margin: 0 }}>Gestión de E-Commerce</h3>
         </div>
         <div className="admin-content-area">
           <Outlet />
