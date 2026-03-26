@@ -88,7 +88,9 @@ const ProductDetail = () => {
 
     setZoomStyle({
       backgroundImage: `url(${imagenActiva})`,
-      backgroundPosition: `${ratioX * 100}% ${ratioY * 100}%`
+      backgroundPosition: `${ratioX * 100}% ${ratioY * 100}%`,
+      backgroundRepeat: 'no-repeat',
+      backgroundSize: '250% 250%',
     });
   };
 
@@ -153,18 +155,7 @@ const ProductDetail = () => {
 
               {/* Info Section */}
               <div className="product-info">
-                <div className="product-condition">
-                  Nuevo | +{Math.floor(producto.ventas / 100) * 100} vendidos
-                </div>
                 <h1 className="product-title">{producto.nombre}</h1>
-
-                <div className="product-rating">
-                  <span className="stars">
-                    ★★★★★
-                  </span>
-                  <span className="rating-value">{producto.estrellas}</span>
-                  <span className="rating-count">({producto.opiniones})</span>
-                </div>
 
                 <div className="product-price-section">
                   {producto.precioAnterior > producto.precio && (
@@ -205,21 +196,16 @@ const ProductDetail = () => {
 
           {/* Right Sidebar - Purchase Card */}
           <div className="product-sidebar">
-            <div className="purchase-card card-box-shadow">
+            <div className="purchase-card">
 
-              <div className="shipping-info">
-                <div className="shipping-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
+              <div className="manufacturer-info">
+                <div className="manufacturer-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 00-1-1h-2a1 1 0 00-1 1v5m4 0H9"></path></svg>
                 </div>
-                <div className="shipping-text">
-                  <span className="shipping-title">Llega gratis mañana</span>
-                  <span className="shipping-subtitle">Enviando a tu código postal</span>
+                <div className="manufacturer-text">
+                  <span className="manufacturer-title">Fabricante directo</span>
+                  <span className="manufacturer-subtitle">Lé Pan — fabricación propia</span>
                 </div>
-              </div>
-
-              <div className="store-info">
-                <span>Vendido por <strong>Tienda Lé Pan</strong></span>
-                <span className="store-badge">MercadoLíder Platinum</span>
               </div>
 
               <div className="stock-info">
@@ -250,8 +236,14 @@ const ProductDetail = () => {
               </div>
 
               <div className="purchase-guarantees">
-                <p>🛡️ <strong>Compra Protegida</strong>, recibí el producto que esperabas o te devolvemos tu dinero.</p>
-                <p>🏆 <strong>Garantía de fábrica</strong>: 12 meses.</p>
+                <div className="guarantee-item">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                  <span><strong>Garantía de fábrica</strong>: 12 meses</span>
+                </div>
+                <div className="guarantee-item">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                  <span><strong>Envío</strong> a coordinar con el equipo</span>
+                </div>
               </div>
             </div>
           </div>

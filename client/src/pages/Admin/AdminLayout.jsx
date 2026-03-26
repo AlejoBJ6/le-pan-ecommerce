@@ -26,6 +26,11 @@ const AdminLayout = () => {
               </Link>
             </li>
             <li>
+              <Link to="/admin/categorias" className={location.pathname.includes('/admin/categorias') ? 'active' : ''}>
+                Categorías
+              </Link>
+            </li>
+            <li>
               <Link to="/admin/combos" className={location.pathname.includes('/admin/combos') ? 'active' : ''}>
                 Armar Combos
               </Link>
