@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import productoService from '../../services/productoService';
+import categoriaService from '../../services/categoriaService';
 
 const AdminProductoForm = ({ isCombo = false }) => {
   const { id } = useParams();
@@ -22,12 +23,16 @@ const AdminProductoForm = ({ isCombo = false }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [subiendoImagen, setSubiendoImagen] = useState(false);
+  const [categorias, setCategorias] = useState([]);
 
   // Validation state
   const [touched, setTouched] = useState({});
   const [displayPrice, setDisplayPrice] = useState('');
 
   useEffect(() => {
+    // Cargar categorías dinámicas
+    categoriaService.obtenerCategorias().then(setCategorias).catch(console.error);
+
     if (isEditMode) {
       const fetchProducto = async () => {
         try {
@@ -191,17 +196,19 @@ const AdminProductoForm = ({ isCombo = false }) => {
             {isCombo ? (
               <input type="text" value="Combos" disabled className="admin-input-control" />
             ) : (
-              <select 
-                name="categoria" 
+              <select
+                name="categoria"
                 className="admin-input-control"
-                value={formData.categoria} 
+                value={formData.categoria}
                 onChange={handleChange}
               >
-                <option value="Hornos">Hornos</option>
-                <option value="Amasadoras">Amasadoras</option>
-                <option value="Laminadoras">Laminadoras</option>
-                <option value="Batidoras">Batidoras</option>
-                <option value="Varios">Varios</option>
+                {categorias.length === 0 ? (
+                  <option value="">— Sin categorías (creá una en el panel) —</option>
+                ) : (
+                  categorias.map((cat) => (
+                    <option key={cat._id} value={cat.nombre}>{cat.nombre}</option>
+                  ))
+                )}
               </select>
             )}
           </div>

@@ -25,18 +25,7 @@ const productoSchema = new mongoose.Schema(
     categoria: {
       type: String,
       required: [true, 'La categoría es obligatoria'],
-      enum: [
-        'Amasadoras',
-        'Hornos',
-        'Laminadoras',
-        'Divisoras',
-        'Batidoras',
-        'Cámaras de fermentación',
-        'Cortadoras',
-        'Accesorios',
-        'Combos',
-        'Otro',
-      ],
+      trim: true,
     },
     marca: {
       type: String,
