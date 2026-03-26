@@ -5,6 +5,8 @@ import productoService from '../../services/productoService';
 const AdminProductos = () => {
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [confirmDelete, setConfirmDelete] = useState(null); // { id, nombre }
+  const [deleteError, setDeleteError] = useState(null);
 
   useEffect(() => {
     const fetchProductos = async () => {
@@ -20,15 +22,16 @@ const AdminProductos = () => {
     fetchProductos();
   }, []);
 
-  const handleDelete = async (id) => {
-    if (window.confirm('¿Estás seguro de que deseas eliminar permanentemente este producto? Esta acción no se puede deshacer.')) {
-      try {
-        await productoService.eliminarProducto(id);
-        setProductos(productos.filter(p => p._id !== id));
-      } catch (error) {
-        alert('Hubo un error al eliminar el producto.');
-        console.error(error);
-      }
+  const handleConfirmDelete = async () => {
+    if (!confirmDelete) return;
+    try {
+      await productoService.eliminarProducto(confirmDelete.id);
+      setProductos(productos.filter(p => p._id !== confirmDelete.id));
+      setConfirmDelete(null);
+    } catch (error) {
+      console.error(error);
+      setDeleteError('Hubo un error al eliminar el producto.');
+      setConfirmDelete(null);
     }
   };
 
@@ -38,13 +41,19 @@ const AdminProductos = () => {
     <div className="admin-productos">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <h2 style={{ margin: 0 }}>Productos ({productos.length})</h2>
-        <Link 
-          to="/admin/productos/nuevo" 
+        <Link
+          to="/admin/productos/nuevo"
           style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-dark)', padding: '10px 20px', borderRadius: '4px', textDecoration: 'none', fontWeight: 'bold' }}
         >
           + Crear Producto
         </Link>
       </div>
+
+      {deleteError && (
+        <div style={{ backgroundColor: '#fff8f8', color: '#dc3545', padding: '12px 16px', borderRadius: '8px', marginBottom: '16px', border: '1px solid #f5c2c7', fontWeight: 500, fontSize: '0.9rem' }}>
+          ⚠️ {deleteError}
+        </div>
+      )}
 
       <div style={{ overflowX: 'auto', backgroundColor: 'var(--color-white)', borderRadius: '8px', boxShadow: 'var(--shadow-sm)' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', color: 'var(--color-dark)' }}>
@@ -78,7 +87,12 @@ const AdminProductos = () => {
                 </td>
                 <td style={{ padding: '15px' }}>
                   <Link to={`/admin/productos/${prod._id}/editar`} className="admin-btn-edit">Editar</Link>
-                  <button onClick={() => handleDelete(prod._id)} className="admin-btn-delete">Borrar</button>
+                  <button
+                    onClick={() => setConfirmDelete({ id: prod._id, nombre: prod.nombre })}
+                    className="admin-btn-delete"
+                  >
+                    Borrar
+                  </button>
                 </td>
               </tr>
             ))}
@@ -90,6 +104,91 @@ const AdminProductos = () => {
           </tbody>
         </table>
       </div>
+
+      {/* Modal de confirmación de eliminación */}
+      {confirmDelete && (
+        <div
+          onClick={() => setConfirmDelete(null)}
+          style={{
+            position: 'fixed', inset: 0,
+            backgroundColor: 'rgba(0,0,0,0.45)',
+            zIndex: 9999,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '16px',
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              backgroundColor: 'var(--color-white)',
+              borderRadius: '12px',
+              padding: '32px 28px',
+              maxWidth: '420px',
+              width: '100%',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
+              textAlign: 'center',
+            }}
+          >
+            <div style={{
+              width: '52px', height: '52px',
+              borderRadius: '50%',
+              backgroundColor: '#fff8f8',
+              border: '2px solid #f5c2c7',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              margin: '0 auto 20px auto',
+            }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#dc3545" strokeWidth="2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+            </div>
+
+            <h3 style={{ margin: '0 0 8px 0', color: 'var(--color-dark)', fontSize: '1.2rem' }}>
+              ¿Eliminar producto?
+            </h3>
+            <p style={{ color: 'var(--color-gray)', fontSize: '0.95rem', margin: '0 0 28px 0', lineHeight: 1.5 }}>
+              Vas a eliminar permanentemente <strong style={{ color: 'var(--color-dark)' }}>"{confirmDelete.nombre}"</strong>.
+              Esta acción no se puede deshacer.
+            </p>
+
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button
+                onClick={() => setConfirmDelete(null)}
+                style={{
+                  flex: 1, padding: '12px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--color-gray-light)',
+                  backgroundColor: 'transparent',
+                  fontWeight: 600, cursor: 'pointer',
+                  color: 'var(--color-dark)', fontSize: '0.95rem',
+                  transition: 'background 0.15s',
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-gray-light)'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                style={{
+                  flex: 1, padding: '12px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  backgroundColor: '#dc3545',
+                  color: '#fff',
+                  fontWeight: 700, cursor: 'pointer',
+                  fontSize: '0.95rem',
+                  transition: 'background 0.15s',
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#b02a37'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#dc3545'}
+              >
+                Sí, eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
