@@ -32,7 +32,7 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     try {
       const data = await authService.register(userData);
-      setUser(data);
+      // Removed setUser(data) so registration doesn't auto-login
       setError(null);
       return data;
     } catch (err) {

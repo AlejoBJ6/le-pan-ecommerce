@@ -141,6 +141,12 @@ const AdminMensajes = () => {
                   </h3>
                   <p style={{ margin: 0, color: 'var(--color-gray)', fontSize: '0.9rem' }}>
                     <a href={`mailto:${mensaje.email}`} style={{ color: '#0066cc', textDecoration: 'none' }}>{mensaje.email}</a> 
+                    {mensaje.telefono && (
+                      <>
+                        <span style={{ margin: '0 10px' }}>•</span>
+                        📞 <a href={`tel:${mensaje.telefono}`} style={{ color: '#4CAF50', textDecoration: 'none', fontWeight: 'bold' }}>{mensaje.telefono}</a>
+                      </>
+                    )}
                     <span style={{ margin: '0 10px' }}>•</span>
                     {formatDate(mensaje.createdAt)}
                   </p>

@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import { CartContext } from '../../context/CartContext.jsx';
 import productoService from '../../services/productoService.js';
+import categoriaService from '../../services/categoriaService.js';
 import './Navbar.css';
 
 const Navbar = () => {
@@ -19,6 +20,19 @@ const Navbar = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [bumpCart, setBumpCart] = useState(false);
+  const [categoriasMenu, setCategoriasMenu] = useState([]);
+
+  useEffect(() => {
+    const fetchCats = async () => {
+      try {
+        const data = await categoriaService.obtenerCategorias();
+        if (data) setCategoriasMenu(data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchCats();
+  }, []);
 
   useEffect(() => {
     const handleCartAdd = () => {
@@ -279,10 +293,13 @@ const Navbar = () => {
               {isCatalogoOpen && (
                 <ul className="submenu-list">
                   <li><Link to="/productos" onClick={() => setIsMenuOpen(false)}>Ver Todo</Link></li>
-                  <li><Link to="/productos?categoria=Amasadoras" onClick={() => setIsMenuOpen(false)}>Amasadoras</Link></li>
-                  <li><Link to="/productos?categoria=Hornos" onClick={() => setIsMenuOpen(false)}>Hornos</Link></li>
-                  <li><Link to="/productos?categoria=Laminadoras" onClick={() => setIsMenuOpen(false)}>Laminadoras</Link></li>
-                  <li><Link to="/productos?categoria=Batidoras" onClick={() => setIsMenuOpen(false)}>Batidoras</Link></li>
+                  {categoriasMenu.map(cat => (
+                    <li key={cat._id || cat.nombre}>
+                      <Link to={`/productos?categoria=${encodeURIComponent(cat.nombre)}`} onClick={() => setIsMenuOpen(false)}>
+                        {cat.nombre}
+                      </Link>
+                    </li>
+                  ))}
                 </ul>
               )}
             </li>

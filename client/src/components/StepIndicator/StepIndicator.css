@@ -1,0 +1,89 @@
+.step-indicator-wrapper {
+  background: #fff;
+  border-bottom: 1px solid #e8e8e8;
+  padding: 0;
+  width: 100%;
+  margin-bottom: 36px;
+}
+
+.step-indicator {
+  display: flex;
+  align-items: stretch;
+  max-width: 860px;
+  margin: 0 auto;
+  height: 52px;
+}
+
+.step-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 24px 0 32px;
+  position: relative;
+  flex: 1;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: default;
+  transition: background 0.2s;
+  clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 50%, calc(100% - 16px) 100%, 0 100%, 16px 50%);
+}
+
+.step-item:first-child {
+  clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 50%, calc(100% - 16px) 100%, 0 100%);
+  padding-left: 20px;
+}
+
+.step-item:last-child {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 16px 50%);
+}
+
+/* Arrow connector - handled by clip-path overlap */
+.step-arrow { display: none; }
+
+/* Status Colors */
+.step-active {
+  background: var(--color-primary, #E8820C);
+  color: #fff;
+}
+
+.step-done {
+  background: #fde8cc;
+  color: var(--color-primary-hover, #cf7009);
+}
+
+.step-pending {
+  background: #f5f5f5;
+  color: #bbb;
+}
+
+.step-icon {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.step-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.step-label {
+  white-space: nowrap;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 560px) {
+  .step-label {
+    display: none;
+  }
+  .step-item {
+    padding: 0 12px 0 20px;
+    justify-content: center;
+  }
+  .step-item:first-child {
+    padding-left: 12px;
+  }
+}

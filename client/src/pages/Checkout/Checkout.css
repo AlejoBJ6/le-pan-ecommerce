@@ -1,0 +1,562 @@
+.checkout-page {
+  background: #f7f7f7;
+  min-height: calc(100vh - 80px);
+}
+
+.checkout-container {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 40px 20px 80px;
+}
+
+/* ── Step ───── */
+.checkout-step {
+  background: #fff;
+  border-radius: 16px;
+  padding: 36px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+}
+
+.checkout-step-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #222;
+  margin-bottom: 28px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+/* ── Form ───── */
+.checkout-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.form-row {
+  display: flex;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.form-group.flex-2 { flex: 2; }
+
+.form-group label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 12px 14px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: #222;
+  background: #fafafa;
+  transition: all 0.2s;
+  outline: none;
+  font-family: inherit;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: var(--color-primary, #E8820C);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(232, 130, 12, 0.12);
+}
+
+.form-group textarea { resize: vertical; }
+
+/* ── Buttons ─── */
+.btn-checkout-next {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: var(--color-primary, #E8820C);
+  color: #fff;
+  border: none;
+  padding: 16px 28px;
+  border-radius: 10px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 8px;
+  box-shadow: 0 4px 14px rgba(232,130,12,0.25);
+}
+
+.btn-checkout-next svg {
+  width: 20px;
+  height: 20px;
+}
+
+.btn-checkout-next:hover {
+  background: var(--color-primary-hover, #cf7009);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(232,130,12,0.35);
+}
+
+.btn-checkout-back {
+  background: transparent;
+  border: 1.5px solid #ccc;
+  color: #666;
+  padding: 14px 22px;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-checkout-back:hover { border-color: #999; color: #333; }
+
+.checkout-nav-btns {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+/* ── Mercado Pago Banner ─── */
+.mp-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #fff9f0;
+  border: 1.5px solid #f5c89a;
+  border-radius: 10px;
+  padding: 14px 20px;
+  margin-bottom: 24px;
+}
+
+.mp-logo {
+  height: 28px;
+  object-fit: contain;
+}
+
+.mp-banner-text {
+  font-size: 0.95rem;
+  color: #333;
+}
+
+/* ── Payment Tabs ─── */
+.payment-method-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+
+.method-tab {
+  flex: 1;
+  min-width: 140px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  background: #fafafa;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.method-tab.active {
+  border-color: var(--color-primary, #E8820C);
+  background: #fff3e8;
+  color: var(--color-primary-hover, #cf7009);
+}
+
+.method-icon { font-size: 1.2rem; }
+
+/* ── Credit Card Preview ─── */
+.card-section {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  margin-bottom: 28px;
+}
+
+.card-form { flex: 1; min-width: 260px; display: flex; flex-direction: column; gap: 14px; }
+
+/* 3D card flip */
+.credit-card-preview {
+  width: 320px;
+  height: 190px;
+  perspective: 1000px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.credit-card-preview .card-front,
+.credit-card-preview .card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 16px;
+  backface-visibility: hidden;
+  transition: transform 0.6s ease;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+}
+
+.credit-card-preview {
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.6s ease;
+}
+
+.credit-card-preview.flipped { transform: rotateY(180deg); }
+
+.card-front {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  color: #fff;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transform: rotateY(0deg);
+}
+
+.card-back {
+  background: linear-gradient(135deg, #2d2d2d, #1a1a1a);
+  color: #fff;
+  transform: rotateY(180deg);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.card-chip svg { width: 38px; height: 30px; }
+
+.card-number {
+  font-size: 1.3rem;
+  letter-spacing: 3px;
+  font-family: 'Courier New', monospace;
+  text-align: center;
+}
+
+.card-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.card-field-label {
+  font-size: 0.6rem;
+  color: rgba(255,255,255,0.7);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 2px;
+}
+
+.card-name, .card-exp {
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.card-brand {
+  height: 36px;
+  object-fit: contain;
+}
+
+.card-strip {
+  width: 100%;
+  height: 44px;
+  background: #111;
+  margin-bottom: 20px;
+}
+
+.card-cvv-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 22px;
+}
+
+.card-signature {
+  flex: 1;
+  height: 36px;
+  background: repeating-linear-gradient(90deg, #fff 0px, #fff 8px, #f5f5f5 8px, #f5f5f5 16px);
+  border-radius: 4px;
+}
+
+.card-cvv {
+  background: #fff;
+  color: #333;
+  font-size: 1rem;
+  font-weight: 800;
+  padding: 8px 14px;
+  border-radius: 6px;
+  letter-spacing: 3px;
+  min-width: 56px;
+  text-align: center;
+}
+
+/* ── Transfer & Cuotas ─── */
+.transfer-info {
+  text-align: center;
+  padding: 24px 0 12px;
+  margin-bottom: 24px;
+}
+
+.info-icon { font-size: 2.5rem; margin-bottom: 8px; }
+
+.transfer-info h3 { font-size: 1.3rem; margin-bottom: 10px; }
+
+.transfer-info p { color: #555; margin-bottom: 20px; }
+
+.bank-data {
+  background: #f7f7f7;
+  border-radius: 10px;
+  padding: 16px 24px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bank-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.92rem;
+  border-bottom: 1px dashed #e0e0e0;
+  padding-bottom: 8px;
+}
+
+.bank-row:last-child { border-bottom: none; padding-bottom: 0; }
+
+.cuotas-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.cuota-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  background: #fafafa;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cuota-option:hover {
+  border-color: #00a650;
+  background: #e8faf1;
+}
+
+.cuota-n { font-size: 1.4rem; font-weight: 800; color: #222; }
+
+.cuota-valor { font-size: 0.9rem; color: #555; }
+
+.cuota-tag {
+  font-size: 0.72rem;
+  background: #e8faf1;
+  color: #00843d;
+  padding: 2px 7px;
+  border-radius: 20px;
+  font-weight: 700;
+}
+
+.cuota-interes { background: #fff3cd; color: #856404; }
+
+/* ── Order Summary within Payment ─── */
+.checkout-order-summary {
+  background: #f7f7f7;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.checkout-order-summary h4 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 14px;
+  color: #333;
+}
+
+.checkout-order-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: #555;
+  padding: 4px 0;
+}
+
+.checkout-order-sep {
+  border-top: 1px dashed #ccc;
+  margin: 10px 0;
+}
+
+.checkout-order-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.95rem;
+  color: #555;
+  padding: 4px 0;
+}
+
+.checkout-order-total {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #222;
+  margin-top: 6px;
+}
+
+/* ── Resumen / Confirmación ─── */
+.resumen-step { text-align: center; }
+
+.success-animation {
+  padding: 32px 0 24px;
+}
+
+.success-circle {
+  width: 90px;
+  height: 90px;
+  margin: 0 auto 20px;
+}
+
+.checkmark-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.checkmark-circle {
+  stroke-dasharray: 166;
+  stroke-dashoffset: 166;
+  animation: drawCircle 0.6s ease forwards;
+  stroke: var(--color-primary, #E8820C);
+}
+
+.checkmark-check {
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+  animation: drawCheck 0.4s 0.6s ease forwards;
+  stroke: var(--color-primary, #E8820C);
+}
+
+@keyframes drawCircle {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes drawCheck {
+  to { stroke-dashoffset: 0; }
+}
+
+.success-animation h2 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--color-primary, #E8820C);
+  margin-bottom: 8px;
+}
+
+.order-number {
+  font-size: 1rem;
+  color: #444;
+  margin-bottom: 6px;
+}
+
+.order-email {
+  font-size: 0.92rem;
+  color: #777;
+  margin-bottom: 32px;
+}
+
+.resumen-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  text-align: left;
+  margin-bottom: 32px;
+}
+
+.resumen-card {
+  background: #f7f7f7;
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.resumen-card h4 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 12px;
+}
+
+.resumen-card p {
+  font-size: 0.9rem;
+  color: #555;
+  margin-bottom: 4px;
+}
+
+.notas-entrega { color: #888; font-style: italic; }
+
+.resumen-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn-resumen-primary {
+  background: var(--color-primary, #E8820C);
+  color: #fff;
+  border: none;
+  padding: 14px 28px;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 14px rgba(232,130,12,0.25);
+}
+
+.btn-resumen-primary:hover { background: var(--color-primary-hover, #cf7009); transform: translateY(-2px); }
+
+.btn-resumen-secondary {
+  background: transparent;
+  border: 2px solid #00a650;
+  color: #00843d;
+  padding: 14px 28px;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-resumen-secondary:hover { background: #e8faf1; }
+
+/* ── Responsive ─── */
+@media (max-width: 640px) {
+  .checkout-step { padding: 24px 18px; }
+  .form-row { flex-direction: column; }
+  .card-section { flex-direction: column; align-items: center; }
+  .credit-card-preview { width: 100%; max-width: 320px; align-self: center; }
+  .resumen-cards { grid-template-columns: 1fr; }
+  .checkout-nav-btns { flex-direction: column; }
+  .btn-checkout-back, .btn-checkout-next { width: 100%; justify-content: center; }
+}

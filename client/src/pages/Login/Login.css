@@ -302,3 +302,9 @@ body.dark-theme .btn-google {
     font-size: 0.95rem;
   }
 }
+
+/* Ocultar el icono revelador nativo de Edge para evitar duplicados */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}

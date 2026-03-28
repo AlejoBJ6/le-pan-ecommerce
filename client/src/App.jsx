@@ -23,8 +23,10 @@ import AdminCombos from './pages/Admin/AdminCombos.jsx';
 import AdminComboBuilder from './pages/Admin/AdminComboBuilder.jsx';
 import AdminMensajes from './pages/Admin/AdminMensajes.jsx';
 import AdminCategorias from './pages/Admin/AdminCategorias.jsx';
+import AdminComboConfig from './pages/Admin/AdminComboConfig.jsx';
 import Perfil from './pages/Perfil/Perfil.jsx';
 import ResetPassword from './pages/ResetPassword/ResetPassword.jsx';
+import Checkout from './pages/Checkout/Checkout.jsx';
 
 // Componente Wrapper para Layout Público
 const PublicLayout = ({ children }) => (
@@ -55,6 +57,7 @@ function App() {
               <Route path="/reset-password/:token" element={<ResetPassword />} />
               <Route path="/producto/:id" element={<ProductDetail />} />
               <Route path="/carrito" element={<Carrito />} />
+              <Route path="/checkout" element={<Checkout />} />
               
               {/* Ruta Privada de Cliente */}
               <Route path="/perfil" element={<PrivateRoute />}>
@@ -76,6 +79,7 @@ function App() {
             <Route path="combos/:id/editar" element={<AdminProductoForm isCombo={true} />} />
             <Route path="mensajes" element={<AdminMensajes />} />
             <Route path="categorias" element={<AdminCategorias />} />
+            <Route path="combo-config" element={<AdminComboConfig />} />
           </Route>
         </Route>
       </Routes>
