@@ -6,6 +6,7 @@ const Contacto = () => {
   const [formData, setFormData] = useState({
     nombre: '',
     email: '',
+    telefono: '',
     asunto: '',
     mensaje: ''
   });
@@ -22,12 +23,12 @@ const Contacto = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setEstado({ loading: true, success: false, error: null });
-    
+
     try {
       await contactoService.enviarMensaje(formData);
       setEstado({ loading: false, success: true, error: null });
-      setFormData({ nombre: '', email: '', asunto: '', mensaje: '' });
-      
+      setFormData({ nombre: '', email: '', telefono: '', asunto: '', mensaje: '' });
+
       // Ocultar el mensaje de éxito después de unos segundos
       setTimeout(() => {
         setEstado(prev => ({ ...prev, success: false }));
@@ -49,7 +50,7 @@ const Contacto = () => {
       <div className="container contacto-container" style={{ justifyContent: 'center' }}>
         <div className="contacto-form-wrapper" style={{ maxWidth: '700px', flex: 'none', width: '100%' }}>
           <h2 className="form-title" style={{ textAlign: 'center' }}>Envíanos tu Mensaje</h2>
-          
+
           {estado.error && (
             <div style={{ backgroundColor: '#f8d7da', color: '#721c24', padding: '15px', borderRadius: '8px', marginBottom: '20px', textAlign: 'center' }}>
               {estado.error}
@@ -64,58 +65,71 @@ const Contacto = () => {
             <form className="contacto-form" onSubmit={handleSubmit}>
               <div className="form-group">
                 <label htmlFor="nombre">Nombre completo</label>
-                <input 
-                  type="text" 
-                  id="nombre" 
-                  name="nombre" 
-                  value={formData.nombre} 
-                  onChange={handleChange} 
-                  required 
+                <input
+                  type="text"
+                  id="nombre"
+                  name="nombre"
+                  value={formData.nombre}
+                  onChange={handleChange}
+                  required
                   placeholder="Ej: Juan Pérez"
                   disabled={estado.loading}
                 />
               </div>
               <div className="form-group">
                 <label htmlFor="email">Correo electrónico</label>
-                <input 
-                  type="email" 
-                  id="email" 
-                  name="email" 
-                  value={formData.email} 
-                  onChange={handleChange} 
-                  required 
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
                   placeholder="ejemplo@correo.com"
                   disabled={estado.loading}
                 />
               </div>
               <div className="form-group">
+                <label htmlFor="telefono">Teléfono</label>
+                <input
+                  type="tel"
+                  id="telefono"
+                  name="telefono"
+                  value={formData.telefono}
+                  onChange={handleChange}
+                  required
+                  placeholder="Ej: +54 9 11 1234-5678"
+                  disabled={estado.loading}
+                />
+              </div>
+              <div className="form-group">
                 <label htmlFor="asunto">Asunto (Opcional)</label>
-                <input 
-                  type="text" 
-                  id="asunto" 
-                  name="asunto" 
-                  value={formData.asunto} 
-                  onChange={handleChange} 
+                <input
+                  type="text"
+                  id="asunto"
+                  name="asunto"
+                  value={formData.asunto}
+                  onChange={handleChange}
                   placeholder="Consulta sobre Hornos"
                   disabled={estado.loading}
                 />
               </div>
               <div className="form-group">
                 <label htmlFor="mensaje">Tu Mensaje</label>
-                <textarea 
-                  id="mensaje" 
-                  name="mensaje" 
-                  rows="6" 
-                  value={formData.mensaje} 
-                  onChange={handleChange} 
-                  required 
+                <textarea
+                  id="mensaje"
+                  name="mensaje"
+                  rows="6"
+                  value={formData.mensaje}
+                  onChange={handleChange}
+                  required
                   placeholder="Escribí aquí tus dudas..."
                   disabled={estado.loading}
                 ></textarea>
               </div>
-              <button 
-                type="submit" 
-                className="btn-enviar" 
+              <button
+                type="submit"
+                className="btn-enviar"
                 style={{ opacity: estado.loading ? 0.7 : 1, cursor: estado.loading ? 'wait' : 'pointer' }}
                 disabled={estado.loading}
               >

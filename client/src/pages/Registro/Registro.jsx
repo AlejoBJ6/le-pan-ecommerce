@@ -26,6 +26,7 @@ const Registro = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [successMsg, setSuccessMsg] = useState('');
   const navigate = useNavigate();
   const { register, error, setError } = useContext(AuthContext);
 
@@ -49,7 +50,10 @@ const Registro = () => {
         email: formData.email,
         password: formData.password
       });
-      navigate('/'); // Redirect to home or dashboard after successful registration
+      setSuccessMsg('Usuario creado con éxito. Redirigiendo al inicio de sesión...');
+      setTimeout(() => {
+        navigate('/login');
+      }, 2500);
     } catch (err) {
       console.error('Registration error:', err);
     }
@@ -69,6 +73,7 @@ const Registro = () => {
             <h2>Crear Cuenta</h2>
             <p>Completa tus datos para registrarte.</p>
             {error && <div style={{ color: 'red', marginTop: '10px', fontSize: '0.9rem' }}>{error}</div>}
+            {successMsg && <div style={{ color: '#155724', backgroundColor: '#d4edda', padding: '10px', borderRadius: '5px', marginTop: '10px', fontSize: '0.9rem', textAlign: 'center' }}>{successMsg}</div>}
           </div>
           
           <form className="auth-form" onSubmit={handleSubmit}>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import productoService from '../services/productoService';
+import categoriaService from '../services/categoriaService';
 import ProductCard from '../components/ProductCard';
 import './Catalogo.css';
 
@@ -9,6 +10,7 @@ const Catalogo = () => {
   const [productos, setProductos] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
+  const [categoriasExtraidas, setCategoriasExtraidas] = useState(['Todas']);
 
   // Estados de filtros
   const [busqueda, setBusqueda] = useState('');
@@ -34,23 +36,29 @@ const Catalogo = () => {
   }, [location.search]);
 
   useEffect(() => {
-    const fetchProductos = async () => {
+    const fetchDatos = async () => {
       setCargando(true);
       try {
-        const data = await productoService.obtenerProductos({
-          nombre: busqueda,
-          categoria: categoriaSeleccionada
-        });
-        setProductos(data);
+        const [productosData, categoriasData] = await Promise.all([
+          productoService.obtenerProductos({
+            nombre: busqueda,
+            categoria: categoriaSeleccionada === 'Todas' ? '' : categoriaSeleccionada
+          }),
+          categoriaService.obtenerCategorias()
+        ]);
+        setProductos(productosData);
+        if (categoriasData && categoriasData.length > 0) {
+          setCategoriasExtraidas(['Todas', ...categoriasData.map(c => c.nombre)]);
+        }
         setCargando(false);
       } catch (err) {
-        console.error('Error al cargar productos:', err);
-        setError('No se pudieron cargar los productos. Intenta de nuevo más tarde.');
+        console.error('Error al cargar datos:', err);
+        setError('No se pudieron cargar los datos. Intenta de nuevo más tarde.');
         setCargando(false);
       }
     };
 
-    fetchProductos();
+    fetchDatos();
   }, [busqueda, categoriaSeleccionada]);
 
 
@@ -66,7 +74,7 @@ const Catalogo = () => {
       <div className="catalogo-filters-container">
         <div className="catalogo-filters" style={{ justifyContent: 'center' }}>
           <div className="category-filters">
-            {['Todas', 'Amasadoras', 'Hornos', 'Laminadoras', 'Batidoras', 'Sobadoras', 'Complementos'].map((cat) => (
+            {categoriasExtraidas.map((cat) => (
               <button 
                 key={cat}
                 className={`category-pill ${categoriaSeleccionada === cat ? 'active' : ''}`}

@@ -5,15 +5,16 @@ import Mensaje from '../models/Mensaje.js';
 // @access  Public
 export const crearMensaje = async (req, res) => {
   try {
-    const { nombre, email, mensaje } = req.body;
+    const { nombre, email, telefono, mensaje } = req.body;
 
-    if (!nombre || !email || !mensaje) {
-      return res.status(400).json({ message: 'Por favor, complete todos los campos.' });
+    if (!nombre || !email || !telefono || !mensaje) {
+      return res.status(400).json({ message: 'Por favor, complete todos los campos obligatorios.' });
     }
 
     const nuevoMensaje = new Mensaje({
       nombre,
       email,
+      telefono,
       mensaje
     });
 
