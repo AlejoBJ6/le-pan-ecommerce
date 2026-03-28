@@ -1,25 +1,27 @@
 import React, { useContext } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { CartContext } from '../../context/CartContext.jsx';
+import StepIndicator from '../../components/StepIndicator/StepIndicator.jsx';
 import './Carrito.css';
 
 const Carrito = () => {
   const { cart, updateQuantity, removeFromCart, clearCart, getCartTotal } = useContext(CartContext);
+  const navigate = useNavigate();
 
   const formatPrice = (price) => 
     new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(price);
 
   const subtotal = getCartTotal();
-  const envio = subtotal > 0 ? (subtotal > 2000000 ? 0 : 25000) : 0; // Envío gratis si supera 2M, si no 25000
+  const envio = subtotal > 0 ? (subtotal > 2000000 ? 0 : 25000) : 0;
   const total = subtotal + envio;
 
   const handleCheckout = () => {
-    // Por el momento no redirecciona a WhatsApp según requested
-    alert("Función de checkout (pasarela de pago o confirmación de carrito) en construcción. Ya veremos esto más tarde.");
+    navigate('/checkout');
   };
 
   return (
     <div className="cart-page bg-gray-light">
+      <StepIndicator currentStep="carrito" />
       <div className="container cart-container">
         
         <h1 className="cart-title">Tu Carrito</h1>
