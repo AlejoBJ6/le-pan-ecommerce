@@ -1,9 +1,9 @@
 .step-indicator-wrapper {
   background: #fff;
   border-bottom: 1px solid #e8e8e8;
-  padding: 0;
+  padding: 24px 0;
   width: 100%;
-  margin-bottom: 36px;
+  margin-bottom: 48px;
 }
 
 .step-indicator {
