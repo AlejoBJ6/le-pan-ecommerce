@@ -2,13 +2,17 @@ import React, { useState, useEffect, useContext } from 'react';
 import { CartContext } from '../../context/CartContext.jsx';
 import productoService from '../../services/productoService.js';
 import categoriaService from '../../services/categoriaService.js';
+import comboConfigService from '../../services/comboConfigService.js';
 import './ArmaCombo.css';
 
-const SelectableCard = ({ producto, isSelected, onSelect, onVerDetalle }) => (
+const SelectableCard = ({ producto, isSelected, onSelect, onVerDetalle, selectionCount }) => (
   <div className={`selectable-card ${isSelected ? 'selected' : ''}`}>
     <div className="selectable-image" onClick={() => onSelect(producto)}>
       <img src={producto.imagenes[0]} alt={producto.nombre} loading="lazy" />
       {isSelected && <div className="selected-badge">✓</div>}
+      {selectionCount > 1 && isSelected && (
+        <div className="selection-count-badge">{selectionCount}</div>
+      )}
     </div>
     <div className="selectable-info">
       <h3 className="selectable-name" onClick={() => onSelect(producto)}>{producto.nombre}</h3>
@@ -36,13 +40,15 @@ const SelectableCard = ({ producto, isSelected, onSelect, onVerDetalle }) => (
 const ArmaCombo = () => {
   const [todosLosProductos, setTodosLosProductos] = useState([]);
   const [categoriasList, setCategoriasList] = useState(['Todas']);
+  const [comboConfig, setComboConfig] = useState({ maxPrincipal: 1, maxComplemento: 1, descuento: 10 });
   const [loading, setLoading] = useState(true);
 
   const [filtroPaso1, setFiltroPaso1] = useState('Todas');
   const [filtroPaso2, setFiltroPaso2] = useState('Todas');
 
-  const [item1, setItem1] = useState(null);
-  const [item2, setItem2] = useState(null);
+  // Arrays to hold multiple selection (admin can allow > 1)
+  const [items1, setItems1] = useState([]);
+  const [items2, setItems2] = useState([]);
   const [isAdded, setIsAdded] = useState(false);
   const [productoDetalle, setProductoDetalle] = useState(null);
 
@@ -51,16 +57,24 @@ const ArmaCombo = () => {
   useEffect(() => {
     const fetchDatos = async () => {
       try {
-        const [resProductos, resCategorias] = await Promise.all([
+        const [resProductos, resCategorias, resConfig] = await Promise.all([
           productoService.obtenerProductos(),
-          categoriaService.obtenerCategorias()
+          categoriaService.obtenerCategorias(),
+          comboConfigService.obtenerConfig()
         ]);
         setTodosLosProductos(resProductos.filter(p => p.categoria !== 'Combos'));
         if (resCategorias && resCategorias.length > 0) {
           setCategoriasList(['Todas', ...resCategorias.map(c => c.nombre)]);
         }
+        if (resConfig) {
+          setComboConfig({
+            maxPrincipal: resConfig.maxPrincipal || 1,
+            maxComplemento: resConfig.maxComplemento || 1,
+            descuento: resConfig.descuento ?? 10,
+          });
+        }
       } catch (err) {
-        console.error("Error cargando productos para combos", err);
+        console.error("Error cargando datos para combos", err);
       } finally {
         setLoading(false);
       }
@@ -68,22 +82,34 @@ const ArmaCombo = () => {
     fetchDatos();
   }, []);
 
+  const toggleItem = (list, setList, producto, max) => {
+    const exists = list.find(p => p._id === producto._id);
+    if (exists) {
+      setList(list.filter(p => p._id !== producto._id));
+    } else {
+      if (list.length < max) {
+        setList([...list, producto]);
+      }
+    }
+  };
+
   const productosPaso1 = todosLosProductos.filter(p => filtroPaso1 === 'Todas' ? true : p.categoria === filtroPaso1);
   const productosPaso2 = todosLosProductos.filter(p => filtroPaso2 === 'Todas' ? true : p.categoria === filtroPaso2);
 
-  const subtotal = (item1?.precio || 0) + (item2?.precio || 0);
-  const discountEligible = item1 && item2;
-  const discountAmount = discountEligible ? subtotal * 0.1 : 0;
+  const subtotal = [...items1, ...items2].reduce((acc, p) => acc + p.precio, 0);
+  const comboComplete = items1.length >= comboConfig.maxPrincipal && items2.length >= comboConfig.maxComplemento;
+  const discountAmount = comboComplete ? subtotal * (comboConfig.descuento / 100) : 0;
   const total = subtotal - discountAmount;
 
   const handleAddToCart = () => {
-    if (!discountEligible || isAdded) return;
+    if (!comboComplete || isAdded) return;
     
+    const allNames = [...items1, ...items2].map(p => p.nombre).join(' + ');
     addToCart({
-      _id: `combo-dinamico-${item1._id}-${item2._id}`,
-      nombre: `Combo 10% OFF: ${item1.nombre} + ${item2.nombre}`,
+      _id: `combo-dinamico-${Date.now()}`,
+      nombre: `Combo ${comboConfig.descuento}% OFF: ${allNames}`,
       precio: total,
-      imagenes: [item1.imagenes[0]],
+      imagenes: [items1[0]?.imagenes[0]],
       categoria: 'Combo Armado'
     }, 1);
 
@@ -91,12 +117,29 @@ const ArmaCombo = () => {
     setTimeout(() => setIsAdded(false), 2000);
   };
 
+  const filterPills = (current, setCurrent) => (
+    <div className="category-filters" style={{ marginBottom: '20px', display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+      {categoriasList.map(cat => (
+        <button 
+          key={cat} 
+          className={`category-pill ${current === cat ? 'active' : ''}`}
+          onClick={() => setCurrent(cat)}
+          style={{ padding: '8px 16px', borderRadius: '20px', border: '1px solid var(--color-primary)', background: current === cat ? 'var(--color-primary)' : 'white', color: current === cat ? 'var(--color-dark)' : 'var(--color-primary)', cursor: 'pointer', transition: 'all 0.2s', fontWeight: 'bold' }}
+        >
+          {cat}
+        </button>
+      ))}
+    </div>
+  );
+
   return (
     <div className="arma-combo-page">
       <div className="arma-hero-banner">
         <div className="arma-hero-content">
           <h1>Armá tu Combo</h1>
-          <p>Llevá tu <strong>Producto Principal</strong> + un <strong>Complemento</strong> y obtené automáticamente un <strong>10% de descuento directo</strong> en tu carrito.</p>
+          <p>
+            Elegí hasta <strong>{comboConfig.maxPrincipal} producto{comboConfig.maxPrincipal > 1 ? 's' : ''} principal{comboConfig.maxPrincipal > 1 ? 'es' : ''}</strong> y hasta <strong>{comboConfig.maxComplemento} complemento{comboConfig.maxComplemento > 1 ? 's' : ''}</strong> y ahorrá automáticamente un <strong>{comboConfig.descuento}% de descuento</strong>.
+          </p>
         </div>
       </div>
       
@@ -105,34 +148,30 @@ const ArmaCombo = () => {
         {/* Left Side: Product Selection */}
         <div className="arma-selections">
           <section className="arma-step" id="paso-1">
-            <h2 className="step-title">Paso 1: Elegí tu Producto Principal</h2>
-            <div className="category-filters" style={{ marginBottom: '20px', display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-              {categoriasList.map(cat => (
-                <button 
-                  key={cat} 
-                  className={`category-pill ${filtroPaso1 === cat ? 'active' : ''}`}
-                  onClick={() => setFiltroPaso1(cat)}
-                  style={{ padding: '8px 16px', borderRadius: '20px', border: '1px solid var(--color-primary)', background: filtroPaso1 === cat ? 'var(--color-primary)' : 'white', color: filtroPaso1 === cat ? 'var(--color-dark)' : 'var(--color-primary)', cursor: 'pointer', transition: 'all 0.2s', fontWeight: 'bold' }}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
+            <h2 className="step-title">
+              Paso 1: Elegí tu Producto Principal
+              <span style={{ marginLeft: '12px', fontSize: '0.9rem', color: 'var(--color-gray)', fontWeight: 'normal' }}>
+                ({items1.length}/{comboConfig.maxPrincipal} seleccionados)
+              </span>
+            </h2>
+            {filterPills(filtroPaso1, setFiltroPaso1)}
             <div className="productos-grid">
               {loading ? <p>Cargando productos...</p> : productosPaso1.map(p => (
                 <SelectableCard 
                   key={p._id} 
                   producto={p} 
-                  isSelected={item1?._id === p._id} 
+                  isSelected={!!items1.find(i => i._id === p._id)}
                   onSelect={(prod) => {
-                    setItem1(prod);
-                    setTimeout(() => {
-                      const nextStep = document.getElementById('paso-2');
-                      if (nextStep) {
-                        const y = nextStep.getBoundingClientRect().top + window.scrollY - 120;
-                        window.scrollTo({ top: y, behavior: 'smooth' });
-                      }
-                    }, 250);
+                    toggleItem(items1, setItems1, prod, comboConfig.maxPrincipal);
+                    if (items1.length + 1 >= comboConfig.maxPrincipal && !items1.find(i => i._id === prod._id)) {
+                      setTimeout(() => {
+                        const nextStep = document.getElementById('paso-2');
+                        if (nextStep) {
+                          const y = nextStep.getBoundingClientRect().top + window.scrollY - 120;
+                          window.scrollTo({ top: y, behavior: 'smooth' });
+                        }
+                      }, 250);
+                    }
                   }} 
                   onVerDetalle={setProductoDetalle}
                 />
@@ -141,26 +180,20 @@ const ArmaCombo = () => {
           </section>
 
           <section className="arma-step" id="paso-2">
-            <h2 className="step-title">Paso 2: Elegí tu Complemento</h2>
-            <div className="category-filters" style={{ marginBottom: '20px', display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-              {categoriasList.map(cat => (
-                <button 
-                  key={cat} 
-                  className={`category-pill ${filtroPaso2 === cat ? 'active' : ''}`}
-                  onClick={() => setFiltroPaso2(cat)}
-                  style={{ padding: '8px 16px', borderRadius: '20px', border: '1px solid var(--color-primary)', background: filtroPaso2 === cat ? 'var(--color-primary)' : 'white', color: filtroPaso2 === cat ? 'var(--color-dark)' : 'var(--color-primary)', cursor: 'pointer', transition: 'all 0.2s', fontWeight: 'bold' }}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
+            <h2 className="step-title">
+              Paso 2: Elegí tu Complemento
+              <span style={{ marginLeft: '12px', fontSize: '0.9rem', color: 'var(--color-gray)', fontWeight: 'normal' }}>
+                ({items2.length}/{comboConfig.maxComplemento} seleccionados)
+              </span>
+            </h2>
+            {filterPills(filtroPaso2, setFiltroPaso2)}
             <div className="productos-grid">
               {loading ? <p>Cargando complementos...</p> : productosPaso2.map(p => (
                 <SelectableCard 
                   key={p._id} 
                   producto={p} 
-                  isSelected={item2?._id === p._id} 
-                  onSelect={setItem2} 
+                  isSelected={!!items2.find(i => i._id === p._id)}
+                  onSelect={(prod) => toggleItem(items2, setItems2, prod, comboConfig.maxComplemento)}
                   onVerDetalle={setProductoDetalle}
                 />
               ))}
@@ -175,18 +208,30 @@ const ArmaCombo = () => {
             
             <div className="summary-list">
               <div className="summary-item">
-                <span className="summary-label">Principal:</span>
+                <span className="summary-label">🛒 Principales ({items1.length}/{comboConfig.maxPrincipal})</span>
                 <div className="summary-details">
-                  <span className="summary-name">{item1 ? item1.nombre : 'Sin seleccionar'}</span>
-                  <span className="summary-price">{item1 ? `$${item1.precio.toLocaleString('es-AR')}` : '-'}</span>
+                  {items1.length === 0 ? (
+                    <span className="summary-empty">Sin seleccionar...</span>
+                  ) : items1.map(i => (
+                    <div key={i._id} className="summary-product-row">
+                      <span className="summary-name">{i.nombre}</span>
+                      <span className="summary-price">${i.precio.toLocaleString('es-AR')}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
               
               <div className="summary-item">
-                <span className="summary-label">Complemento:</span>
+                <span className="summary-label">➕ Complementos ({items2.length}/{comboConfig.maxComplemento})</span>
                 <div className="summary-details">
-                  <span className="summary-name">{item2 ? item2.nombre : 'Sin seleccionar'}</span>
-                  <span className="summary-price">{item2 ? `$${item2.precio.toLocaleString('es-AR')}` : '-'}</span>
+                  {items2.length === 0 ? (
+                    <span className="summary-empty">Sin seleccionar...</span>
+                  ) : items2.map(i => (
+                    <div key={i._id} className="summary-product-row">
+                      <span className="summary-name">{i.nombre}</span>
+                      <span className="summary-price">${i.precio.toLocaleString('es-AR')}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -197,8 +242,8 @@ const ArmaCombo = () => {
                 <span>${subtotal.toLocaleString('es-AR')}</span>
               </div>
               
-              <div className={`summary-row discount ${discountEligible ? 'active' : ''}`}>
-                <span>Descuento Combo (10%)</span>
+              <div className={`summary-row discount ${comboComplete ? 'active' : ''}`}>
+                <span>Descuento Combo ({comboConfig.descuento}%)</span>
                 <span>- ${discountAmount.toLocaleString('es-AR')}</span>
               </div>
               
@@ -210,12 +255,12 @@ const ArmaCombo = () => {
 
             <button 
               className={`btn-checkout-combo ${isAdded ? 'btn-added' : ''}`} 
-              disabled={!discountEligible}
+              disabled={!comboComplete}
               onClick={handleAddToCart}
             >
-              {isAdded ? '¡Combo Añadido! ✓' : (discountEligible ? '🛒 Añadir Combo al Carrito' : 'Seleccioná ambos para comprar')}
+              {isAdded ? '¡Combo Añadido! ✓' : (comboComplete ? '🛒 Añadir Combo al Carrito' : `Completá los ${items1.length < comboConfig.maxPrincipal ? 'productos' : 'complementos'} para continuar`)}
             </button>
-            {!discountEligible && <p className="combo-hint">El descuento se activa automáticamente al elegir 1 producto principal y 1 complemento.</p>}
+            {!comboComplete && <p className="combo-hint">El descuento del {comboConfig.descuento}% se activa al completar ambos pasos.</p>}
           </div>
         </aside>
 
@@ -250,17 +295,10 @@ const ArmaCombo = () => {
                 <button 
                   className="qv-select-btn"
                   onClick={() => {
-                    if (!item1) {
-                      setItem1(productoDetalle);
-                      setTimeout(() => {
-                        const nextStep = document.getElementById('paso-2');
-                        if (nextStep) {
-                          const y = nextStep.getBoundingClientRect().top + window.scrollY - 120;
-                          window.scrollTo({ top: y, behavior: 'smooth' });
-                        }
-                      }, 250);
+                    if (items1.length < comboConfig.maxPrincipal) {
+                      toggleItem(items1, setItems1, productoDetalle, comboConfig.maxPrincipal);
                     } else {
-                      setItem2(productoDetalle);
+                      toggleItem(items2, setItems2, productoDetalle, comboConfig.maxComplemento);
                     }
                     setProductoDetalle(null);
                   }}

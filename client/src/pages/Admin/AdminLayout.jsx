@@ -36,6 +36,11 @@ const AdminLayout = () => {
               </Link>
             </li>
             <li>
+              <Link to="/admin/combo-config" className={location.pathname.includes('/admin/combo-config') ? 'active' : ''}>
+                ⚙️ Config. Combo
+              </Link>
+            </li>
+            <li>
               <Link to="/admin/mensajes" className={location.pathname.includes('/admin/mensajes') ? 'active' : ''}>
                 Mensajes ✉️
               </Link>

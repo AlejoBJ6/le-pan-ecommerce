@@ -9,6 +9,7 @@ import rateLimit from 'express-rate-limit';
 import './models/Producto.js';
 import './models/Combo.js';
 import './models/Categoria.js';
+import './models/ComboConfig.js';
 
 // Rutas
 import productoRoutes from './routes/productoRoutes.js';
@@ -16,6 +17,7 @@ import authRoutes from './routes/authRoutes.js';
 import uploadRoutes from './routes/uploadRoutes.js';
 import contactoRoutes from './routes/contactoRoutes.js';
 import categoriaRoutes from './routes/categoriaRoutes.js';
+import comboConfigRoutes from './routes/comboConfigRoutes.js';
 
 // Configurar variables de entorno
 dotenv.config();
@@ -100,6 +102,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/contacto', contactoRoutes);
 app.use('/api/categorias', categoriaRoutes);
+app.use('/api/combo-config', comboConfigRoutes);
 
 // Conexión a MongoDB
 mongoose
