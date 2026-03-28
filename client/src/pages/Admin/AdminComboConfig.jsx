@@ -1,8 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import comboConfigService from '../../services/comboConfigService.js';
+import categoriaService from '../../services/categoriaService.js';
 
 const AdminComboConfig = () => {
-  const [config, setConfig] = useState({ maxPrincipal: 1, maxComplemento: 1, descuento: 10 });
+  const [config, setConfig] = useState({ 
+    maxPrincipal: 1, maxComplemento: 1, descuento: 10, 
+    tipoDescuento: 'porcentaje', categoriasPrincipal: [], categoriasComplemento: [] 
+  });
+  const [categorias, setCategorias] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
@@ -11,8 +16,19 @@ const AdminComboConfig = () => {
   useEffect(() => {
     const fetch = async () => {
       try {
-        const data = await comboConfigService.obtenerConfig();
-        setConfig({ maxPrincipal: data.maxPrincipal, maxComplemento: data.maxComplemento, descuento: data.descuento });
+        const [data, cats] = await Promise.all([
+          comboConfigService.obtenerConfig(),
+          categoriaService.obtenerCategorias()
+        ]);
+        setConfig({ 
+          maxPrincipal: data.maxPrincipal || 1, 
+          maxComplemento: data.maxComplemento || 1, 
+          descuento: data.descuento || 0,
+          tipoDescuento: data.tipoDescuento || 'porcentaje',
+          categoriasPrincipal: data.categoriasPrincipal || [],
+          categoriasComplemento: data.categoriasComplemento || []
+        });
+        setCategorias(cats.filter(c => c.nombre !== 'Combos').map(c => c.nombre));
       } catch {
         setError('No se pudo cargar la configuración.');
       } finally {
@@ -21,6 +37,23 @@ const AdminComboConfig = () => {
     };
     fetch();
   }, []);
+
+  const updateNumber = (field, delta) => {
+    setConfig(c => {
+      let val = c[field] + delta;
+      if (field !== 'descuento' && val < 1) val = 1;
+      if (field === 'descuento' && val < 0) val = 0;
+      return { ...c, [field]: val };
+    });
+  };
+
+  const toggleCategoria = (field, cat) => {
+    setConfig(c => {
+      const arr = c[field] || [];
+      if (arr.includes(cat)) return { ...c, [field]: arr.filter(x => x !== cat) };
+      return { ...c, [field]: [...arr, cat] };
+    });
+  };
 
   const handleSave = async (e) => {
     e.preventDefault();
@@ -39,9 +72,11 @@ const AdminComboConfig = () => {
 
   if (loading) return <div style={{ padding: '20px' }}>Cargando configuración...</div>;
 
-  const subtotalExample = 100; // example price for preview
-  const discountAmount = subtotalExample * (config.descuento / 100);
-  const totalExample = subtotalExample - discountAmount;
+  const subtotalExample = config.tipoDescuento === 'fijo' ? (config.descuento > 1000 ? config.descuento * 2 : 10000) : 100; 
+  const discountAmount = config.tipoDescuento === 'porcentaje' 
+    ? subtotalExample * (config.descuento / 100)
+    : config.descuento;
+  const totalExample = Math.max(0, subtotalExample - discountAmount);
 
   return (
     <div>
@@ -62,78 +97,129 @@ const AdminComboConfig = () => {
             {/* Max Principal */}
             <div>
               <label style={{ display: 'block', fontWeight: 700, marginBottom: '8px', color: 'var(--color-dark)' }}>
-                🛒 Máx. de Productos Principales (Paso 1)
+                🛒 Cantidad de Productos Principales (Paso 1)
               </label>
               <p style={{ color: 'var(--color-gray)', fontSize: '0.85rem', margin: '0 0 10px 0' }}>
-                Cuántos productos puede elegir el cliente en el primer paso del combo.
+                Cuántos productos debe elegir el cliente obligatoriamente en el primer paso.
               </p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <button type="button" onClick={() => updateNumber('maxPrincipal', -1)} style={{ width: '40px', height: '40px', fontSize: '1.2rem', fontWeight: 'bold', background: '#f5f5f5', border: '1px solid #ddd', borderRadius: '8px', cursor: 'pointer' }}>-</button>
                 <input
-                  type="range"
-                  min="1" max="5"
+                  type="number"
+                  min="1"
                   value={config.maxPrincipal}
-                  onChange={(e) => setConfig(c => ({ ...c, maxPrincipal: Number(e.target.value) }))}
-                  style={{ flex: 1, accentColor: 'var(--color-primary)' }}
+                  onChange={(e) => setConfig(c => ({ ...c, maxPrincipal: Math.max(1, Number(e.target.value)) }))}
+                  style={{ width: '80px', height: '40px', textAlign: 'center', fontWeight: 800, fontSize: '1.2rem', color: 'var(--color-primary)', backgroundColor: '#fff9db', borderRadius: '8px', border: '2px solid var(--color-primary)' }}
                 />
-                <span style={{
-                  minWidth: '48px', textAlign: 'center', fontWeight: 800, fontSize: '1.5rem',
-                  color: 'var(--color-primary)', backgroundColor: '#fff9db', padding: '4px 12px',
-                  borderRadius: '8px', border: '2px solid var(--color-primary)'
-                }}>
-                  {config.maxPrincipal}
-                </span>
+                <button type="button" onClick={() => updateNumber('maxPrincipal', 1)} style={{ width: '40px', height: '40px', fontSize: '1.2rem', fontWeight: 'bold', background: '#f5f5f5', border: '1px solid #ddd', borderRadius: '8px', cursor: 'pointer' }}>+</button>
+              </div>
+
+              {/* Selector Categorias Paso 1 */}
+              <div style={{ marginTop: '16px', background: '#fcfcfc', border: '1px solid #eee', padding: '12px', borderRadius: '8px' }}>
+                <label style={{ display: 'block', fontWeight: 600, fontSize: '0.9rem', marginBottom: '8px', color: 'var(--color-dark)' }}>
+                  🏷️ Límite de Categorías (Paso 1)
+                </label>
+                <p style={{ color: '#888', fontSize: '0.8rem', fontStyle: 'italic', marginBottom: '12px' }}>
+                  Si no seleccionas ninguna categoría, se mostrarán todos los productos de la tienda.
+                </p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                  {categorias.map(cat => (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => toggleCategoria('categoriasPrincipal', cat)}
+                      style={{
+                        padding: '6px 14px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s',
+                        background: config.categoriasPrincipal.includes(cat) ? 'var(--color-primary)' : '#e0e0e0',
+                        color: config.categoriasPrincipal.includes(cat) ? '#fff' : '#444',
+                        border: 'none',
+                      }}
+                    >
+                      {cat} {config.categoriasPrincipal.includes(cat) && '✓'}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
             {/* Max Complemento */}
             <div>
               <label style={{ display: 'block', fontWeight: 700, marginBottom: '8px', color: 'var(--color-dark)' }}>
-                ➕ Máx. de Complementos (Paso 2)
+                ➕ Cantidad de Complementos (Paso 2)
               </label>
               <p style={{ color: 'var(--color-gray)', fontSize: '0.85rem', margin: '0 0 10px 0' }}>
-                Cuántos complementos puede agregar el cliente en el segundo paso.
+                Cuántos complementos debe elegir el cliente en el segundo paso.
               </p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <button type="button" onClick={() => updateNumber('maxComplemento', -1)} style={{ width: '40px', height: '40px', fontSize: '1.2rem', fontWeight: 'bold', background: '#f5f5f5', border: '1px solid #ddd', borderRadius: '8px', cursor: 'pointer' }}>-</button>
                 <input
-                  type="range"
-                  min="1" max="5"
+                  type="number"
+                  min="1"
                   value={config.maxComplemento}
-                  onChange={(e) => setConfig(c => ({ ...c, maxComplemento: Number(e.target.value) }))}
-                  style={{ flex: 1, accentColor: 'var(--color-primary)' }}
+                  onChange={(e) => setConfig(c => ({ ...c, maxComplemento: Math.max(1, Number(e.target.value)) }))}
+                  style={{ width: '80px', height: '40px', textAlign: 'center', fontWeight: 800, fontSize: '1.2rem', color: 'var(--color-primary)', backgroundColor: '#fff9db', borderRadius: '8px', border: '2px solid var(--color-primary)' }}
                 />
-                <span style={{
-                  minWidth: '48px', textAlign: 'center', fontWeight: 800, fontSize: '1.5rem',
-                  color: 'var(--color-primary)', backgroundColor: '#fff9db', padding: '4px 12px',
-                  borderRadius: '8px', border: '2px solid var(--color-primary)'
-                }}>
-                  {config.maxComplemento}
-                </span>
+                <button type="button" onClick={() => updateNumber('maxComplemento', 1)} style={{ width: '40px', height: '40px', fontSize: '1.2rem', fontWeight: 'bold', background: '#f5f5f5', border: '1px solid #ddd', borderRadius: '8px', cursor: 'pointer' }}>+</button>
+              </div>
+
+              {/* Selector Categorias Paso 2 */}
+              <div style={{ marginTop: '16px', background: '#fcfcfc', border: '1px solid #eee', padding: '12px', borderRadius: '8px' }}>
+                <label style={{ display: 'block', fontWeight: 600, fontSize: '0.9rem', marginBottom: '8px', color: 'var(--color-dark)' }}>
+                  🏷️ Límite de Categorías (Paso 2)
+                </label>
+                <p style={{ color: '#888', fontSize: '0.8rem', fontStyle: 'italic', marginBottom: '12px' }}>
+                  Si no seleccionas ninguna categoría, se mostrarán todos los productos de la tienda.
+                </p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                  {categorias.map(cat => (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => toggleCategoria('categoriasComplemento', cat)}
+                      style={{
+                        padding: '6px 14px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s',
+                        background: config.categoriasComplemento.includes(cat) ? 'var(--color-primary)' : '#e0e0e0',
+                        color: config.categoriasComplemento.includes(cat) ? '#fff' : '#444',
+                        border: 'none',
+                      }}
+                    >
+                      {cat} {config.categoriasComplemento.includes(cat) && '✓'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Tipo de Descuento (Toggle) */}
+            <div>
+              <label style={{ display: 'block', fontWeight: 700, marginBottom: '8px', color: 'var(--color-dark)' }}>
+                💱 Tipo de Descuento
+              </label>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button type="button" onClick={() => setConfig(c => ({ ...c, tipoDescuento: 'porcentaje' }))} style={{ flex: 1, padding: '10px', fontSize: '0.95rem', fontWeight: 'bold', borderRadius: '8px', border: config.tipoDescuento === 'porcentaje' ? '2px solid var(--color-primary)' : '1px solid #ddd', background: config.tipoDescuento === 'porcentaje' ? '#fff9db' : '#f9f9f9', color: config.tipoDescuento === 'porcentaje' ? 'var(--color-primary)' : '#666', cursor: 'pointer', transition: 'all 0.2s' }}>Porcentaje (%)</button>
+                <button type="button" onClick={() => setConfig(c => ({ ...c, tipoDescuento: 'fijo' }))} style={{ flex: 1, padding: '10px', fontSize: '0.95rem', fontWeight: 'bold', borderRadius: '8px', border: config.tipoDescuento === 'fijo' ? '2px solid var(--color-primary)' : '1px solid #ddd', background: config.tipoDescuento === 'fijo' ? '#fff9db' : '#f9f9f9', color: config.tipoDescuento === 'fijo' ? 'var(--color-primary)' : '#666', cursor: 'pointer', transition: 'all 0.2s' }}>Monto Fijo ($)</button>
               </div>
             </div>
 
             {/* Descuento */}
             <div>
               <label style={{ display: 'block', fontWeight: 700, marginBottom: '8px', color: 'var(--color-dark)' }}>
-                🏷️ Descuento al Armar el Combo (%)
+                🏷️ Valor del Descuento al Armar el Combo
               </label>
-              <p style={{ color: 'var(--color-gray)', fontSize: '0.85rem', margin: '0 0 10px 0' }}>
-                Porcentaje de descuento que se aplica cuando el cliente completa ambos pasos.
-              </p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                <input
-                  type="range"
-                  min="0" max="50"
-                  value={config.descuento}
-                  onChange={(e) => setConfig(c => ({ ...c, descuento: Number(e.target.value) }))}
-                  style={{ flex: 1, accentColor: 'var(--color-primary)' }}
-                />
-                <span style={{
-                  minWidth: '60px', textAlign: 'center', fontWeight: 800, fontSize: '1.5rem',
-                  color: 'var(--color-primary)', backgroundColor: '#fff9db', padding: '4px 12px',
-                  borderRadius: '8px', border: '2px solid var(--color-primary)'
-                }}>
-                  {config.descuento}%
-                </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <button type="button" onClick={() => updateNumber('descuento', config.tipoDescuento === 'fijo' ? -1000 : -1)} style={{ width: '40px', height: '40px', fontSize: '1.2rem', fontWeight: 'bold', background: '#f5f5f5', border: '1px solid #ddd', borderRadius: '8px', cursor: 'pointer' }}>-</button>
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                  {config.tipoDescuento === 'fijo' && <span style={{ position: 'absolute', left: '12px', fontWeight: 800, color: 'var(--color-primary)', fontSize: '1.2rem' }}>$</span>}
+                  <input
+                    type="number"
+                    min="0"
+                    value={config.descuento}
+                    onChange={(e) => setConfig(c => ({ ...c, descuento: Math.max(0, Number(e.target.value)) }))}
+                    style={{ width: config.tipoDescuento === 'fijo' ? '140px' : '100px', height: '40px', textAlign: 'center', paddingLeft: config.tipoDescuento === 'fijo' ? '24px' : '10px', paddingRight: config.tipoDescuento === 'porcentaje' ? '28px' : '10px', fontWeight: 800, fontSize: '1.2rem', color: 'var(--color-primary)', backgroundColor: '#fff9db', borderRadius: '8px', border: '2px solid var(--color-primary)' }}
+                  />
+                  {config.tipoDescuento === 'porcentaje' && <span style={{ position: 'absolute', right: '12px', fontWeight: 800, color: 'var(--color-primary)', fontSize: '1.2rem' }}>%</span>}
+                </div>
+                <button type="button" onClick={() => updateNumber('descuento', config.tipoDescuento === 'fijo' ? 1000 : 1)} style={{ width: '40px', height: '40px', fontSize: '1.2rem', fontWeight: 'bold', background: '#f5f5f5', border: '1px solid #ddd', borderRadius: '8px', cursor: 'pointer' }}>+</button>
               </div>
             </div>
 
@@ -163,22 +249,32 @@ const AdminComboConfig = () => {
               <span style={{ display: 'inline-block', backgroundColor: 'var(--color-primary)', color: '#000', borderRadius: '4px', padding: '2px 8px', fontWeight: 700, fontSize: '0.8rem', marginBottom: '4px' }}>
                 Paso 1
               </span>
-              <p style={{ margin: 0, fontSize: '0.9rem' }}>Elegí hasta <strong>{config.maxPrincipal}</strong> producto{config.maxPrincipal > 1 ? 's' : ''} principal{config.maxPrincipal > 1 ? 'es' : ''}.</p>
+              <p style={{ margin: 0, fontSize: '0.9rem' }}>Elegí <strong>{config.maxPrincipal}</strong> producto{config.maxPrincipal > 1 ? 's' : ''} principal{config.maxPrincipal > 1 ? 'es' : ''}.</p>
             </div>
             <div style={{ marginBottom: '16px' }}>
               <span style={{ display: 'inline-block', backgroundColor: 'var(--color-primary)', color: '#000', borderRadius: '4px', padding: '2px 8px', fontWeight: 700, fontSize: '0.8rem', marginBottom: '4px' }}>
                 Paso 2
               </span>
-              <p style={{ margin: 0, fontSize: '0.9rem' }}>Elegí hasta <strong>{config.maxComplemento}</strong> complemento{config.maxComplemento > 1 ? 's' : ''}.</p>
+              <p style={{ margin: 0, fontSize: '0.9rem' }}>Elegí <strong>{config.maxComplemento}</strong> complemento{config.maxComplemento > 1 ? 's' : ''}.</p>
             </div>
 
             <div style={{ borderTop: '1px dashed #ccc', paddingTop: '12px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', marginBottom: '4px' }}>
-                <span>Subtotal</span><span>$100</span>
+                <span>Subtotal</span><span>${subtotalExample.toFixed(0)}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: 'green', marginBottom: '4px' }}>
-                <span>Descuento ({config.descuento}%)</span><span>- ${discountAmount.toFixed(0)}</span>
-              </div>
+              
+              {config.descuento > 0 ? (
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: '#00a650', fontWeight: 600, marginBottom: '4px' }}>
+                  <span>Descuento {config.tipoDescuento === 'porcentaje' ? `(${config.descuento}%)` : `Fijo`}</span>
+                  <span>- ${discountAmount.toFixed(0)}</span>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#999', fontStyle: 'italic', marginBottom: '4px' }}>
+                  <span>Sin descuento configurado</span>
+                  <span>-$0</span>
+                </div>
+              )}
+
               <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800, fontSize: '1.1rem', borderTop: '1px solid #ccc', paddingTop: '8px', marginTop: '4px' }}>
                 <span>Total Final</span><span style={{ color: 'var(--color-primary)' }}>${totalExample.toFixed(0)}</span>
               </div>

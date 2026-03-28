@@ -15,7 +15,7 @@ export const obtenerConfig = async (req, res) => {
 
 // PUT /api/combo-config - Admin only: update the config
 export const actualizarConfig = async (req, res) => {
-  const { maxPrincipal, maxComplemento, descuento } = req.body;
+  const { maxPrincipal, maxComplemento, descuento, tipoDescuento, categoriasPrincipal, categoriasComplemento } = req.body;
 
   try {
     let config = await ComboConfig.findOne();
@@ -26,6 +26,9 @@ export const actualizarConfig = async (req, res) => {
     if (maxPrincipal !== undefined) config.maxPrincipal = Number(maxPrincipal);
     if (maxComplemento !== undefined) config.maxComplemento = Number(maxComplemento);
     if (descuento !== undefined) config.descuento = Number(descuento);
+    if (tipoDescuento !== undefined) config.tipoDescuento = tipoDescuento;
+    if (categoriasPrincipal !== undefined) config.categoriasPrincipal = categoriasPrincipal;
+    if (categoriasComplemento !== undefined) config.categoriasComplemento = categoriasComplemento;
 
     await config.save();
     res.json({ message: 'Configuración actualizada con éxito.', config });

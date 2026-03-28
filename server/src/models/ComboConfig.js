@@ -5,20 +5,30 @@ const comboConfigSchema = new mongoose.Schema({
     type: Number,
     default: 1,
     min: 1,
-    max: 10,
   },
   maxComplemento: {
     type: Number,
     default: 1,
     min: 1,
-    max: 10,
+  },
+  tipoDescuento: {
+    type: String,
+    enum: ['porcentaje', 'fijo'],
+    default: 'porcentaje'
   },
   descuento: {
     type: Number,
     default: 10,
     min: 0,
-    max: 100,
   },
+  categoriasPrincipal: {
+    type: [String],
+    default: []
+  },
+  categoriasComplemento: {
+    type: [String],
+    default: []
+  }
 }, { timestamps: true });
 
 // Singleton pattern: only one config document ever exists

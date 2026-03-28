@@ -40,7 +40,10 @@ const SelectableCard = ({ producto, isSelected, onSelect, onVerDetalle, selectio
 const ArmaCombo = () => {
   const [todosLosProductos, setTodosLosProductos] = useState([]);
   const [categoriasList, setCategoriasList] = useState(['Todas']);
-  const [comboConfig, setComboConfig] = useState({ maxPrincipal: 1, maxComplemento: 1, descuento: 10 });
+  const [comboConfig, setComboConfig] = useState({ 
+    maxPrincipal: 1, maxComplemento: 1, descuento: 10,
+    tipoDescuento: 'porcentaje', categoriasPrincipal: [], categoriasComplemento: []
+  });
   const [loading, setLoading] = useState(true);
 
   const [filtroPaso1, setFiltroPaso1] = useState('Todas');
@@ -71,6 +74,9 @@ const ArmaCombo = () => {
             maxPrincipal: resConfig.maxPrincipal || 1,
             maxComplemento: resConfig.maxComplemento || 1,
             descuento: resConfig.descuento ?? 10,
+            tipoDescuento: resConfig.tipoDescuento || 'porcentaje',
+            categoriasPrincipal: resConfig.categoriasPrincipal || [],
+            categoriasComplemento: resConfig.categoriasComplemento || [],
           });
         }
       } catch (err) {
@@ -93,13 +99,18 @@ const ArmaCombo = () => {
     }
   };
 
-  const productosPaso1 = todosLosProductos.filter(p => filtroPaso1 === 'Todas' ? true : p.categoria === filtroPaso1);
-  const productosPaso2 = todosLosProductos.filter(p => filtroPaso2 === 'Todas' ? true : p.categoria === filtroPaso2);
+  const baseFilter1 = p => comboConfig.categoriasPrincipal.length === 0 || comboConfig.categoriasPrincipal.includes(p.categoria);
+  const baseFilter2 = p => comboConfig.categoriasComplemento.length === 0 || comboConfig.categoriasComplemento.includes(p.categoria);
+
+  const productosPaso1 = todosLosProductos.filter(p => baseFilter1(p) && (filtroPaso1 === 'Todas' ? true : p.categoria === filtroPaso1));
+  const productosPaso2 = todosLosProductos.filter(p => baseFilter2(p) && (filtroPaso2 === 'Todas' ? true : p.categoria === filtroPaso2));
 
   const subtotal = [...items1, ...items2].reduce((acc, p) => acc + p.precio, 0);
   const comboComplete = items1.length >= comboConfig.maxPrincipal && items2.length >= comboConfig.maxComplemento;
-  const discountAmount = comboComplete ? subtotal * (comboConfig.descuento / 100) : 0;
-  const total = subtotal - discountAmount;
+  const discountAmount = comboComplete 
+    ? (comboConfig.tipoDescuento === 'porcentaje' ? subtotal * (comboConfig.descuento / 100) : comboConfig.descuento)
+    : 0;
+  const total = Math.max(0, subtotal - discountAmount);
 
   const handleAddToCart = () => {
     if (!comboComplete || isAdded) return;
@@ -107,7 +118,7 @@ const ArmaCombo = () => {
     const allNames = [...items1, ...items2].map(p => p.nombre).join(' + ');
     addToCart({
       _id: `combo-dinamico-${Date.now()}`,
-      nombre: `Combo ${comboConfig.descuento}% OFF: ${allNames}`,
+      nombre: `Combo ${comboConfig.tipoDescuento === 'porcentaje' ? comboConfig.descuento + '% OFF' : '$' + comboConfig.descuento + ' OFF'}: ${allNames}`,
       precio: total,
       imagenes: [items1[0]?.imagenes[0]],
       categoria: 'Combo Armado'
@@ -117,20 +128,26 @@ const ArmaCombo = () => {
     setTimeout(() => setIsAdded(false), 2000);
   };
 
-  const filterPills = (current, setCurrent) => (
-    <div className="category-filters" style={{ marginBottom: '20px', display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-      {categoriasList.map(cat => (
-        <button 
-          key={cat} 
-          className={`category-pill ${current === cat ? 'active' : ''}`}
-          onClick={() => setCurrent(cat)}
-          style={{ padding: '8px 16px', borderRadius: '20px', border: '1px solid var(--color-primary)', background: current === cat ? 'var(--color-primary)' : 'white', color: current === cat ? 'var(--color-dark)' : 'var(--color-primary)', cursor: 'pointer', transition: 'all 0.2s', fontWeight: 'bold' }}
-        >
-          {cat}
-        </button>
-      ))}
-    </div>
-  );
+  const filterPills = (current, setCurrent, categoriasPermitidas) => {
+    const listToShow = categoriasPermitidas.length > 0 
+      ? categoriasList.filter(c => c === 'Todas' || categoriasPermitidas.includes(c))
+      : categoriasList;
+      
+    return (
+      <div className="category-filters" style={{ marginBottom: '20px', display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+        {listToShow.map(cat => (
+          <button 
+            key={cat} 
+            className={`category-pill ${current === cat ? 'active' : ''}`}
+            onClick={() => setCurrent(cat)}
+            style={{ padding: '8px 16px', borderRadius: '20px', border: '1px solid var(--color-primary)', background: current === cat ? 'var(--color-primary)' : 'white', color: current === cat ? 'var(--color-dark)' : 'var(--color-primary)', cursor: 'pointer', transition: 'all 0.2s', fontWeight: 'bold' }}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+    );
+  };
 
   return (
     <div className="arma-combo-page">
@@ -138,7 +155,7 @@ const ArmaCombo = () => {
         <div className="arma-hero-content">
           <h1>Armá tu Combo</h1>
           <p>
-            Elegí hasta <strong>{comboConfig.maxPrincipal} producto{comboConfig.maxPrincipal > 1 ? 's' : ''} principal{comboConfig.maxPrincipal > 1 ? 'es' : ''}</strong> y hasta <strong>{comboConfig.maxComplemento} complemento{comboConfig.maxComplemento > 1 ? 's' : ''}</strong> y ahorrá automáticamente un <strong>{comboConfig.descuento}% de descuento</strong>.
+            Elegí <strong>{comboConfig.maxPrincipal} producto{comboConfig.maxPrincipal > 1 ? 's' : ''} principal{comboConfig.maxPrincipal > 1 ? 'es' : ''}</strong> y <strong>{comboConfig.maxComplemento} complemento{comboConfig.maxComplemento > 1 ? 's' : ''}</strong> y ahorrá automáticamente <strong>{comboConfig.tipoDescuento === 'porcentaje' ? `un ${comboConfig.descuento}% de descuento` : `$${comboConfig.descuento.toLocaleString('es-AR')} de descuento`}</strong>.
           </p>
         </div>
       </div>
@@ -154,7 +171,7 @@ const ArmaCombo = () => {
                 ({items1.length}/{comboConfig.maxPrincipal} seleccionados)
               </span>
             </h2>
-            {filterPills(filtroPaso1, setFiltroPaso1)}
+            {filterPills(filtroPaso1, setFiltroPaso1, comboConfig.categoriasPrincipal)}
             <div className="productos-grid">
               {loading ? <p>Cargando productos...</p> : productosPaso1.map(p => (
                 <SelectableCard 
@@ -186,7 +203,7 @@ const ArmaCombo = () => {
                 ({items2.length}/{comboConfig.maxComplemento} seleccionados)
               </span>
             </h2>
-            {filterPills(filtroPaso2, setFiltroPaso2)}
+            {filterPills(filtroPaso2, setFiltroPaso2, comboConfig.categoriasComplemento)}
             <div className="productos-grid">
               {loading ? <p>Cargando complementos...</p> : productosPaso2.map(p => (
                 <SelectableCard 
@@ -243,7 +260,7 @@ const ArmaCombo = () => {
               </div>
               
               <div className={`summary-row discount ${comboComplete ? 'active' : ''}`}>
-                <span>Descuento Combo ({comboConfig.descuento}%)</span>
+                <span>Descuento Combo {comboConfig.tipoDescuento === 'porcentaje' ? `(${comboConfig.descuento}%)` : `Fijo`}</span>
                 <span>- ${discountAmount.toLocaleString('es-AR')}</span>
               </div>
               
@@ -260,7 +277,7 @@ const ArmaCombo = () => {
             >
               {isAdded ? '¡Combo Añadido! ✓' : (comboComplete ? '🛒 Añadir Combo al Carrito' : `Completá los ${items1.length < comboConfig.maxPrincipal ? 'productos' : 'complementos'} para continuar`)}
             </button>
-            {!comboComplete && <p className="combo-hint">El descuento del {comboConfig.descuento}% se activa al completar ambos pasos.</p>}
+            {!comboComplete && <p className="combo-hint">El descuento {comboConfig.tipoDescuento === 'porcentaje' ? `del ${comboConfig.descuento}%` : `fijo de $${comboConfig.descuento.toLocaleString('es-AR')}`} se activa al completar ambos pasos.</p>}
           </div>
         </aside>
 
