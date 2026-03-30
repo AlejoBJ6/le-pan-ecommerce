@@ -10,7 +10,7 @@ const AdminDashboard = () => {
   useEffect(() => {
     const fetchProductos = async () => {
       try {
-        const data = await productoService.obtenerProductos();
+        const data = await productoService.obtenerProductos({ admin: true });
         setProductos(data.filter(p => p.categoria !== 'Combos'));
       } catch (error) {
         console.error("Error cargando dashboard", error);

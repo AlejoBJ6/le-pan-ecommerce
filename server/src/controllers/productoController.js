@@ -5,10 +5,21 @@ import Producto from '../models/Producto.js';
 // @access  Public
 export const obtenerProductos = async (req, res) => {
   try {
-    const { nombre, categoria, destacado, limit } = req.query;
+    const { nombre, categoria, destacado, limit, eliminados } = req.query;
     
     // Construir objeto de consulta
     let query = {};
+    
+    if (eliminados === 'true') {
+      query.eliminado = true;
+    } else {
+      query.eliminado = { $ne: true };
+    }
+    
+    // Si no se pide explícitamente desde el panel admin, ocultamos los que no están disponibles
+    if (req.query.admin !== 'true') {
+      query.disponible = { $ne: false }; 
+    }
     
     if (nombre) {
       // Búsqueda parcial insensible a mayúsculas
@@ -108,6 +119,7 @@ export const actualizarProducto = async (req, res) => {
       stock,
       disponible,
       destacado,
+      eliminado,
     } = req.body;
 
     const producto = await Producto.findById(req.params.id);
@@ -123,6 +135,7 @@ export const actualizarProducto = async (req, res) => {
       producto.stock = stock !== undefined ? stock : producto.stock;
       producto.disponible = disponible !== undefined ? disponible : producto.disponible;
       producto.destacado = destacado !== undefined ? destacado : producto.destacado;
+      producto.eliminado = eliminado !== undefined ? eliminado : producto.eliminado;
 
       const productoActualizado = await producto.save();
       res.json(productoActualizado);
@@ -142,8 +155,10 @@ export const eliminarProducto = async (req, res) => {
     const producto = await Producto.findById(req.params.id);
 
     if (producto) {
-      await Producto.deleteOne({ _id: producto._id });
-      res.json({ message: 'Producto eliminado' });
+      producto.eliminado = true;
+      producto.disponible = false; // Se inhabilita como doble seguridad
+      await producto.save();
+      res.json({ message: 'Producto enviado a la papelera (borrado lógico)' });
     } else {
       res.status(404).json({ message: 'Producto no encontrado' });
     }

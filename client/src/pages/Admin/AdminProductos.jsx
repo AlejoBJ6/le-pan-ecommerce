@@ -7,11 +7,13 @@ const AdminProductos = () => {
   const [loading, setLoading] = useState(true);
   const [confirmDelete, setConfirmDelete] = useState(null); // { id, nombre }
   const [deleteError, setDeleteError] = useState(null);
+  const [verPapelera, setVerPapelera] = useState(false);
 
   useEffect(() => {
     const fetchProductos = async () => {
+      setLoading(true);
       try {
-        const data = await productoService.obtenerProductos();
+        const data = await productoService.obtenerProductos({ eliminados: verPapelera, admin: true });
         setProductos(data.filter(p => p.categoria !== 'Combos'));
       } catch (error) {
         console.error("Error cargando productos", error);
@@ -20,7 +22,7 @@ const AdminProductos = () => {
       }
     };
     fetchProductos();
-  }, []);
+  }, [verPapelera]);
 
   const handleConfirmDelete = async () => {
     if (!confirmDelete) return;
@@ -32,6 +34,17 @@ const AdminProductos = () => {
       console.error(error);
       setDeleteError('Hubo un error al eliminar el producto.');
       setConfirmDelete(null);
+    }
+  };
+
+  const handleRestaurar = async (id) => {
+    try {
+      await productoService.restaurarProducto(id);
+      setProductos(productos.filter(p => p._id !== id));
+      setDeleteError(null);
+    } catch (error) {
+      console.error(error);
+      setDeleteError('Hubo un error al restaurar el producto.');
     }
   };
 
@@ -60,13 +73,31 @@ const AdminProductos = () => {
   return (
     <div className="admin-productos">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-        <h2 style={{ margin: 0 }}>Productos ({productosFiltrados.length})</h2>
-        <Link
-          to="/admin/productos/nuevo"
-          style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-dark)', padding: '10px 20px', borderRadius: '4px', textDecoration: 'none', fontWeight: 'bold' }}
-        >
-          + Crear Producto
-        </Link>
+        <h2 style={{ margin: 0 }}>
+          {verPapelera ? '🗑️ Papelera de Productos' : `Productos (${productosFiltrados.length})`}
+        </h2>
+        
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button 
+            onClick={() => setVerPapelera(!verPapelera)}
+            style={{ 
+              backgroundColor: verPapelera ? 'var(--color-dark)' : '#f0f0f0', 
+              color: verPapelera ? '#fff' : 'var(--color-dark)', 
+              padding: '10px 15px', borderRadius: '4px', border: 'none', 
+              fontWeight: 'bold', cursor: 'pointer', transition: '0.2s'
+            }}
+          >
+            {verPapelera ? 'Volver al Catálogo' : 'Ver Papelera'}
+          </button>
+          {!verPapelera && (
+            <Link
+              to="/admin/productos/nuevo"
+              style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-dark)', padding: '10px 20px', borderRadius: '4px', textDecoration: 'none', fontWeight: 'bold' }}
+            >
+              + Crear Producto
+            </Link>
+          )}
+        </div>
       </div>
 
       {/* Barra de Filtros */}
@@ -156,7 +187,18 @@ const AdminProductos = () => {
                       <div style={{ width: '50px', height: '50px', backgroundColor: '#ddd', borderRadius: '4px' }}></div>
                     )}
                   </td>
-                  <td style={{ padding: '15px', fontWeight: 500 }}>{prod.nombre}</td>
+                  <td style={{ padding: '15px', fontWeight: 500 }}>
+                    {prod.nombre}
+                    {prod.disponible === false && (
+                      <span style={{ 
+                        marginLeft: '10px', fontSize: '0.75em', padding: '3px 8px', 
+                        borderRadius: '12px', backgroundColor: '#e2e3e5', color: '#383d41', 
+                        border: '1px solid #d6d8db', fontWeight: 'bold' 
+                      }}>
+                        Oculto Web
+                      </span>
+                    )}
+                  </td>
                   <td style={{ padding: '15px' }}>{prod.categoria}</td>
                   <td style={{ padding: '15px' }}>${(prod.precio || 0).toLocaleString('es-AR')}</td>
                   <td style={{ padding: '15px' }}>
@@ -173,12 +215,21 @@ const AdminProductos = () => {
                   </td>
                   <td style={{ padding: '15px' }}>
                     <Link to={`/admin/productos/${prod._id}/editar`} className="admin-btn-edit">Editar</Link>
-                    <button
-                      onClick={() => setConfirmDelete({ id: prod._id, nombre: prod.nombre })}
-                      className="admin-btn-delete"
-                    >
-                      Borrar
-                    </button>
+                    {verPapelera ? (
+                      <button
+                        onClick={() => handleRestaurar(prod._id)}
+                        className="admin-btn-edit" style={{ backgroundColor: '#28a745', color: '#fff' }}
+                      >
+                        Restaurar
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => setConfirmDelete({ id: prod._id, nombre: prod.nombre })}
+                        className="admin-btn-delete"
+                      >
+                        Deshabilitar
+                      </button>
+                    )}
                   </td>
                 </tr>
               );
@@ -233,11 +284,10 @@ const AdminProductos = () => {
             </div>
 
             <h3 style={{ margin: '0 0 8px 0', color: 'var(--color-dark)', fontSize: '1.2rem' }}>
-              ¿Eliminar producto?
+              ¿Deshabilitar producto?
             </h3>
             <p style={{ color: 'var(--color-gray)', fontSize: '0.95rem', margin: '0 0 28px 0', lineHeight: 1.5 }}>
-              Vas a eliminar permanentemente <strong style={{ color: 'var(--color-dark)' }}>"{confirmDelete.nombre}"</strong>.
-              Esta acción no se puede deshacer.
+              Vas a inhabilitar <strong style={{ color: 'var(--color-dark)' }}>"{confirmDelete.nombre}"</strong> ocultándolo del catálogo público. Podrás restaurarlo más tarde.
             </p>
 
             <div style={{ display: 'flex', gap: '12px' }}>
@@ -272,7 +322,7 @@ const AdminProductos = () => {
                 onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#b02a37'}
                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#dc3545'}
               >
-                Sí, eliminar
+                Sí, deshabilitar
               </button>
             </div>
           </div>

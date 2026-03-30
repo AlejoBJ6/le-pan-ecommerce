@@ -7,11 +7,13 @@ const AdminCombos = () => {
   const [loading, setLoading] = useState(true);
   const [confirmDelete, setConfirmDelete] = useState(null); // { id, nombre }
   const [deleteError, setDeleteError] = useState(null);
+  const [verPapelera, setVerPapelera] = useState(false);
 
   useEffect(() => {
     const fetchCombos = async () => {
+      setLoading(true);
       try {
-        const data = await productoService.obtenerProductos();
+        const data = await productoService.obtenerProductos({ eliminados: verPapelera, admin: true });
         setCombos(data.filter(p => p.categoria === 'Combos'));
       } catch (error) {
         console.error("Error cargando combos", error);
@@ -20,7 +22,7 @@ const AdminCombos = () => {
       }
     };
     fetchCombos();
-  }, []);
+  }, [verPapelera]);
 
   const handleConfirmDelete = async () => {
     if (!confirmDelete) return;
@@ -30,8 +32,19 @@ const AdminCombos = () => {
       setConfirmDelete(null);
     } catch (error) {
       console.error(error);
-      setDeleteError('Hubo un error al eliminar el combo.');
+      setDeleteError('Hubo un error al inhabilitar el combo.');
       setConfirmDelete(null);
+    }
+  };
+
+  const handleRestaurar = async (id) => {
+    try {
+      await productoService.restaurarProducto(id);
+      setCombos(combos.filter(p => p._id !== id));
+      setDeleteError(null);
+    } catch (error) {
+      console.error(error);
+      setDeleteError('Hubo un error al restaurar el combo.');
     }
   };
 
@@ -40,13 +53,31 @@ const AdminCombos = () => {
   return (
     <div className="admin-productos">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h2 style={{ margin: 0 }}>Combos Armados ({combos.length})</h2>
-        <Link
-          to="/admin/combos/nuevo"
-          style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-dark)', padding: '10px 20px', borderRadius: '4px', textDecoration: 'none', fontWeight: 'bold' }}
-        >
-          + Crear Combo
-        </Link>
+        <h2 style={{ margin: 0 }}>
+          {verPapelera ? '🗑️ Papelera de Combos' : `Combos Armados (${combos.length})`}
+        </h2>
+        
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button 
+            onClick={() => setVerPapelera(!verPapelera)}
+            style={{ 
+              backgroundColor: verPapelera ? 'var(--color-dark)' : '#f0f0f0', 
+              color: verPapelera ? '#fff' : 'var(--color-dark)', 
+              padding: '10px 15px', borderRadius: '4px', border: 'none', 
+              fontWeight: 'bold', cursor: 'pointer', transition: '0.2s'
+            }}
+          >
+            {verPapelera ? 'Volver al Catálogo' : 'Ver Papelera'}
+          </button>
+          {!verPapelera && (
+            <Link
+              to="/admin/combos/nuevo"
+              style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-dark)', padding: '10px 20px', borderRadius: '4px', textDecoration: 'none', fontWeight: 'bold' }}
+            >
+              + Crear Combo
+            </Link>
+          )}
+        </div>
       </div>
 
       {deleteError && (
@@ -94,9 +125,18 @@ const AdminCombos = () => {
             </div>
 
             {/* Contenido Card */}
-            <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+            <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', flex: 1, position: 'relative' }}>
               <h3 style={{ margin: '0 0 8px 0', fontSize: '1.05rem', color: 'var(--color-dark)', lineHeight: 1.4, fontWeight: 700 }}>
                 {combo.nombre}
+                {combo.disponible === false && (
+                  <span style={{ 
+                    display: 'inline-block', marginLeft: '8px', fontSize: '0.7em', padding: '2px 6px', 
+                    borderRadius: '10px', backgroundColor: '#e2e3e5', color: '#383d41', 
+                    border: '1px solid #d6d8db', fontWeight: 'bold', verticalAlign: 'middle'
+                  }}>
+                    Oculto Web
+                  </span>
+                )}
               </h3>
               <p style={{ margin: '0 0 20px 0', fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-primary)' }}>
                 ${(combo.precio || 0).toLocaleString('es-AR')}
@@ -117,19 +157,35 @@ const AdminCombos = () => {
                 >
                   Editar
                 </Link>
-                <button
-                  onClick={() => setConfirmDelete({ id: combo._id, nombre: combo.nombre })}
-                  style={{ 
-                    flex: 1, padding: '10px', 
-                    backgroundColor: '#fff0f0', color: '#dc3545', 
-                    border: 'none', borderRadius: '8px', cursor: 'pointer', 
-                    fontWeight: 600, transition: 'background 0.2s', fontSize: '0.95rem'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#ffe0e0'}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#fff0f0'}
-                >
-                  Borrar
-                </button>
+                {verPapelera ? (
+                  <button
+                    onClick={() => handleRestaurar(combo._id)}
+                    style={{ 
+                      flex: 1, padding: '10px', 
+                      backgroundColor: '#d4edda', color: '#155724', 
+                      border: 'none', borderRadius: '8px', cursor: 'pointer', 
+                      fontWeight: 600, transition: 'background 0.2s', fontSize: '0.95rem'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#c3e6cb'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#d4edda'}
+                  >
+                    Restaurar
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setConfirmDelete({ id: combo._id, nombre: combo.nombre })}
+                    style={{ 
+                      flex: 1, padding: '10px', 
+                      backgroundColor: '#fff0f0', color: '#dc3545', 
+                      border: 'none', borderRadius: '8px', cursor: 'pointer', 
+                      fontWeight: 600, transition: 'background 0.2s', fontSize: '0.95rem'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#ffe0e0'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#fff0f0'}
+                  >
+                    Deshabilitar
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -144,8 +200,12 @@ const AdminCombos = () => {
           }}>
             <span style={{ fontSize: '3rem' }}>🛍️</span>
             <div>
-              <h3 style={{ margin: '0 0 5px 0', color: 'var(--color-dark)' }}>No tenés combos armados</h3>
-              <p style={{ margin: 0, color: 'var(--color-gray)' }}>Aprovechá para agrupar productos y vender más.</p>
+              <h3 style={{ margin: '0 0 5px 0', color: 'var(--color-dark)' }}>
+                {verPapelera ? 'La papelera está vacía' : 'No tenés combos armados'}
+              </h3>
+              <p style={{ margin: 0, color: 'var(--color-gray)' }}>
+                {verPapelera ? 'No hay combos inhabilitados actualmente.' : 'Aprovechá para agrupar productos y vender más.'}
+              </p>
             </div>
             <Link
               to="/admin/combos/nuevo"
@@ -199,11 +259,10 @@ const AdminCombos = () => {
             </div>
 
             <h3 style={{ margin: '0 0 8px 0', color: 'var(--color-dark)', fontSize: '1.2rem' }}>
-              ¿Eliminar combo?
+              ¿Deshabilitar combo?
             </h3>
             <p style={{ color: 'var(--color-gray)', fontSize: '0.95rem', margin: '0 0 28px 0', lineHeight: 1.5 }}>
-              Vas a eliminar permanentemente <strong style={{ color: 'var(--color-dark)' }}>"{confirmDelete.nombre}"</strong>.
-              Esta acción no se puede deshacer.
+              Vas a inhabilitar <strong style={{ color: 'var(--color-dark)' }}>"{confirmDelete.nombre}"</strong> ocultándolo del catálogo público. Podrás restaurarlo más tarde.
             </p>
 
             <div style={{ display: 'flex', gap: '12px' }}>
@@ -238,7 +297,7 @@ const AdminCombos = () => {
                 onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#b02a37'}
                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#dc3545'}
               >
-                Sí, eliminar
+                Sí, deshabilitar
               </button>
             </div>
           </div>
