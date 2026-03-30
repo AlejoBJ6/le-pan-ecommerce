@@ -44,7 +44,8 @@ const AdminProductos = () => {
 
   // Lógica de filtrado
   const productosFiltrados = productos.filter(p => {
-    const matchBusqueda = p.nombre.toLowerCase().includes(busqueda.toLowerCase());
+    const nombreSeguro = p.nombre || '';
+    const matchBusqueda = nombreSeguro.toLowerCase().includes((busqueda || '').toLowerCase());
     const matchCategoria = filtroCategoria === '' || p.categoria === filtroCategoria;
     
     let matchStock = true;
@@ -157,7 +158,7 @@ const AdminProductos = () => {
                   </td>
                   <td style={{ padding: '15px', fontWeight: 500 }}>{prod.nombre}</td>
                   <td style={{ padding: '15px' }}>{prod.categoria}</td>
-                  <td style={{ padding: '15px' }}>${prod.precio.toLocaleString('es-AR')}</td>
+                  <td style={{ padding: '15px' }}>${(prod.precio || 0).toLocaleString('es-AR')}</td>
                   <td style={{ padding: '15px' }}>
                     <span style={{ 
                       padding: '4px 10px', 
