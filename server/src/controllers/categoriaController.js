@@ -1,4 +1,5 @@
 import Categoria from '../models/Categoria.js';
+import Producto from '../models/Producto.js';
 
 // @desc  Obtener todas las categorías
 // @route GET /api/categorias
@@ -43,8 +44,17 @@ export const eliminarCategoria = async (req, res) => {
     if (!categoria) {
       return res.status(404).json({ message: 'Categoría no encontrada' });
     }
+    const nombreCategoria = categoria.nombre;
+    
     await categoria.deleteOne();
-    res.json({ message: 'Categoría eliminada' });
+    
+    // Actualizamos todos los productos pertenecientes a esa categoría para que no queden huérfanos
+    await Producto.updateMany(
+      { categoria: nombreCategoria },
+      { $set: { categoria: 'Sin categoría' } }
+    );
+    
+    res.json({ message: 'Categoría eliminada y productos actualizados a "Sin categoría"' });
   } catch (error) {
     res.status(500).json({ message: 'Error al eliminar la categoría' });
   }

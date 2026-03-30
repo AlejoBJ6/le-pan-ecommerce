@@ -10,6 +10,8 @@ const obtenerProductos = async (filtros = {}) => {
   if (filtros.categoria && filtros.categoria !== 'Todas') params.append('categoria', filtros.categoria);
   if (filtros.destacado) params.append('destacado', filtros.destacado);
   if (filtros.limit) params.append('limit', filtros.limit);
+  if (filtros.eliminados) params.append('eliminados', filtros.eliminados);
+  if (filtros.admin) params.append('admin', filtros.admin);
   
   const queryString = params.toString() ? `?${params.toString()}` : '';
   
@@ -51,6 +53,11 @@ const eliminarProducto = async (id) => {
   return response.data;
 };
 
+const restaurarProducto = async (id) => {
+  const response = await axios.put(`${API_URL}/${id}`, { eliminado: false, disponible: true }, getAuthHeaders());
+  return response.data;
+};
+
 const uploadImage = async (file) => {
   const formData = new FormData();
   formData.append('image', file);
@@ -69,5 +76,6 @@ export default {
   crearProducto,
   actualizarProducto,
   eliminarProducto,
+  restaurarProducto,
   uploadImage
 };

@@ -49,10 +49,10 @@ app.use(cors({
 }));
 
 // ── 3. RATE LIMITING GENERAL ──────────────────────────────────────────────────
-// Máximo 100 peticiones por IP cada 15 minutos (protege toda la API)
+// Máximo 100 peticiones por IP cada 15 minutos en producción, 3000 en desarrollo (protege toda la API)
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 100,
+  max: process.env.NODE_ENV === 'production' ? 100 : 3000,
   standardHeaders: true,
   legacyHeaders: false,
   message: { message: 'Demasiadas peticiones desde esta IP. Intentá de nuevo en 15 minutos.' },

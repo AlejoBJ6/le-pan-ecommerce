@@ -27,7 +27,7 @@ const AdminComboBuilder = () => {
     const fetchData = async () => {
       try {
         const [data, cats] = await Promise.all([
-          productoService.obtenerProductos(),
+          productoService.obtenerProductos({ admin: true }),
           categoriaService.obtenerCategorias()
         ]);
         setProductos(data.filter(p => p.categoria !== 'Combos'));

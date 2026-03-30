@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import categoriaService from '../../services/categoriaService';
+import productoService from '../../services/productoService';
 
 const AdminCategorias = () => {
   const [categorias, setCategorias] = useState([]);
+  const [productos, setProductos] = useState([]);
   const [nueva, setNueva] = useState('');
   const [loading, setLoading] = useState(true);
   const [guardando, setGuardando] = useState(false);
@@ -10,18 +12,22 @@ const AdminCategorias = () => {
   const [successMsg, setSuccessMsg] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null); // { id, nombre }
 
-  const cargarCategorias = async () => {
+  const cargarDatos = async () => {
     try {
-      const data = await categoriaService.obtenerCategorias();
-      setCategorias(data);
+      const [catsData, prodsData] = await Promise.all([
+        categoriaService.obtenerCategorias(),
+        productoService.obtenerProductos({ admin: true })
+      ]);
+      setCategorias(catsData);
+      setProductos(prodsData);
     } catch {
-      setError('No se pudieron cargar las categorías.');
+      setError('No se pudieron cargar los datos.');
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => { cargarCategorias(); }, []);
+  useEffect(() => { cargarDatos(); }, []);
 
   const showSuccess = (msg) => {
     setSuccessMsg(msg);
@@ -36,7 +42,7 @@ const AdminCategorias = () => {
     try {
       await categoriaService.crearCategoria(nueva.trim());
       setNueva('');
-      await cargarCategorias();
+      await cargarDatos();
       showSuccess(`Categoría "${nueva.trim()}" creada correctamente.`);
     } catch (err) {
       setError(err.response?.data?.message || 'Error al crear la categoría.');
@@ -50,7 +56,7 @@ const AdminCategorias = () => {
     try {
       await categoriaService.eliminarCategoria(confirmDelete.id);
       showSuccess(`Categoría "${confirmDelete.nombre}" eliminada.`);
-      await cargarCategorias();
+      await cargarDatos();
     } catch {
       setError('Error al eliminar la categoría.');
     } finally {
@@ -210,9 +216,14 @@ const AdminCategorias = () => {
                   backgroundColor: 'var(--color-primary)',
                   flexShrink: 0,
                 }} />
-                <span style={{ fontWeight: 600, color: 'var(--color-dark)', fontSize: '0.95rem' }}>
-                  {cat.nombre}
-                </span>
+                <div>
+                  <span style={{ fontWeight: 600, color: 'var(--color-dark)', fontSize: '0.95rem', display: 'block' }}>
+                    {cat.nombre}
+                  </span>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--color-gray)' }}>
+                    {productos.filter(p => p.categoria === cat.nombre).length} productos
+                  </span>
+                </div>
               </div>
               <button
                 onClick={() => setConfirmDelete({ id: cat._id, nombre: cat.nombre })}
@@ -294,19 +305,28 @@ const AdminCategorias = () => {
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               margin: '0 auto 20px auto',
             }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#dc3545" strokeWidth="2">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#dc3545" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-                <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
               </svg>
             </div>
 
             <h3 style={{ margin: '0 0 8px 0', color: 'var(--color-dark)', fontSize: '1.2rem' }}>
               ¿Eliminar categoría?
             </h3>
-            <p style={{ color: 'var(--color-gray)', fontSize: '0.95rem', margin: '0 0 28px 0', lineHeight: 1.5 }}>
+            <p style={{ color: 'var(--color-gray)', fontSize: '0.95rem', margin: '0 0 10px 0', lineHeight: 1.5 }}>
               Vas a eliminar <strong style={{ color: 'var(--color-dark)' }}>"{confirmDelete.nombre}"</strong>.
-              Los productos con esta categoría no se eliminan, solo dejarán de asociarse a ella.
             </p>
+            {productos.filter(p => p.categoria === confirmDelete.nombre).length > 0 ? (
+              <div style={{ backgroundColor: '#fff3cd', color: '#856404', padding: '10px', borderRadius: '8px', fontSize: '0.85rem', marginBottom: '28px', border: '1px solid #ffeeba' }}>
+                <strong>¡Atención!</strong> Hay <strong>{productos.filter(p => p.categoria === confirmDelete.nombre).length} producto(s)</strong> usando esta categoría. Si la eliminás, quedarán con el texto de la categoría original pero no aparecerán correctamente en los filtros nuevos.
+              </div>
+            ) : (
+               <p style={{ color: 'var(--color-gray)', fontSize: '0.95rem', margin: '0 0 28px 0', lineHeight: 1.5 }}>
+                 Ningún producto sufrirá impacto porque no hay ítems asociados.
+               </p>
+            )}
 
             <div style={{ display: 'flex', gap: '12px' }}>
               <button

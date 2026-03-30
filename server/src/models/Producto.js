@@ -52,6 +52,10 @@ const productoSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    eliminado: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true, // Agrega createdAt y updatedAt automáticamente
