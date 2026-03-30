@@ -8,6 +8,13 @@ const AdminPedidos = () => {
   const [error, setError] = useState(null);
   const [selectedPedido, setSelectedPedido] = useState(null);
 
+  // Estados para filtros y paginación
+  const [busqueda, setBusqueda] = useState('');
+  const [filtroPago, setFiltroPago] = useState('');
+  const [filtroEntrega, setFiltroEntrega] = useState('');
+  const [paginaActual, setPaginaActual] = useState(1);
+  const itemsPorPagina = 15;
+
   const formatPrice = (p) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(p);
 
   const getBadgeStyle = (estado) => {
@@ -48,13 +55,78 @@ const AdminPedidos = () => {
     }
   };
 
-  if (loading) return <div>Cargando pedidos...</div>;
-  if (error) return <div style={{ color: 'red' }}>{error}</div>;
+  // Resetea la paginación a 1 cuando cambian los filtros
+  useEffect(() => {
+    setPaginaActual(1);
+  }, [busqueda, filtroPago, filtroEntrega]);
+
+  // Lógica de filtrado
+  const pedidosFiltrados = pedidos.filter(p => {
+    const term = busqueda.toLowerCase();
+    const matchBusqueda = p._id.toLowerCase().includes(term) || 
+                          `${p.datosEntrega.nombre} ${p.datosEntrega.apellido}`.toLowerCase().includes(term);
+    const matchPago = filtroPago === '' || p.estadoPago === filtroPago;
+    const matchEntrega = filtroEntrega === '' || p.estadoEntrega === filtroEntrega;
+    return matchBusqueda && matchPago && matchEntrega;
+  });
+
+  // Lógica de paginación
+  const totalPaginas = Math.ceil(pedidosFiltrados.length / itemsPorPagina);
+  const indexUltimo = paginaActual * itemsPorPagina;
+  const indexPrimero = indexUltimo - itemsPorPagina;
+  const pedidosPaginados = pedidosFiltrados.slice(indexPrimero, indexUltimo);
+
+  if (loading) return <div style={{ padding: '40px', textAlign: 'center' }}>Cargando administrador de pedidos...</div>;
+  if (error) return <div style={{ color: 'red', padding: '40px' }}>{error}</div>;
 
   return (
     <div className="admin-page">
-      <div className="admin-header">
-        <h2>Gestión de Pedidos</h2>
+      <div className="admin-header" style={{ marginBottom: '20px' }}>
+        <h2 style={{ margin: 0 }}>Gestión de Pedidos</h2>
+      </div>
+
+      {/* Barra de Filtros */}
+      <div style={{ display: 'flex', gap: '15px', marginBottom: '20px', flexWrap: 'wrap', backgroundColor: 'var(--color-white)', padding: '15px', borderRadius: '8px', boxShadow: 'var(--shadow-sm)' }}>
+        <div style={{ flex: '1', minWidth: '200px' }}>
+          <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--color-dark)' }}>Buscar (ID o Cliente)</label>
+          <input 
+            type="text" 
+            placeholder="Ej: BF042B o Juan Perez" 
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+            style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--color-gray-light)', outline: 'none' }}
+          />
+        </div>
+
+        <div style={{ minWidth: '180px' }}>
+          <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--color-dark)' }}>Estado de Pago</label>
+          <select 
+            value={filtroPago}
+            onChange={(e) => setFiltroPago(e.target.value)}
+            style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--color-gray-light)', outline: 'none', cursor: 'pointer', backgroundColor: 'white' }}
+          >
+            <option value="">Todos los pagos</option>
+            <option value="Pendiente">Pendiente</option>
+            <option value="Aprobado">Aprobado</option>
+            <option value="Rechazado">Rechazado</option>
+          </select>
+        </div>
+
+        <div style={{ minWidth: '180px' }}>
+          <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--color-dark)' }}>Estado de Entrega</label>
+          <select 
+            value={filtroEntrega}
+            onChange={(e) => setFiltroEntrega(e.target.value)}
+            style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--color-gray-light)', outline: 'none', cursor: 'pointer', backgroundColor: 'white' }}
+          >
+            <option value="">Todos los envíos</option>
+            <option value="Pendiente">Pendiente</option>
+            <option value="En preparación">En preparación</option>
+            <option value="Enviado">Enviado</option>
+            <option value="Entregado">Entregado</option>
+            <option value="Cancelado">Cancelado</option>
+          </select>
+        </div>
       </div>
 
       <div style={{ overflowX: 'auto', backgroundColor: 'var(--color-white)', borderRadius: '8px', boxShadow: 'var(--shadow-sm)' }}>
@@ -71,11 +143,26 @@ const AdminPedidos = () => {
             </tr>
           </thead>
           <tbody>
-            {pedidos.length === 0 ? (
-              <tr><td colSpan="7" style={{ padding: '30px', textAlign: 'center', color: 'var(--color-gray)' }}>No hay pedidos registrados</td></tr>
-            ) : pedidos.map(pedido => (
+            {pedidosPaginados.length === 0 ? (
+              <tr>
+                <td colSpan="7" style={{ padding: '50px', textAlign: 'center', color: 'var(--color-gray)' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ccc" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="11" cy="11" r="8"></circle>
+                      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <p style={{ margin: 0, fontSize: '1.1rem', color: '#666', fontWeight: 500 }}>No se encontraron pedidos con ese criterio.</p>
+                    <small style={{ color: '#999' }}>Prueba cambiando los filtros o la búsqueda.</small>
+                  </div>
+                </td>
+              </tr>
+            ) : pedidosPaginados.map(pedido => (
               <tr key={pedido._id} style={{ borderBottom: '1px solid var(--color-gray-light)', transition: 'background-color 0.2s' }} onMouseEnter={e => e.currentTarget.style.backgroundColor = '#fdfdfd'} onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}>
-                <td style={{ padding: '15px' }}><small style={{ fontWeight: 600, color: '#666' }}>{pedido._id.slice(-6).toUpperCase()}</small></td>
+                <td style={{ padding: '15px' }}>
+                  <span style={{ backgroundColor: '#fff7f2', padding: '4px 8px', borderRadius: '4px', border: '1px solid #ffe8d6', fontWeight: 'bold', color: 'var(--color-primary)', fontSize: '0.9em', letterSpacing: '1px', display: 'inline-block' }}>
+                    #{pedido._id.slice(-6).toUpperCase()}
+                  </span>
+                </td>
                 <td style={{ padding: '15px', color: '#444' }}>{new Date(pedido.createdAt).toLocaleDateString()}</td>
                 <td style={{ padding: '15px' }}>
                   <div style={{ fontWeight: 600 }}>{pedido.datosEntrega.nombre} {pedido.datosEntrega.apellido}</div>
@@ -122,12 +209,36 @@ const AdminPedidos = () => {
                   </select>
                 </td>
                 <td style={{ padding: '15px' }}>
-                  <button className="admin-btn-edit" onClick={() => setSelectedPedido(pedido)} style={{ border: 'none', cursor: 'pointer' }}>Ver Detalles</button>
+                  <button className="admin-btn-edit" onClick={() => setSelectedPedido(pedido)} style={{ border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    Ver Detalles
+                  </button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
+        
+        {/* Paginación */}
+        {totalPaginas > 1 && (
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '15px', borderTop: '1px solid var(--color-gray-light)', gap: '10px' }}>
+            <button 
+              onClick={() => setPaginaActual(p => Math.max(1, p - 1))}
+              disabled={paginaActual === 1}
+              style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #ccc', backgroundColor: paginaActual === 1 ? '#f8f9fa' : '#fff', cursor: paginaActual === 1 ? 'not-allowed' : 'pointer' }}
+            >
+              Anterior
+            </button>
+            <span style={{ fontSize: '0.9rem', color: '#666' }}>Página <strong>{paginaActual}</strong> de {totalPaginas}</span>
+            <button 
+              onClick={() => setPaginaActual(p => Math.min(totalPaginas, p + 1))}
+              disabled={paginaActual === totalPaginas}
+              style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #ccc', backgroundColor: paginaActual === totalPaginas ? '#f8f9fa' : '#fff', cursor: paginaActual === totalPaginas ? 'not-allowed' : 'pointer' }}
+            >
+              Siguiente
+            </button>
+          </div>
+        )}
       </div>
 
       {selectedPedido && (
