@@ -28,6 +28,8 @@ import AdminPedidos from './pages/Admin/AdminPedidos.jsx';
 import Perfil from './pages/Perfil/Perfil.jsx';
 import ResetPassword from './pages/ResetPassword/ResetPassword.jsx';
 import Checkout from './pages/Checkout/Checkout.jsx';
+import CheckoutResult from './pages/Checkout/CheckoutResult.jsx';
+
 
 // Componente Wrapper para Layout Público
 const PublicLayout = ({ children }) => (
@@ -59,6 +61,9 @@ function App() {
               <Route path="/producto/:id" element={<ProductDetail />} />
               <Route path="/carrito" element={<Carrito />} />
               <Route path="/checkout" element={<Checkout />} />
+              <Route path="/checkout-success" element={<CheckoutResult />} />
+              <Route path="/checkout-failure" element={<CheckoutResult />} />
+              <Route path="/checkout-pending" element={<CheckoutResult />} />
               
               {/* Ruta Privada de Cliente */}
               <Route path="/perfil" element={<PrivateRoute />}>

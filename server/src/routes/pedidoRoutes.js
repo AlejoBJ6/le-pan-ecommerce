@@ -3,7 +3,8 @@ import {
   crearPedido,
   getMisPedidos,
   getAllPedidos,
-  updateEstadoPedido
+  updateEstadoPedido,
+  webhookMercadoPago
 } from '../controllers/pedidoController.js';
 import { protect, admin } from '../middleware/authMiddleware.js'; // Asumo que existe el middleware de Auth.
 
@@ -13,6 +14,9 @@ const router = express.Router();
 router.route('/')
   .post(protect, crearPedido)
   .get(protect, admin, getAllPedidos);
+
+// Esta ruta va sin proteger porque Mercado Pago la llama por detrás
+router.post('/webhook', webhookMercadoPago);
 
 router.route('/mis-pedidos').get(protect, getMisPedidos);
 

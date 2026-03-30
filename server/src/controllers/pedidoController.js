@@ -1,4 +1,6 @@
 import Pedido from '../models/Pedido.js';
+import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
+
 
 // @desc    Crear un nuevo pedido
 // @route   POST /api/pedidos
@@ -46,7 +48,54 @@ export const crearPedido = async (req, res) => {
 
     const createdPedido = await pedido.save();
 
-    res.status(201).json(createdPedido);
+    let initPoint = null;
+
+    if (metodoPago === 'mercado_pago') {
+       try {
+         const client = new MercadoPagoConfig({ accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN || 'TEST-123' });
+         const preference = new Preference(client);
+         const body = {
+           items: items.map(item => ({
+             id: item.productoId ? item.productoId.toString() : 'item',
+             title: item.nombre,
+             quantity: Number(item.cantidad),
+             unit_price: Number(item.precio),
+             currency_id: 'ARS'
+           })),
+           payer: {
+             name: datosEntrega.nombre || '',
+             surname: datosEntrega.apellido || '',
+             email: datosEntrega.email
+           },
+           back_urls: {
+             success: ((process.env.FRONTEND_URL || '').trim() || 'http://localhost:5173') + '/checkout-success',
+             failure: ((process.env.FRONTEND_URL || '').trim() || 'http://localhost:5173') + '/checkout-failure',
+             pending: ((process.env.FRONTEND_URL || '').trim() || 'http://localhost:5173') + '/checkout-pending'
+           },
+           auto_return: 'approved',
+           external_reference: createdPedido._id.toString()
+         };
+
+         // Le decimos a MP a dónde enviar exactamente las notificaciones
+         if (process.env.BACKEND_URL) {
+           body.notification_url = `${process.env.BACKEND_URL}/api/pedidos/webhook`;
+         }
+
+         console.log('Sending Preference to MP:', JSON.stringify(body, null, 2));
+
+         const response = await preference.create({ body });
+         initPoint = response.init_point; // URL para redirigir al usuario a pagar
+       } catch (mpError) {
+         console.error('Error al generar preferencia Mercado Pago:', mpError);
+       }
+    }
+
+    const pedidoResponse = createdPedido.toObject();
+    if (initPoint) {
+      pedidoResponse.init_point = initPoint;
+    }
+
+    res.status(201).json(pedidoResponse);
   } catch (error) {
     console.error('Error al crear el pedido:', error);
     res.status(500).json({ message: 'Error en el servidor al crear el pedido' });
@@ -99,5 +148,49 @@ export const updateEstadoPedido = async (req, res) => {
   } catch (error) {
     console.error('Error updating pedido:', error);
     res.status(500).json({ message: 'Error del servidor al actualizar pedido' });
+  }
+};
+
+// @desc    Webhook para recibir validación de pagos asincrónica de Mercado Pago
+// @route   POST /api/pedidos/webhook
+// @access  Público
+export const webhookMercadoPago = async (req, res) => {
+  try {
+    // 1. Devolver 200 OK inmediatamente para evitar que MP nos marque como fallidos
+    res.status(200).send('OK');
+
+    // 2. Extraer el Payment ID de la notificación (Maneja tanto IPN como Webhooks)
+    const paymentId = req.query['data.id'] || req.query.id || req.body?.data?.id;
+    const type = req.query.type || req.query.topic || req.body?.type;
+
+    if (type === 'payment' && paymentId) {
+      console.log('Webhook MP recibido para paymentId:', paymentId);
+      
+      const client = new MercadoPagoConfig({ accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN || 'TEST-123' });
+      const paymentConfig = new Payment(client);
+      
+      // 3. Consultar la API de MP para ver el estado *real* del pago (por seguridad)
+      const paymentInfo = await paymentConfig.get({ id: paymentId });
+      
+      if (paymentInfo.external_reference) {
+        // 4. Buscar el pedido original en nuestra base de datos
+        const pedido = await Pedido.findById(paymentInfo.external_reference);
+        
+        if (pedido) {
+          // 5. Actualizar el estado de pago del Pedido
+          if (paymentInfo.status === 'approved') {
+            pedido.estadoPago = 'Aprobado';
+          } else if (paymentInfo.status === 'rejected' || paymentInfo.status === 'cancelled') {
+            pedido.estadoPago = 'Rechazado';
+          } else if (paymentInfo.status === 'in_process' || paymentInfo.status === 'pending') {
+            pedido.estadoPago = 'Pendiente';
+          }
+          await pedido.save();
+          console.log(`[MP] Pedido ${pedido._id} actualizado automáticamente a estado: ${pedido.estadoPago}`);
+        }
+      }
+    }
+  } catch (error) {
+    console.error('[MP] Error crítico procesando Webhook:', error);
   }
 };

@@ -83,18 +83,7 @@ const StepEntrega = ({ data, onChange, onNext }) => {
 
 /* ─── STEP 2: Pago ──────────────────────────────────────── */
 const StepPago = ({ cart, getCartTotal, onNext, onBack, loading }) => {
-  const [metodo, setMetodo] = useState('tarjeta');
-  const [cardData, setCardData] = useState({ numero: '', nombre: '', vencimiento: '', cvv: '' });
-  const [flipped, setFlipped] = useState(false);
-
-  const formatCard = (val) => {
-    const digits = val.replace(/\D/g, '').slice(0, 16);
-    return digits.replace(/(\d{4})(?=\d)/g, '$1 ').trim();
-  };
-  const formatExp = (val) => {
-    const digits = val.replace(/\D/g, '').slice(0, 4);
-    return digits.length > 2 ? `${digits.slice(0,2)}/${digits.slice(2)}` : digits;
-  };
+  const [metodo, setMetodo] = useState('mercado_pago');
 
   const subtotal = getCartTotal();
   const envio = 0; // Envío siempre gratis según requerimiento del cliente
@@ -115,9 +104,8 @@ const StepPago = ({ cart, getCartTotal, onNext, onBack, loading }) => {
       {/* Method Tabs */}
       <div className="payment-method-tabs">
         {[
-          { key: 'tarjeta', label: 'Tarjeta Crédito/Débito', icon: '💳' },
+          { key: 'mercado_pago', label: 'Mercado Pago', icon: '💳' },
           { key: 'transferencia', label: 'Transferencia Bancaria', icon: '🏦' },
-          { key: 'cuotas', label: 'Pagar en Cuotas', icon: '📅' },
         ].map(m => (
           <button
             key={m.key}
@@ -130,57 +118,16 @@ const StepPago = ({ cart, getCartTotal, onNext, onBack, loading }) => {
         ))}
       </div>
 
-      {/* Card Form */}
-      {metodo === 'tarjeta' && (
-        <div className="card-section">
-          {/* Card Preview */}
-          <div className={`credit-card-preview ${flipped ? 'flipped' : ''}`}>
-            <div className="card-front">
-              <div className="card-chip">
-                <svg viewBox="0 0 50 40" fill="none"><rect x="1" y="1" width="48" height="38" rx="5" fill="#d4a017" stroke="#b8860b" strokeWidth="1"/><rect x="16" y="1" width="18" height="38" fill="none" stroke="#b8860b" strokeWidth="1"/><line x1="1" y1="14" x2="49" y2="14" stroke="#b8860b" strokeWidth="1"/><line x1="1" y1="26" x2="49" y2="26" stroke="#b8860b" strokeWidth="1"/></svg>
-              </div>
-              <div className="card-number">{cardData.numero || '•••• •••• •••• ••••'}</div>
-              <div className="card-bottom">
-                <div>
-                  <div className="card-field-label">TITULAR</div>
-                  <div className="card-name">{cardData.nombre || 'NOMBRE APELLIDO'}</div>
-                </div>
-                <div>
-                  <div className="card-field-label">VENCE</div>
-                  <div className="card-exp">{cardData.vencimiento || 'MM/AA'}</div>
-                </div>
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Mastercard-logo.svg/800px-Mastercard-logo.svg.png" alt="" className="card-brand" />
-              </div>
-            </div>
-            <div className="card-back">
-              <div className="card-strip"></div>
-              <div className="card-cvv-row">
-                <div className="card-signature"></div>
-                <div className="card-cvv">{cardData.cvv || '•••'}</div>
-              </div>
-            </div>
-          </div>
-
-          <div className="card-form">
-            <div className="form-group">
-              <label>Número de tarjeta *</label>
-              <input type="text" maxLength="19" placeholder="1234 5678 9012 3456" value={cardData.numero} onChange={e => setCardData(d => ({ ...d, numero: formatCard(e.target.value) }))} />
-            </div>
-            <div className="form-group">
-              <label>Nombre en la tarjeta *</label>
-              <input type="text" placeholder="JUAN PEREZ" value={cardData.nombre} onChange={e => setCardData(d => ({ ...d, nombre: e.target.value.toUpperCase() }))} />
-            </div>
-            <div className="form-row">
-              <div className="form-group">
-                <label>Vencimiento *</label>
-                <input type="text" maxLength="5" placeholder="MM/AA" value={cardData.vencimiento} onChange={e => setCardData(d => ({ ...d, vencimiento: formatExp(e.target.value) }))} />
-              </div>
-              <div className="form-group">
-                <label>CVV *</label>
-                <input type="text" maxLength="4" placeholder="•••" value={cardData.cvv} onChange={e => setCardData(d => ({ ...d, cvv: e.target.value.replace(/\D/g,'').slice(0,4) }))} onFocus={() => setFlipped(true)} onBlur={() => setFlipped(false)} />
-              </div>
-            </div>
-          </div>
+      {metodo === 'mercado_pago' && (
+        <div className="transfer-info">
+          <div className="info-icon">🔒</div>
+          <h3>Mercado Pago</h3>
+          <p>Serás redirigido de forma segura a Mercado Pago para completar tu compra. Podrás abonar con:</p>
+          <ul style={{textAlign: 'left', margin: '15px auto', maxWidth: '300px', listStyle: 'none', padding: 0, color: '#4b5563', fontSize: '0.95rem'}}>
+            <li style={{marginBottom: '8px'}}>💳 Tarjetas de crédito y débito</li>
+            <li style={{marginBottom: '8px'}}>💸 Dinero en cuenta</li>
+            <li style={{marginBottom: '8px'}}>💵 Efectivo (Pago Fácil / Rapipago)</li>
+          </ul>
         </div>
       )}
 
@@ -194,23 +141,6 @@ const StepPago = ({ cart, getCartTotal, onNext, onBack, loading }) => {
             <div className="bank-row"><span>Titular</span><strong>Le Pan S.R.L.</strong></div>
             <div className="bank-row"><span>CBU</span><strong>0070999830004177123456</strong></div>
             <div className="bank-row"><span>Alias</span><strong>LEPAN.PAGO</strong></div>
-          </div>
-        </div>
-      )}
-
-      {metodo === 'cuotas' && (
-        <div className="transfer-info">
-          <div className="info-icon">📅</div>
-          <h3>Pago en Cuotas</h3>
-          <p>Podés pagar tu compra en hasta <strong>12 cuotas sin interés</strong> con tarjeta de crédito. Seleccioná tu plan:</p>
-          <div className="cuotas-grid">
-            {[1, 3, 6, 12].map(n => (
-              <button key={n} className="cuota-option">
-                <span className="cuota-n">{n}x</span>
-                <span className="cuota-valor">{formatPrice(Math.ceil(total / n))}</span>
-                {n === 1 ? <span className="cuota-tag">Sin recargo</span> : n <= 6 ? <span className="cuota-tag">Sin interés</span> : <span className="cuota-tag cuota-interes">+CFT 0%</span>}
-              </button>
-            ))}
           </div>
         </div>
       )}
@@ -229,7 +159,7 @@ const StepPago = ({ cart, getCartTotal, onNext, onBack, loading }) => {
           <span>Subtotal</span><span>{formatPrice(subtotal)}</span>
         </div>
         <div className="checkout-order-row">
-          <span>Envío</span><span style={{color: MP_GREEN}}>Gratis</span>
+          <span>Envío</span><span style={{ color: MP_GREEN }}>Gratis</span>
         </div>
         <div className="checkout-order-row checkout-order-total">
           <span>Total</span><span>{formatPrice(total)}</span>
@@ -253,7 +183,7 @@ const StepResumen = ({ entrega, finalOrderData }) => {
   const total = finalOrderData ? finalOrderData.totales.total : 0;
   const orderNum = finalOrderData ? finalOrderData._id.slice(-6).toUpperCase() : Math.floor(Math.random() * 900000) + 100000;
   const formatPrice = (p) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(p);
-  
+
   const fMin = finalOrderData && finalOrderData.datosEntrega?.fechaEstimadaMin ? new Date(finalOrderData.datosEntrega.fechaEstimadaMin).toLocaleDateString() : '';
   const fMax = finalOrderData && finalOrderData.datosEntrega?.fechaEstimadaMax ? new Date(finalOrderData.datosEntrega.fechaEstimadaMax).toLocaleDateString() : '';
 
@@ -269,7 +199,7 @@ const StepResumen = ({ entrega, finalOrderData }) => {
         <h2>¡Pedido recibido!</h2>
         <p className="order-number">Número de pedido: <strong>#{orderNum}</strong></p>
         <p className="order-email">Te enviaremos la confirmación a <strong>{entrega.email}</strong></p>
-        
+
         {fMin && fMax && (
           <div style={{ marginTop: '10px', padding: '10px', backgroundColor: '#e9f5ff', borderRadius: '8px', border: '1px solid #bce0fd' }}>
             <strong>🚚 Entrega estimada:</strong><br />
@@ -367,6 +297,13 @@ const Checkout = () => {
         const createdOrder = await pedidoService.crearPedido(orderPayload);
         setFinalOrderData(createdOrder);
         clearCart();
+        
+        if (createdOrder.init_point) {
+          // Redirigir a Mercado Pago
+          window.location.href = createdOrder.init_point;
+          return; // Detenemos la ejecución aquí
+        }
+
         setSubStep(s => s + 1);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } catch (error) {
