@@ -24,6 +24,7 @@ import AdminComboBuilder from './pages/Admin/AdminComboBuilder.jsx';
 import AdminMensajes from './pages/Admin/AdminMensajes.jsx';
 import AdminCategorias from './pages/Admin/AdminCategorias.jsx';
 import AdminComboConfig from './pages/Admin/AdminComboConfig.jsx';
+import AdminPedidos from './pages/Admin/AdminPedidos.jsx';
 import Perfil from './pages/Perfil/Perfil.jsx';
 import ResetPassword from './pages/ResetPassword/ResetPassword.jsx';
 import Checkout from './pages/Checkout/Checkout.jsx';
@@ -80,6 +81,7 @@ function App() {
             <Route path="mensajes" element={<AdminMensajes />} />
             <Route path="categorias" element={<AdminCategorias />} />
             <Route path="combo-config" element={<AdminComboConfig />} />
+            <Route path="pedidos" element={<AdminPedidos />} />
           </Route>
         </Route>
       </Routes>

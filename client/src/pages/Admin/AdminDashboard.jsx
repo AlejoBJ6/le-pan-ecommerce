@@ -1,24 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import productoService from '../../services/productoService';
+import pedidoService from '../../services/pedidoService';
 
 const AdminDashboard = () => {
   const [productos, setProductos] = useState([]);
+  const [pedidosPendientes, setPedidosPendientes] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchProductos = async () => {
+    const fetchData = async () => {
       try {
-        const data = await productoService.obtenerProductos({ admin: true });
-        setProductos(data.filter(p => p.categoria !== 'Combos'));
+        const [prodData, pedData] = await Promise.all([
+          productoService.obtenerProductos({ admin: true }),
+          pedidoService.getAllPedidos()
+        ]);
+        setProductos(prodData.filter(p => p.categoria !== 'Combos'));
+        setPedidosPendientes(pedData.filter(ped => ped.estadoEntrega === 'Pendiente' || ped.estadoEntrega === 'En preparación'));
       } catch (error) {
         console.error("Error cargando dashboard", error);
       } finally {
         setLoading(false);
       }
     };
-    fetchProductos();
+    fetchData();
   }, []);
 
   if (loading) return <div>Cargando resumen...</div>;
@@ -88,21 +94,26 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        {/* Órdenes Recientes (Placeholder) */}
-        <div style={{ backgroundColor: 'var(--color-white)', padding: '24px', borderRadius: '12px', boxShadow: '0 4px 15px rgba(0,0,0,0.03)', border: '1px solid #f0f0f0', opacity: 0.6 }}>
+        {/* Órdenes Recientes */}
+        <div 
+          onClick={() => navigate('/admin/pedidos')}
+          style={{ backgroundColor: 'var(--color-white)', padding: '24px', borderRadius: '12px', boxShadow: '0 4px 15px rgba(0,0,0,0.03)', border: '1px solid #f0f0f0', cursor: 'pointer', transition: 'transform 0.2s' }}
+          onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-3px)'}
+          onMouseLeave={e => e.currentTarget.style.transform = 'none'}
+        >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
-              <h3 style={{ margin: '0 0 5px 0', color: 'var(--color-gray)', fontSize: '0.95rem' }}>Órdenes Recientes</h3>
-              <p style={{ margin: 0, fontSize: '2.5rem', fontWeight: '800', color: 'var(--color-dark)' }}>
-                0
+              <h3 style={{ margin: '0 0 5px 0', color: 'var(--color-gray)', fontSize: '0.95rem' }}>Órdenes Pendientes</h3>
+              <p style={{ margin: 0, fontSize: '2.5rem', fontWeight: '800', color: pedidosPendientes.length > 0 ? '#ff9800' : 'var(--color-dark)' }}>
+                {pedidosPendientes.length}
               </p>
             </div>
-            <div style={{ padding: '12px', backgroundColor: '#f5f5f5', borderRadius: '10px', color: '#888' }}>
-              🛒
+            <div style={{ padding: '12px', backgroundColor: '#fff3e0', borderRadius: '10px', color: '#e65100' }}>
+              📦
             </div>
           </div>
           <div style={{ marginTop: '15px', color: 'var(--color-gray)', fontSize: '0.85rem', fontWeight: 500 }}>
-            Función próximamente...
+            Ver panel de pedidos →
           </div>
         </div>
 

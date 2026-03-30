@@ -10,6 +10,7 @@ import './models/Producto.js';
 import './models/Combo.js';
 import './models/Categoria.js';
 import './models/ComboConfig.js';
+import './models/Pedido.js';
 
 // Rutas
 import productoRoutes from './routes/productoRoutes.js';
@@ -18,6 +19,7 @@ import uploadRoutes from './routes/uploadRoutes.js';
 import contactoRoutes from './routes/contactoRoutes.js';
 import categoriaRoutes from './routes/categoriaRoutes.js';
 import comboConfigRoutes from './routes/comboConfigRoutes.js';
+import pedidoRoutes from './routes/pedidoRoutes.js';
 
 // Configurar variables de entorno
 dotenv.config();
@@ -103,6 +105,7 @@ app.use('/api/upload', uploadRoutes);
 app.use('/api/contacto', contactoRoutes);
 app.use('/api/categorias', categoriaRoutes);
 app.use('/api/combo-config', comboConfigRoutes);
+app.use('/api/pedidos', pedidoRoutes);
 
 // Conexión a MongoDB
 mongoose

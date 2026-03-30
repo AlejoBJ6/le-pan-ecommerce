@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import authService from '../../services/authService';
+import pedidoService from '../../services/pedidoService';
 
 const EyeIcon = ({ show }) => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -34,6 +35,8 @@ const Perfil = () => {
   const [mensaje, setMensaje] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [pedidos, setPedidos] = useState([]);
+  const [loadingPedidos, setLoadingPedidos] = useState(true);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -41,8 +44,18 @@ const Perfil = () => {
         const data = await authService.getUserProfile();
         setNombre(data.nombre);
         setEmail(data.email);
+        
+        try {
+          const pedData = await pedidoService.getMisPedidos();
+          setPedidos(pedData);
+        } catch (pedidoErr) {
+          console.error("Error al cargar pedidos", pedidoErr);
+        } finally {
+          setLoadingPedidos(false);
+        }
       } catch (err) {
         setError('Error al cargar datos del perfil');
+        setLoadingPedidos(false);
       }
     };
     fetchProfile();
@@ -174,22 +187,64 @@ const Perfil = () => {
 
         <div style={{ marginTop: '50px', paddingTop: '30px', borderTop: '1px solid #eee' }}>
            <h3 style={{ color: 'var(--color-dark)', marginBottom: '20px', fontSize: '1.4rem' }}>Mis Órdenes</h3>
-           <div style={{ padding: '40px 20px', backgroundColor: '#faf9f6', borderRadius: '8px', textAlign: 'center', border: '1px dashed #ddd', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px' }}>
-              <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#ccc" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
-                <line x1="3" y1="6" x2="21" y2="6"></line>
-                <path d="M16 10a4 4 0 0 1-8 0"></path>
-              </svg>
-             <p style={{ color: 'var(--color-dark-2)', margin: 0, fontSize: '1.05rem' }}>No tienes órdenes registradas por el momento.</p>
-             <button 
-                onClick={() => navigate('/productos')} 
-                style={{ marginTop: '5px', backgroundColor: 'var(--color-dark)', color: 'var(--color-white)', border: 'none', padding: '10px 24px', borderRadius: '30px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.95rem', transition: 'all 0.2s', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }}
-                onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; }}
-                onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; }}
-              >
-               Ir a la tienda
-             </button>
-           </div>
+           
+           {loadingPedidos ? (
+             <p>Cargando tus órdenes...</p>
+           ) : pedidos.length === 0 ? (
+             <div style={{ padding: '40px 20px', backgroundColor: '#faf9f6', borderRadius: '8px', textAlign: 'center', border: '1px dashed #ddd', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px' }}>
+                <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#ccc" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                  <line x1="3" y1="6" x2="21" y2="6"></line>
+                  <path d="M16 10a4 4 0 0 1-8 0"></path>
+                </svg>
+               <p style={{ color: 'var(--color-dark-2)', margin: 0, fontSize: '1.05rem' }}>No tienes órdenes registradas por el momento.</p>
+               <button 
+                  onClick={() => navigate('/productos')} 
+                  style={{ marginTop: '5px', backgroundColor: 'var(--color-dark)', color: 'var(--color-white)', border: 'none', padding: '10px 24px', borderRadius: '30px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.95rem', transition: 'all 0.2s', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }}
+                  onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                  onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; }}
+                >
+                 Ir a la tienda
+               </button>
+             </div>
+           ) : (
+             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+               {pedidos.map(pedido => {
+                 const fMin = pedido.datosEntrega.fechaEstimadaMin ? new Date(pedido.datosEntrega.fechaEstimadaMin).toLocaleDateString() : '';
+                 const fMax = pedido.datosEntrega.fechaEstimadaMax ? new Date(pedido.datosEntrega.fechaEstimadaMax).toLocaleDateString() : '';
+                 return (
+                 <div key={pedido._id} style={{ border: '1px solid #eee', borderRadius: '8px', padding: '20px', backgroundColor: '#fff', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
+                   <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #eee', paddingBottom: '10px', marginBottom: '10px' }}>
+                     <div>
+                       <strong>Pedido #{pedido._id.slice(-6).toUpperCase()}</strong>
+                       <span style={{ display: 'block', fontSize: '0.85rem', color: '#888' }}>{new Date(pedido.createdAt).toLocaleDateString()}</span>
+                     </div>
+                     <div style={{ textAlign: 'right' }}>
+                       <strong>${pedido.totales.total.toLocaleString('es-AR')}</strong>
+                     </div>
+                   </div>
+                   <div style={{ fontSize: '0.9rem', marginBottom: '10px' }}>
+                     {pedido.pedidosData.map((item, i) => (
+                       <div key={i}>{item.cantidad}x {item.nombre}</div>
+                     ))}
+                   </div>
+                   <div style={{ display: 'flex', gap: '10px' }}>
+                     <span style={{ padding: '4px 8px', borderRadius: '12px', fontSize: '0.8rem', backgroundColor: pedido.estadoEntrega === 'Entregado' ? '#d4edda' : '#e2e3e5', color: pedido.estadoEntrega === 'Entregado' ? '#155724' : '#383d41' }}>
+                       Envío: {pedido.estadoEntrega}
+                     </span>
+                     <span style={{ padding: '4px 8px', borderRadius: '12px', fontSize: '0.8rem', backgroundColor: pedido.estadoPago === 'Aprobado' ? '#d4edda' : '#fff3cd', color: pedido.estadoPago === 'Aprobado' ? '#155724' : '#856404' }}>
+                       Pago: {pedido.estadoPago}
+                     </span>
+                   </div>
+                   {pedido.estadoEntrega !== 'Entregado' && pedido.estadoEntrega !== 'Cancelado' && fMin && (
+                     <div style={{ marginTop: '10px', fontSize: '0.85rem', color: '#17a2b8' }}>
+                       🚚 Entrega estimada: {fMin} a {fMax}
+                     </div>
+                   )}
+                 </div>
+               )})}
+             </div>
+           )}
         </div>
       </div>
     </div>

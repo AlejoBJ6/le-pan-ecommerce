@@ -1,7 +1,9 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { CartContext } from '../../context/CartContext.jsx';
+import { AuthContext } from '../../context/AuthContext.jsx';
 import StepIndicator from '../../components/StepIndicator/StepIndicator.jsx';
+import pedidoService from '../../services/pedidoService.js';
 import './Checkout.css';
 
 const MP_GREEN = '#00a650';
@@ -80,7 +82,7 @@ const StepEntrega = ({ data, onChange, onNext }) => {
 };
 
 /* ─── STEP 2: Pago ──────────────────────────────────────── */
-const StepPago = ({ cart, getCartTotal, onNext, onBack }) => {
+const StepPago = ({ cart, getCartTotal, onNext, onBack, loading }) => {
   const [metodo, setMetodo] = useState('tarjeta');
   const [cardData, setCardData] = useState({ numero: '', nombre: '', vencimiento: '', cvv: '' });
   const [flipped, setFlipped] = useState(false);
@@ -95,7 +97,7 @@ const StepPago = ({ cart, getCartTotal, onNext, onBack }) => {
   };
 
   const subtotal = getCartTotal();
-  const envio = subtotal > 2000000 ? 0 : 25000;
+  const envio = 0; // Envío siempre gratis según requerimiento del cliente
   const total = subtotal + envio;
 
   const formatPrice = (p) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(p);
@@ -227,7 +229,7 @@ const StepPago = ({ cart, getCartTotal, onNext, onBack }) => {
           <span>Subtotal</span><span>{formatPrice(subtotal)}</span>
         </div>
         <div className="checkout-order-row">
-          <span>Envío</span><span>{envio === 0 ? <span style={{color: MP_GREEN}}>Gratis</span> : formatPrice(envio)}</span>
+          <span>Envío</span><span style={{color: MP_GREEN}}>Gratis</span>
         </div>
         <div className="checkout-order-row checkout-order-total">
           <span>Total</span><span>{formatPrice(total)}</span>
@@ -235,10 +237,10 @@ const StepPago = ({ cart, getCartTotal, onNext, onBack }) => {
       </div>
 
       <div className="checkout-nav-btns">
-        <button className="btn-checkout-back" onClick={onBack}>← Volver</button>
-        <button className="btn-checkout-next" onClick={onNext}>
-          Confirmar y pagar
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+        <button className="btn-checkout-back" onClick={onBack} disabled={loading}>← Volver</button>
+        <button className="btn-checkout-next" onClick={() => onNext({ metodoPago: metodo, total, envio, subtotal })} disabled={loading}>
+          {loading ? 'Procesando...' : 'Confirmar y pagar'}
+          {!loading && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>}
         </button>
       </div>
     </div>
@@ -246,13 +248,14 @@ const StepPago = ({ cart, getCartTotal, onNext, onBack }) => {
 };
 
 /* ─── STEP 3: Resumen / Confirmación ─────────────────────── */
-const StepResumen = ({ cart, entrega, getCartTotal }) => {
+const StepResumen = ({ entrega, finalOrderData }) => {
   const navigate = useNavigate();
-  const subtotal = getCartTotal();
-  const envio = subtotal > 2000000 ? 0 : 25000;
-  const total = subtotal + envio;
+  const total = finalOrderData ? finalOrderData.totales.total : 0;
+  const orderNum = finalOrderData ? finalOrderData._id.slice(-6).toUpperCase() : Math.floor(Math.random() * 900000) + 100000;
   const formatPrice = (p) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(p);
-  const orderNum = Math.floor(Math.random() * 900000) + 100000;
+  
+  const fMin = finalOrderData && finalOrderData.datosEntrega?.fechaEstimadaMin ? new Date(finalOrderData.datosEntrega.fechaEstimadaMin).toLocaleDateString() : '';
+  const fMax = finalOrderData && finalOrderData.datosEntrega?.fechaEstimadaMax ? new Date(finalOrderData.datosEntrega.fechaEstimadaMax).toLocaleDateString() : '';
 
   return (
     <div className="checkout-step resumen-step">
@@ -266,17 +269,24 @@ const StepResumen = ({ cart, entrega, getCartTotal }) => {
         <h2>¡Pedido recibido!</h2>
         <p className="order-number">Número de pedido: <strong>#{orderNum}</strong></p>
         <p className="order-email">Te enviaremos la confirmación a <strong>{entrega.email}</strong></p>
+        
+        {fMin && fMax && (
+          <div style={{ marginTop: '10px', padding: '10px', backgroundColor: '#e9f5ff', borderRadius: '8px', border: '1px solid #bce0fd' }}>
+            <strong>🚚 Entrega estimada:</strong><br />
+            Entre el {fMin} y el {fMax}
+          </div>
+        )}
       </div>
 
       <div className="resumen-cards">
         <div className="resumen-card">
           <h4>📦 Productos</h4>
-          {cart.map(item => (
-            <div key={item._id} className="checkout-order-item">
-              <span>{item.nombre} × {item.quantity}</span>
-              <span>{formatPrice((item.precio || 0) * item.quantity)}</span>
+          {finalOrderData && finalOrderData.pedidosData ? finalOrderData.pedidosData.map((item, idx) => (
+            <div key={idx} className="checkout-order-item">
+              <span>{item.nombre} × {item.cantidad}</span>
+              <span>{formatPrice((item.precio || 0) * item.cantidad)}</span>
             </div>
-          ))}
+          )) : null}
           <div className="checkout-order-sep"></div>
           <div className="checkout-order-row checkout-order-total">
             <span>Total pagado</span><span>{formatPrice(total)}</span>
@@ -310,8 +320,11 @@ const STEP_KEYS = ['carrito', 'entrega', 'pago', 'resumen'];
 
 const Checkout = () => {
   const { cart, getCartTotal, clearCart } = useContext(CartContext);
+  const { user } = useContext(AuthContext);
   const navigate = useNavigate();
   const [subStep, setSubStep] = useState(0); // 0=entrega, 1=pago, 2=resumen
+  const [loading, setLoading] = useState(false);
+  const [finalOrderData, setFinalOrderData] = useState(null);
   const stepKey = STEP_KEYS[subStep + 1]; // offset: carrito is step 0 in indicator
 
   const [entrega, setEntrega] = useState({
@@ -321,14 +334,50 @@ const Checkout = () => {
 
   useEffect(() => {
     if (cart.length === 0 && subStep < 2) navigate('/carrito');
-  }, [cart]);
+    if (!user) {
+      alert("Debes iniciar sesión para finalizar tu compra");
+      navigate('/login?redirect=checkout');
+    }
+  }, [cart, user]);
 
   const handleEntregaChange = (field, value) => setEntrega(e => ({ ...e, [field]: value }));
 
-  const advanceStep = () => {
-    if (subStep === 1) clearCart(); // clear cart on payment confirm
-    setSubStep(s => s + 1);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  const advanceStep = async (pagoPayload) => {
+    if (subStep === 1) {
+      // Create order via API
+      try {
+        setLoading(true);
+        const orderPayload = {
+          items: cart.map(item => ({
+            productoId: item._id, // Usamos el ID de combo o producto normal
+            nombre: item.nombre,
+            precio: item.precio,
+            cantidad: item.quantity,
+            imagen: item.imagen,
+            esCombo: item.esCombo || false
+          })),
+          datosEntrega: entrega,
+          totales: {
+            subtotal: pagoPayload.subtotal,
+            envio: pagoPayload.envio,
+            total: pagoPayload.total
+          },
+          metodoPago: pagoPayload.metodoPago
+        };
+        const createdOrder = await pedidoService.crearPedido(orderPayload);
+        setFinalOrderData(createdOrder);
+        clearCart();
+        setSubStep(s => s + 1);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch (error) {
+        alert(error.response?.data?.message || 'Hubo un error al procesar tu pedido. Inténtalo de nuevo.');
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      setSubStep(s => s + 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
   const backStep = () => {
     if (subStep === 0) { navigate('/carrito'); return; }
@@ -345,10 +394,10 @@ const Checkout = () => {
           <StepEntrega data={entrega} onChange={handleEntregaChange} onNext={advanceStep} />
         )}
         {subStep === 1 && (
-          <StepPago cart={cart} getCartTotal={getCartTotal} onNext={advanceStep} onBack={backStep} />
+          <StepPago cart={cart} getCartTotal={getCartTotal} onNext={advanceStep} onBack={backStep} loading={loading} />
         )}
         {subStep === 2 && (
-          <StepResumen cart={cart} entrega={entrega} getCartTotal={getCartTotal} />
+          <StepResumen entrega={entrega} finalOrderData={finalOrderData} />
         )}
       </div>
     </div>
