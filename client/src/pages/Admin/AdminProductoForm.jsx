@@ -336,6 +336,26 @@ const AdminProductoForm = ({ isCombo = false }) => {
                           style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} 
                           onError={(e) => { e.target.src = 'https://via.placeholder.com/100?text=Error'; }}
                         />
+                        {/* Botón para eliminar imagen */}
+                        <button 
+                          type="button"
+                          onClick={() => {
+                            const urls = formData.imagenes.split(',').map(u => u.trim()).filter(u => u !== '');
+                            const newUrls = urls.filter((_, idx) => idx !== i);
+                            handleChange({ target: { name: 'imagenes', value: newUrls.join(', ') } });
+                          }}
+                          style={{
+                            position: 'absolute', top: '4px', right: '4px',
+                            backgroundColor: 'rgba(220, 53, 69, 0.9)', color: 'white',
+                            border: 'none', borderRadius: '50%', width: '24px', height: '24px',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            cursor: 'pointer', fontSize: '12px', fontWeight: 'bold',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                          }}
+                          title="Borrar imagen"
+                        >
+                          ✕
+                        </button>
                      </div>
                    ))}
                  </div>

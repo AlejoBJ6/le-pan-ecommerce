@@ -35,18 +35,81 @@ const AdminProductos = () => {
     }
   };
 
+  const [busqueda, setBusqueda] = useState('');
+  const [filtroCategoria, setFiltroCategoria] = useState('');
+  const [filtroStock, setFiltroStock] = useState('todos'); // 'todos', 'bajo', 'agotado'
+
+  // Categorías extraídas automáticamente (únicas)
+  const categoriasUnicas = [...new Set(productos.map(p => p.categoria))];
+
+  // Lógica de filtrado
+  const productosFiltrados = productos.filter(p => {
+    const matchBusqueda = p.nombre.toLowerCase().includes(busqueda.toLowerCase());
+    const matchCategoria = filtroCategoria === '' || p.categoria === filtroCategoria;
+    
+    let matchStock = true;
+    if (filtroStock === 'bajo') matchStock = p.stock > 0 && p.stock <= 5;
+    if (filtroStock === 'agotado') matchStock = p.stock === 0;
+
+    return matchBusqueda && matchCategoria && matchStock;
+  });
+
   if (loading) return <div>Cargando catálogo...</div>;
 
   return (
     <div className="admin-productos">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h2 style={{ margin: 0 }}>Productos ({productos.length})</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+        <h2 style={{ margin: 0 }}>Productos ({productosFiltrados.length})</h2>
         <Link
           to="/admin/productos/nuevo"
           style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-dark)', padding: '10px 20px', borderRadius: '4px', textDecoration: 'none', fontWeight: 'bold' }}
         >
           + Crear Producto
         </Link>
+      </div>
+
+      {/* Barra de Filtros */}
+      <div style={{ 
+        display: 'flex', gap: '15px', marginBottom: '20px', flexWrap: 'wrap',
+        backgroundColor: 'var(--color-white)', padding: '15px', borderRadius: '8px', boxShadow: 'var(--shadow-sm)'
+      }}>
+        <div style={{ flex: '1', minWidth: '200px' }}>
+          <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--color-dark)' }}>Buscar por nombre</label>
+          <input 
+            type="text" 
+            placeholder="Ej: Amasadora" 
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+            style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--color-gray-light)', outline: 'none' }}
+          />
+        </div>
+
+        <div style={{ minWidth: '180px' }}>
+          <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--color-dark)' }}>Categoría</label>
+          <select 
+            value={filtroCategoria}
+            onChange={(e) => setFiltroCategoria(e.target.value)}
+            style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--color-gray-light)', outline: 'none', cursor: 'pointer', backgroundColor: 'white' }}
+          >
+            <option value="">Todas las categorías</option>
+            {categoriasUnicas.map(cat => (
+              <option key={cat} value={cat}>{cat}</option>
+            ))}
+          </select>
+        </div>
+
+        <div style={{ minWidth: '180px' }}>
+          <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--color-dark)' }}>Estado de Stock</label>
+          <select 
+            value={filtroStock}
+            onChange={(e) => setFiltroStock(e.target.value)}
+            style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--color-gray-light)', outline: 'none', cursor: 'pointer', backgroundColor: 'white' }}
+          >
+            <option value="todos">Mostrar todos</option>
+            <option value="bajo">Stock Bajo (≤ 5)</option>
+            <option value="agotado">Agotados (0)</option>
+          </select>
+        </div>
       </div>
 
       {deleteError && (
@@ -68,37 +131,62 @@ const AdminProductos = () => {
             </tr>
           </thead>
           <tbody>
-            {productos.map(prod => (
-              <tr key={prod._id} style={{ borderBottom: '1px solid var(--color-gray-light)' }}>
-                <td style={{ padding: '15px' }}>
-                  {prod.imagenes && prod.imagenes[0] ? (
-                    <img src={prod.imagenes[0]} alt={prod.nombre} style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '4px' }} />
-                  ) : (
-                    <div style={{ width: '50px', height: '50px', backgroundColor: '#ddd', borderRadius: '4px' }}></div>
-                  )}
-                </td>
-                <td style={{ padding: '15px', fontWeight: 500 }}>{prod.nombre}</td>
-                <td style={{ padding: '15px' }}>{prod.categoria}</td>
-                <td style={{ padding: '15px' }}>${prod.precio.toLocaleString('es-AR')}</td>
-                <td style={{ padding: '15px' }}>
-                  <span style={{ padding: '4px 8px', borderRadius: '12px', fontSize: '0.85em', backgroundColor: prod.stock > 0 ? '#d4edda' : '#f8d7da', color: prod.stock > 0 ? '#155724' : '#721c24' }}>
-                    {prod.stock > 0 ? prod.stock : 'Agotado'}
-                  </span>
-                </td>
-                <td style={{ padding: '15px' }}>
-                  <Link to={`/admin/productos/${prod._id}/editar`} className="admin-btn-edit">Editar</Link>
-                  <button
-                    onClick={() => setConfirmDelete({ id: prod._id, nombre: prod.nombre })}
-                    className="admin-btn-delete"
-                  >
-                    Borrar
-                  </button>
-                </td>
-              </tr>
-            ))}
-            {productos.length === 0 && (
+            {productosFiltrados.map(prod => {
+              // Lógica visual del badge de stock
+              let stockBgColor = '#d4edda';
+              let stockTextColor = '#155724';
+              let stockText = prod.stock;
+
+              if (prod.stock === 0) {
+                stockBgColor = '#f8d7da';
+                stockTextColor = '#721c24';
+                stockText = 'Agotado';
+              } else if (prod.stock <= 5) {
+                stockBgColor = '#fff3cd';
+                stockTextColor = '#856404';
+              }
+
+              return (
+                <tr key={prod._id} style={{ borderBottom: '1px solid var(--color-gray-light)' }}>
+                  <td style={{ padding: '15px' }}>
+                    {prod.imagenes && prod.imagenes[0] ? (
+                      <img src={prod.imagenes[0]} alt={prod.nombre} style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '4px' }} />
+                    ) : (
+                      <div style={{ width: '50px', height: '50px', backgroundColor: '#ddd', borderRadius: '4px' }}></div>
+                    )}
+                  </td>
+                  <td style={{ padding: '15px', fontWeight: 500 }}>{prod.nombre}</td>
+                  <td style={{ padding: '15px' }}>{prod.categoria}</td>
+                  <td style={{ padding: '15px' }}>${prod.precio.toLocaleString('es-AR')}</td>
+                  <td style={{ padding: '15px' }}>
+                    <span style={{ 
+                      padding: '4px 10px', 
+                      borderRadius: '12px', 
+                      fontSize: '0.85em', 
+                      fontWeight: 'bold',
+                      backgroundColor: stockBgColor, 
+                      color: stockTextColor 
+                    }}>
+                      {stockText}
+                    </span>
+                  </td>
+                  <td style={{ padding: '15px' }}>
+                    <Link to={`/admin/productos/${prod._id}/editar`} className="admin-btn-edit">Editar</Link>
+                    <button
+                      onClick={() => setConfirmDelete({ id: prod._id, nombre: prod.nombre })}
+                      className="admin-btn-delete"
+                    >
+                      Borrar
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
+            {productosFiltrados.length === 0 && (
               <tr>
-                <td colSpan="6" style={{ padding: '30px', textAlign: 'center', color: 'var(--color-gray)' }}>No hay productos registrados. ¡Comienza creando uno nuevo!</td>
+                <td colSpan="6" style={{ padding: '30px', textAlign: 'center', color: 'var(--color-gray)' }}>
+                  No hay productos que coincidan con los filtros.
+                </td>
               </tr>
             )}
           </tbody>
