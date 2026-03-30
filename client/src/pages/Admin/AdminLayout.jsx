@@ -41,6 +41,11 @@ const AdminLayout = () => {
               </Link>
             </li>
             <li>
+              <Link to="/admin/pedidos" className={location.pathname.includes('/admin/pedidos') ? 'active' : ''}>
+                Pedidos 📦
+              </Link>
+            </li>
+            <li>
               <Link to="/admin/mensajes" className={location.pathname.includes('/admin/mensajes') ? 'active' : ''}>
                 Mensajes ✉️
               </Link>
