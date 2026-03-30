@@ -248,15 +248,14 @@ const StepPago = ({ cart, getCartTotal, onNext, onBack, loading }) => {
 };
 
 /* ─── STEP 3: Resumen / Confirmación ─────────────────────── */
-const StepResumen = ({ cart, entrega, getCartTotal, finalOrderData }) => {
+const StepResumen = ({ entrega, finalOrderData }) => {
   const navigate = useNavigate();
-  const subtotal = getCartTotal();
-  const envio = 0;
-  const total = finalOrderData ? finalOrderData.totales.total : (subtotal + envio);
+  const total = finalOrderData ? finalOrderData.totales.total : 0;
   const orderNum = finalOrderData ? finalOrderData._id.slice(-6).toUpperCase() : Math.floor(Math.random() * 900000) + 100000;
+  const formatPrice = (p) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(p);
   
-  const fMin = finalOrderData && finalOrderData.datosEntrega.fechaEstimadaMin ? new Date(finalOrderData.datosEntrega.fechaEstimadaMin).toLocaleDateString() : '';
-  const fMax = finalOrderData && finalOrderData.datosEntrega.fechaEstimadaMax ? new Date(finalOrderData.datosEntrega.fechaEstimadaMax).toLocaleDateString() : '';
+  const fMin = finalOrderData && finalOrderData.datosEntrega?.fechaEstimadaMin ? new Date(finalOrderData.datosEntrega.fechaEstimadaMin).toLocaleDateString() : '';
+  const fMax = finalOrderData && finalOrderData.datosEntrega?.fechaEstimadaMax ? new Date(finalOrderData.datosEntrega.fechaEstimadaMax).toLocaleDateString() : '';
 
   return (
     <div className="checkout-step resumen-step">
@@ -282,12 +281,12 @@ const StepResumen = ({ cart, entrega, getCartTotal, finalOrderData }) => {
       <div className="resumen-cards">
         <div className="resumen-card">
           <h4>📦 Productos</h4>
-          {cart.map(item => (
-            <div key={item._id} className="checkout-order-item">
-              <span>{item.nombre} × {item.quantity}</span>
-              <span>{formatPrice((item.precio || 0) * item.quantity)}</span>
+          {finalOrderData && finalOrderData.pedidosData ? finalOrderData.pedidosData.map((item, idx) => (
+            <div key={idx} className="checkout-order-item">
+              <span>{item.nombre} × {item.cantidad}</span>
+              <span>{formatPrice((item.precio || 0) * item.cantidad)}</span>
             </div>
-          ))}
+          )) : null}
           <div className="checkout-order-sep"></div>
           <div className="checkout-order-row checkout-order-total">
             <span>Total pagado</span><span>{formatPrice(total)}</span>
@@ -398,7 +397,7 @@ const Checkout = () => {
           <StepPago cart={cart} getCartTotal={getCartTotal} onNext={advanceStep} onBack={backStep} loading={loading} />
         )}
         {subStep === 2 && (
-          <StepResumen cart={cart} entrega={entrega} getCartTotal={getCartTotal} finalOrderData={finalOrderData} />
+          <StepResumen entrega={entrega} finalOrderData={finalOrderData} />
         )}
       </div>
     </div>
