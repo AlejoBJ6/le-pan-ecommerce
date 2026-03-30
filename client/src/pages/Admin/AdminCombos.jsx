@@ -54,25 +54,40 @@ const AdminCombos = () => {
     <div className="admin-productos">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <h2 style={{ margin: 0 }}>
-          {verPapelera ? '🗑️ Papelera de Combos' : `Combos Armados (${combos.length})`}
+          {verPapelera ? '🚫 Combos Deshabilitados' : `Combos Armados (${combos.length})`}
         </h2>
         
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div style={{ display: 'flex', gap: '12px' }}>
           <button 
             onClick={() => setVerPapelera(!verPapelera)}
             style={{ 
-              backgroundColor: verPapelera ? 'var(--color-dark)' : '#f0f0f0', 
-              color: verPapelera ? '#fff' : 'var(--color-dark)', 
-              padding: '10px 15px', borderRadius: '4px', border: 'none', 
-              fontWeight: 'bold', cursor: 'pointer', transition: '0.2s'
+              display: 'flex', alignItems: 'center', gap: '8px',
+              backgroundColor: verPapelera ? 'var(--color-dark)' : '#ffffff', 
+              color: verPapelera ? '#ffffff' : '#495057', 
+              padding: '10px 18px', borderRadius: '6px', 
+              border: '1px solid #ced4da', 
+              fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.03)'
+            }}
+            onMouseEnter={(e) => {
+               if(!verPapelera) {
+                 e.currentTarget.style.backgroundColor = '#f8f9fa';
+                 e.currentTarget.style.borderColor = '#adb5bd';
+               }
+            }}
+            onMouseLeave={(e) => {
+               if(!verPapelera) {
+                 e.currentTarget.style.backgroundColor = '#ffffff';
+                 e.currentTarget.style.borderColor = '#ced4da';
+               }
             }}
           >
-            {verPapelera ? 'Volver al Catálogo' : 'Ver Papelera'}
+            {verPapelera ? '⬅️ Volver al Catálogo' : '🚫 Ver Deshabilitados'}
           </button>
           {!verPapelera && (
             <Link
               to="/admin/combos/nuevo"
-              style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-dark)', padding: '10px 20px', borderRadius: '4px', textDecoration: 'none', fontWeight: 'bold' }}
+              style={{ display: 'flex', alignItems: 'center', backgroundColor: 'var(--color-primary)', color: 'var(--color-dark)', padding: '10px 20px', borderRadius: '6px', textDecoration: 'none', fontWeight: 'bold', boxShadow: '0 2px 5px rgba(0,0,0,0.08)' }}
             >
               + Crear Combo
             </Link>
@@ -201,10 +216,10 @@ const AdminCombos = () => {
             <span style={{ fontSize: '3rem' }}>🛍️</span>
             <div>
               <h3 style={{ margin: '0 0 5px 0', color: 'var(--color-dark)' }}>
-                {verPapelera ? 'La papelera está vacía' : 'No tenés combos armados'}
+                {verPapelera ? 'Sin combos deshabilitados' : 'No tenés combos armados'}
               </h3>
               <p style={{ margin: 0, color: 'var(--color-gray)' }}>
-                {verPapelera ? 'No hay combos inhabilitados actualmente.' : 'Aprovechá para agrupar productos y vender más.'}
+                {verPapelera ? 'No hay ningún combo en este estado hoy.' : 'Aprovechá para agrupar productos y vender más.'}
               </p>
             </div>
             <Link
@@ -252,9 +267,10 @@ const AdminCombos = () => {
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               margin: '0 auto 20px auto',
             }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#dc3545" strokeWidth="2">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#dc3545" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-                <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
               </svg>
             </div>
 

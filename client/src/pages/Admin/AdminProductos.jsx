@@ -52,8 +52,13 @@ const AdminProductos = () => {
   const [filtroCategoria, setFiltroCategoria] = useState('');
   const [filtroStock, setFiltroStock] = useState('todos'); // 'todos', 'bajo', 'agotado'
 
-  // Categorías extraídas automáticamente (únicas)
-  const categoriasUnicas = [...new Set(productos.map(p => p.categoria))];
+  // Categorías extraídas automáticamente (únicas), ordenadas alfabéticamente pero con "Sin categoría" al final
+  const categoriasUnicas = [...new Set(productos.map(p => p.categoria || 'Sin categoría'))]
+    .sort((a, b) => {
+      if (a === 'Sin categoría') return 1;
+      if (b === 'Sin categoría') return -1;
+      return a.localeCompare(b);
+    });
 
   // Lógica de filtrado
   const productosFiltrados = productos.filter(p => {
@@ -74,25 +79,40 @@ const AdminProductos = () => {
     <div className="admin-productos">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
         <h2 style={{ margin: 0 }}>
-          {verPapelera ? '🗑️ Papelera de Productos' : `Productos (${productosFiltrados.length})`}
+          {verPapelera ? '🚫 Productos Deshabilitados' : `Productos (${productosFiltrados.length})`}
         </h2>
         
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div style={{ display: 'flex', gap: '12px' }}>
           <button 
             onClick={() => setVerPapelera(!verPapelera)}
             style={{ 
-              backgroundColor: verPapelera ? 'var(--color-dark)' : '#f0f0f0', 
-              color: verPapelera ? '#fff' : 'var(--color-dark)', 
-              padding: '10px 15px', borderRadius: '4px', border: 'none', 
-              fontWeight: 'bold', cursor: 'pointer', transition: '0.2s'
+              display: 'flex', alignItems: 'center', gap: '8px',
+              backgroundColor: verPapelera ? 'var(--color-dark)' : '#ffffff', 
+              color: verPapelera ? '#ffffff' : '#495057', 
+              padding: '10px 18px', borderRadius: '6px', 
+              border: '1px solid #ced4da', 
+              fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.03)'
+            }}
+            onMouseEnter={(e) => {
+               if(!verPapelera) {
+                 e.currentTarget.style.backgroundColor = '#f8f9fa';
+                 e.currentTarget.style.borderColor = '#adb5bd';
+               }
+            }}
+            onMouseLeave={(e) => {
+               if(!verPapelera) {
+                 e.currentTarget.style.backgroundColor = '#ffffff';
+                 e.currentTarget.style.borderColor = '#ced4da';
+               }
             }}
           >
-            {verPapelera ? 'Volver al Catálogo' : 'Ver Papelera'}
+            {verPapelera ? '⬅️ Volver al Catálogo' : '🚫 Ver Deshabilitados'}
           </button>
           {!verPapelera && (
             <Link
               to="/admin/productos/nuevo"
-              style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-dark)', padding: '10px 20px', borderRadius: '4px', textDecoration: 'none', fontWeight: 'bold' }}
+              style={{ display: 'flex', alignItems: 'center', backgroundColor: 'var(--color-primary)', color: 'var(--color-dark)', padding: '10px 20px', borderRadius: '6px', textDecoration: 'none', fontWeight: 'bold', boxShadow: '0 2px 5px rgba(0,0,0,0.08)' }}
             >
               + Crear Producto
             </Link>
@@ -199,7 +219,20 @@ const AdminProductos = () => {
                       </span>
                     )}
                   </td>
-                  <td style={{ padding: '15px' }}>{prod.categoria}</td>
+                  <td style={{ padding: '15px' }}>
+                    {prod.categoria === 'Sin categoría' || !prod.categoria ? (
+                      <span style={{ 
+                        backgroundColor: '#fff3cd', color: '#856404', 
+                        padding: '4px 10px', borderRadius: '12px', 
+                        fontSize: '0.85em', fontWeight: 'bold',
+                        border: '1px solid #ffeeba'
+                      }}>
+                        Sin categoría
+                      </span>
+                    ) : (
+                      prod.categoria
+                    )}
+                  </td>
                   <td style={{ padding: '15px' }}>${(prod.precio || 0).toLocaleString('es-AR')}</td>
                   <td style={{ padding: '15px' }}>
                     <span style={{ 
@@ -277,9 +310,10 @@ const AdminProductos = () => {
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               margin: '0 auto 20px auto',
             }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#dc3545" strokeWidth="2">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#dc3545" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-                <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
               </svg>
             </div>
 

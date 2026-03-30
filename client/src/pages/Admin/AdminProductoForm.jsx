@@ -205,9 +205,13 @@ const AdminProductoForm = ({ isCombo = false }) => {
                 {categorias.length === 0 ? (
                   <option value="">— Sin categorías (creá una en el panel) —</option>
                 ) : (
-                  categorias.map((cat) => (
-                    <option key={cat._id} value={cat.nombre}>{cat.nombre}</option>
-                  ))
+                  <>
+                    <option value="" disabled>— Seleccionar categoría —</option>
+                    {categorias.map((cat) => (
+                      <option key={cat._id} value={cat.nombre}>{cat.nombre}</option>
+                    ))}
+                    <option value="Sin categoría" style={{ color: '#856404', fontWeight: 'bold' }}>Sin categoría</option>
+                  </>
                 )}
               </select>
             )}
