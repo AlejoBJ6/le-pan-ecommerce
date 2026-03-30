@@ -37,7 +37,7 @@ const pedidoSchema = new mongoose.Schema({
   },
   metodoPago: {
     type: String,
-    enum: ['tarjeta', 'transferencia', 'cuotas'],
+    enum: ['tarjeta', 'transferencia', 'cuotas', 'mercado_pago'],
     required: true
   },
   estadoPago: {
