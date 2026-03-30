@@ -1,5 +1,5 @@
 import Pedido from '../models/Pedido.js';
-import { MercadoPagoConfig, Preference } from 'mercadopago';
+import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
 
 
 // @desc    Crear un nuevo pedido
@@ -76,6 +76,11 @@ export const crearPedido = async (req, res) => {
            external_reference: createdPedido._id.toString()
          };
 
+         // Le decimos a MP a dónde enviar exactamente las notificaciones
+         if (process.env.BACKEND_URL) {
+           body.notification_url = `${process.env.BACKEND_URL}/api/pedidos/webhook`;
+         }
+
          console.log('Sending Preference to MP:', JSON.stringify(body, null, 2));
 
          const response = await preference.create({ body });
@@ -143,5 +148,49 @@ export const updateEstadoPedido = async (req, res) => {
   } catch (error) {
     console.error('Error updating pedido:', error);
     res.status(500).json({ message: 'Error del servidor al actualizar pedido' });
+  }
+};
+
+// @desc    Webhook para recibir validación de pagos asincrónica de Mercado Pago
+// @route   POST /api/pedidos/webhook
+// @access  Público
+export const webhookMercadoPago = async (req, res) => {
+  try {
+    // 1. Devolver 200 OK inmediatamente para evitar que MP nos marque como fallidos
+    res.status(200).send('OK');
+
+    // 2. Extraer el Payment ID de la notificación (Maneja tanto IPN como Webhooks)
+    const paymentId = req.query['data.id'] || req.query.id || req.body?.data?.id;
+    const type = req.query.type || req.query.topic || req.body?.type;
+
+    if (type === 'payment' && paymentId) {
+      console.log('Webhook MP recibido para paymentId:', paymentId);
+      
+      const client = new MercadoPagoConfig({ accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN || 'TEST-123' });
+      const paymentConfig = new Payment(client);
+      
+      // 3. Consultar la API de MP para ver el estado *real* del pago (por seguridad)
+      const paymentInfo = await paymentConfig.get({ id: paymentId });
+      
+      if (paymentInfo.external_reference) {
+        // 4. Buscar el pedido original en nuestra base de datos
+        const pedido = await Pedido.findById(paymentInfo.external_reference);
+        
+        if (pedido) {
+          // 5. Actualizar el estado de pago del Pedido
+          if (paymentInfo.status === 'approved') {
+            pedido.estadoPago = 'Aprobado';
+          } else if (paymentInfo.status === 'rejected' || paymentInfo.status === 'cancelled') {
+            pedido.estadoPago = 'Rechazado';
+          } else if (paymentInfo.status === 'in_process' || paymentInfo.status === 'pending') {
+            pedido.estadoPago = 'Pendiente';
+          }
+          await pedido.save();
+          console.log(`[MP] Pedido ${pedido._id} actualizado automáticamente a estado: ${pedido.estadoPago}`);
+        }
+      }
+    }
+  } catch (error) {
+    console.error('[MP] Error crítico procesando Webhook:', error);
   }
 };
