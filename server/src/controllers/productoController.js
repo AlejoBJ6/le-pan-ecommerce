@@ -35,14 +35,30 @@ export const obtenerProductos = async (req, res) => {
     }
     
     // Ejecutar consulta Mongoose
-    let dbQuery = Producto.find(query);
+    let dbQuery = Producto.find(query).populate('productosIncluidos', 'stock disponible eliminado');
     
     if (limit) {
       dbQuery = dbQuery.limit(Number(limit));
     }
     
-    const productos = await dbQuery;
-    res.json(productos);
+    let productos = await dbQuery;
+
+    // Calculo dinámico de stock para combos
+    const productosProcesados = productos.map(p => {
+      let prodData = p.toObject();
+      if (p.categoria === 'Combos' && p.productosIncluidos?.length > 0) {
+        const algunNoDisponible = p.productosIncluidos.some(inc => !inc.disponible || inc.eliminado || inc.stock <= 0);
+        if (algunNoDisponible) {
+          prodData.stock = 0;
+          prodData.disponible = false;
+        } else {
+          prodData.stock = Math.min(...p.productosIncluidos.map(inc => inc.stock));
+        }
+      }
+      return prodData;
+    });
+
+    res.json(productosProcesados);
   } catch (error) {
     res.status(500).json({ message: 'Error al obtener los productos', error: error.message });
   }
@@ -53,10 +69,20 @@ export const obtenerProductos = async (req, res) => {
 // @access  Public
 export const obtenerProductoPorId = async (req, res) => {
   try {
-    const producto = await Producto.findById(req.params.id);
+    const producto = await Producto.findById(req.params.id).populate('productosIncluidos', 'stock disponible eliminado nombre caracteristicas');
 
     if (producto) {
-      res.json(producto);
+      let prodData = producto.toObject();
+      if (producto.categoria === 'Combos' && producto.productosIncluidos?.length > 0) {
+        const algunNoDisponible = producto.productosIncluidos.some(inc => !inc.disponible || inc.eliminado || inc.stock <= 0);
+        if (algunNoDisponible) {
+          prodData.stock = 0;
+          prodData.disponible = false;
+        } else {
+          prodData.stock = Math.min(...producto.productosIncluidos.map(inc => inc.stock));
+        }
+      }
+      res.json(prodData);
     } else {
       res.status(404).json({ message: 'Producto no encontrado' });
     }
@@ -81,6 +107,8 @@ export const crearProducto = async (req, res) => {
       stock,
       disponible,
       destacado,
+      productosIncluidos,
+      caracteristicas,
     } = req.body;
 
     const producto = new Producto({
@@ -94,6 +122,8 @@ export const crearProducto = async (req, res) => {
       stock,
       disponible,
       destacado,
+      productosIncluidos,
+      caracteristicas: caracteristicas || [],
     });
 
     const productoCreado = await producto.save();
@@ -120,6 +150,8 @@ export const actualizarProducto = async (req, res) => {
       disponible,
       destacado,
       eliminado,
+      productosIncluidos,
+      caracteristicas,
     } = req.body;
 
     const producto = await Producto.findById(req.params.id);
@@ -136,6 +168,8 @@ export const actualizarProducto = async (req, res) => {
       producto.disponible = disponible !== undefined ? disponible : producto.disponible;
       producto.destacado = destacado !== undefined ? destacado : producto.destacado;
       producto.eliminado = eliminado !== undefined ? eliminado : producto.eliminado;
+      producto.productosIncluidos = productosIncluidos !== undefined ? productosIncluidos : producto.productosIncluidos;
+      producto.caracteristicas = caracteristicas !== undefined ? caracteristicas : producto.caracteristicas;
 
       const productoActualizado = await producto.save();
       res.json(productoActualizado);

@@ -2,17 +2,13 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { CartContext } from '../../context/CartContext.jsx';
 import productoService from '../../services/productoService';
+import { LuSettings, LuShieldCheck, LuTruck, LuCreditCard, LuBadgeCheck } from 'react-icons/lu';
 import './ProductDetail.css';
 
 const fallbackData = {
   ventas: 124,
   estrellas: 4.8,
   opiniones: 31,
-  cuotas: 6,
-  caracteristicas: [
-    { nombre: 'Garantía', valor: '12 meses' },
-    { nombre: 'Envío', valor: 'A convenir' }
-  ]
 };
 
 const ProductDetail = () => {
@@ -155,7 +151,9 @@ const ProductDetail = () => {
 
               {/* Info Section */}
               <div className="product-info">
-                <h1 className="product-title">{producto.nombre}</h1>
+                <h1 className="product-title" style={{ textTransform: 'capitalize', fontSize: '1.6rem', fontWeight: 600, color: '#444' }}>
+                  {producto.nombre.toLowerCase()}
+                </h1>
 
                 <div className="product-price-section">
                   {producto.precioAnterior > producto.precio && (
@@ -169,20 +167,57 @@ const ProductDetail = () => {
                       </span>
                     )}
                   </div>
-                  <div className="payment-installments">
-                    en {producto.cuotas}x de {precioFormat(producto.precio / producto.cuotas)} sin interés
+                  <div className="payment-installments" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#444' }}>
+                    <LuCreditCard size={20} color="#00a650" />
+                    <span>Pagá en cuotas con <strong style={{ color: '#00a650' }}>Mercado Pago</strong></span>
                   </div>
                 </div>
 
                 <div className="product-features">
-                  <h3>Lo que tenés que saber de este producto</h3>
-                  <ul>
-                    {producto.caracteristicas.map((c, idx) => (
-                      <li key={idx}>
-                        <strong>{c.nombre}:</strong> {c.valor}
-                      </li>
-                    ))}
-                  </ul>
+                  <h3>Especificaciones Técnicas</h3>
+
+                  {/* COMBO: heredamos specs de cada producto incluido */}
+                  {producto.categoria === 'Combos' && producto.productosIncluidos && producto.productosIncluidos.length > 0 ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                      {producto.productosIncluidos.map((prod, idx) => (
+                        <div key={idx}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                          <LuSettings size={16} color="var(--color-primary, #E8820C)" />
+                            <strong style={{ color: '#333', fontSize: '0.95rem', textTransform: 'capitalize' }}>
+                              {prod.nombre.toLowerCase()}
+                            </strong>
+                          </div>
+                          {prod.caracteristicas && prod.caracteristicas.length > 0 ? (
+                            <ul style={{ margin: 0, paddingLeft: '24px' }}>
+                              {prod.caracteristicas.map((c, cidx) => (
+                                <li key={cidx} style={{ fontSize: '0.9rem', color: '#555', padding: '2px 0' }}>
+                                  <strong>{c.nombre}:</strong> {c.valor}
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <p style={{ color: '#bbb', fontStyle: 'italic', fontSize: '0.85rem', marginLeft: '24px' }}>
+                              Sin specs cargadas para este producto.
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+
+                  /* PRODUCTO INDIVIDUAL: sus propias specs */
+                  ) : producto.caracteristicas && producto.caracteristicas.length > 0 ? (
+                    <ul>
+                      {producto.caracteristicas.map((c, idx) => (
+                        <li key={idx}>
+                          <strong>{c.nombre}:</strong> {c.valor}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p style={{ color: '#aaa', fontStyle: 'italic', fontSize: '0.9rem' }}>
+                      Sin especificaciones técnicas cargadas aún.
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -198,13 +233,13 @@ const ProductDetail = () => {
           <div className="product-sidebar">
             <div className="purchase-card">
 
-              <div className="manufacturer-info">
-                <div className="manufacturer-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 00-1-1h-2a1 1 0 00-1 1v5m4 0H9"></path></svg>
+              <div className="manufacturer-info" style={{ display: 'flex', alignItems: 'center', backgroundColor: '#fff9eb', padding: '12px', borderRadius: '8px', border: '1px solid #ffe8b3' }}>
+                <div style={{ color: '#E8820C', marginRight: '12px' }}>
+                  <LuBadgeCheck size={28} />
                 </div>
                 <div className="manufacturer-text">
-                  <span className="manufacturer-title">Fabricante directo</span>
-                  <span className="manufacturer-subtitle">Lé Pan — fabricación propia</span>
+                  <span className="manufacturer-title" style={{ display: 'block', fontWeight: 'bold', color: '#B36200' }}>Vendedor Verificado</span>
+                  <span className="manufacturer-subtitle" style={{ fontSize: '0.85rem', color: '#666' }}>Lé Pan — Fabricante Directo</span>
                 </div>
               </div>
 
@@ -236,13 +271,16 @@ const ProductDetail = () => {
               </div>
 
               <div className="purchase-guarantees">
-                <div className="guarantee-item">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                  <span><strong>Garantía de fábrica</strong>: 12 meses</span>
+                <div className="guarantee-item" style={{ marginBottom: '16px', display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                  <LuTruck size={24} color="#00a650" style={{ marginTop: '2px', flexShrink: 0 }} />
+                  <div>
+                    <span style={{ display: 'block', color: '#00a650', fontWeight: 'bold', fontSize: '1.05rem' }}>Envío GRATIS</span>
+                    <span style={{ fontSize: '0.85rem', color: '#666' }}>Entrega a coordinar (Sin cargo)</span>
+                  </div>
                 </div>
-                <div className="guarantee-item">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-                  <span><strong>Envío</strong> a coordinar con el equipo</span>
+                <div className="guarantee-item" style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                  <LuShieldCheck size={20} color="#666" style={{ marginTop: '2px', flexShrink: 0 }} />
+                  <span style={{ color: '#444' }}><strong>Garantía de fábrica</strong>: 12 meses</span>
                 </div>
               </div>
             </div>

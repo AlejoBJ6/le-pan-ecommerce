@@ -1,15 +1,16 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { CartContext } from '../../context/CartContext.jsx';
 import { AuthContext } from '../../context/AuthContext.jsx';
 import StepIndicator from '../../components/StepIndicator/StepIndicator.jsx';
 import pedidoService from '../../services/pedidoService.js';
+import { LuChevronRight, LuChevronLeft, LuShieldCheck, LuPhone, LuTruck, LuCreditCard, LuBuilding2 } from 'react-icons/lu';
 import './Checkout.css';
 
 const MP_GREEN = '#00a650';
 
 /* ─── STEP 1: Entrega ───────────────────────────────────── */
-const StepEntrega = ({ data, onChange, onNext }) => {
+const StepEntrega = ({ data, onChange, onNext, onBack }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     onNext();
@@ -22,11 +23,11 @@ const StepEntrega = ({ data, onChange, onNext }) => {
         <div className="form-row">
           <div className="form-group">
             <label>Nombre *</label>
-            <input type="text" placeholder="Juan" value={data.nombre} onChange={e => onChange('nombre', e.target.value)} required />
+            <input type="text" placeholder="Juan" value={data.nombre} onChange={e => onChange('nombre', e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, ''))} required />
           </div>
           <div className="form-group">
             <label>Apellido *</label>
-            <input type="text" placeholder="Pérez" value={data.apellido} onChange={e => onChange('apellido', e.target.value)} required />
+            <input type="text" placeholder="Pérez" value={data.apellido} onChange={e => onChange('apellido', e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, ''))} required />
           </div>
         </div>
         <div className="form-row">
@@ -36,7 +37,7 @@ const StepEntrega = ({ data, onChange, onNext }) => {
           </div>
           <div className="form-group">
             <label>Teléfono *</label>
-            <input type="tel" placeholder="+54 9 11 1234-5678" value={data.telefono} onChange={e => onChange('telefono', e.target.value)} required />
+            <input type="tel" placeholder="11 1234-5678" value={data.telefono} onChange={e => onChange('telefono', e.target.value.replace(/[^0-9+\-\s()]/g, ''))} required />
           </div>
         </div>
         <div className="form-row">
@@ -51,7 +52,7 @@ const StepEntrega = ({ data, onChange, onNext }) => {
           </div>
           <div className="form-group">
             <label>Ciudad *</label>
-            <input type="text" placeholder="Buenos Aires" value={data.ciudad} onChange={e => onChange('ciudad', e.target.value)} required />
+            <input type="text" placeholder="Buenos Aires" value={data.ciudad} onChange={e => onChange('ciudad', e.target.value.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s.,-]/g, ''))} required />
           </div>
         </div>
         <div className="form-row">
@@ -61,21 +62,28 @@ const StepEntrega = ({ data, onChange, onNext }) => {
           </div>
           <div className="form-group">
             <label>Piso / Depto</label>
-            <input type="text" placeholder="3B" value={data.piso} onChange={e => onChange('piso', e.target.value)} />
+            <input type="text" placeholder="3B" maxLength="6" value={data.piso} onChange={e => onChange('piso', e.target.value.trim().toUpperCase())} />
           </div>
           <div className="form-group">
             <label>Código Postal *</label>
-            <input type="text" placeholder="1000" value={data.cp} onChange={e => onChange('cp', e.target.value)} required />
+            <input type="text" placeholder="1000" maxLength="5" value={data.cp} onChange={e => onChange('cp', e.target.value.replace(/[^0-9]/g, ''))} required />
           </div>
         </div>
         <div className="form-group">
           <label>Notas adicionales</label>
           <textarea placeholder="Instrucciones especiales para la entrega..." value={data.notas} onChange={e => onChange('notas', e.target.value)} rows="2" />
         </div>
-        <button type="submit" className="btn-checkout-next">
-          Continuar al pago
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-        </button>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '20px' }}>
+          <button type="submit" className="btn-checkout-next" style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}>
+            Continuar al pago
+            <LuChevronRight size={20} />
+          </button>
+          
+          <button type="button" onClick={onBack} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '100%', padding: '15px', backgroundColor: 'transparent', border: '1px solid #ccc', borderRadius: '8px', fontWeight: 'bold', color: '#666', cursor: 'pointer', transition: 'all 0.2s' }}>
+            <LuChevronLeft size={18} />
+            Volver al carrito
+          </button>
+        </div>
       </form>
     </div>
   );
@@ -95,17 +103,13 @@ const StepPago = ({ cart, getCartTotal, onNext, onBack, loading }) => {
     <div className="checkout-step">
       <h2 className="checkout-step-title">Método de pago</h2>
 
-      {/* MP Logo banner */}
-      <div className="mp-banner">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/MercadoPago_logo.png/1200px-MercadoPago_logo.png" alt="Mercado Pago" className="mp-logo" />
-        <span className="mp-banner-text">Pagos seguros con <strong>Mercado Pago</strong></span>
-      </div>
+      {/* MP Logo banner removido por sugerencia de UI */}
 
       {/* Method Tabs */}
       <div className="payment-method-tabs">
         {[
-          { key: 'mercado_pago', label: 'Mercado Pago', icon: '💳' },
-          { key: 'transferencia', label: 'Transferencia Bancaria', icon: '🏦' },
+          { key: 'mercado_pago', label: 'Mercado Pago', icon: <LuCreditCard size={20} /> },
+          { key: 'transferencia', label: 'Transferencia Bancaria', icon: <LuBuilding2 size={20} /> },
         ].map(m => (
           <button
             key={m.key}
@@ -119,21 +123,37 @@ const StepPago = ({ cart, getCartTotal, onNext, onBack, loading }) => {
       </div>
 
       {metodo === 'mercado_pago' && (
-        <div className="transfer-info">
-          <div className="info-icon">🔒</div>
-          <h3>Mercado Pago</h3>
-          <p>Serás redirigido de forma segura a Mercado Pago para completar tu compra. Podrás abonar con:</p>
-          <ul style={{textAlign: 'left', margin: '15px auto', maxWidth: '300px', listStyle: 'none', padding: 0, color: '#4b5563', fontSize: '0.95rem'}}>
-            <li style={{marginBottom: '8px'}}>💳 Tarjetas de crédito y débito</li>
-            <li style={{marginBottom: '8px'}}>💸 Dinero en cuenta</li>
-            <li style={{marginBottom: '8px'}}>💵 Efectivo (Pago Fácil / Rapipago)</li>
+        <div className="transfer-info" style={{ backgroundColor: '#f9f9faf0', padding: '24px', borderRadius: '12px', textAlign: 'left', border: '1px solid #e0e0e0', display: 'flex', flexDirection: 'column', gap: '15px', marginBottom: '24px' }}>
+          <p style={{ margin: 0, fontSize: '0.95rem', color: '#444', lineHeight: '1.5' }}>
+            Serás redirigido de forma segura a Mercado Pago para completar tu compra. Podrás abonar con:
+          </p>
+          <ul style={{ listStyle: 'none', padding: 0, margin: 0, color: '#4b5563', fontSize: '0.95rem', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <li style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ display: 'flex', gap: '8px', background: '#fff', padding: '6px 10px', borderRadius: '6px', border: '1px solid #ddd' }}>
+                <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Visa.svg" alt="Visa" height="14"/>
+                <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" height="14"/>
+              </div>
+              Tarjetas de crédito y débito
+            </li>
+            <li style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ background: '#fff', padding: '6px 10px', borderRadius: '6px', border: '1px solid #ddd', display: 'flex', alignItems: 'center' }}>
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/MercadoPago_logo.png/1200px-MercadoPago_logo.png" alt="MercadoPago" height="14"/>
+              </div>
+              Dinero en tu cuenta
+            </li>
+            <li style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ background: '#fff', padding: '6px 10px', borderRadius: '6px', border: '1px solid #ddd', fontSize: '0.75rem', fontWeight: '800', color: '#333', letterSpacing: '0.5px' }}>
+                EFECTIVO
+              </div>
+              Pago Fácil / Rapipago
+            </li>
           </ul>
         </div>
       )}
 
       {metodo === 'transferencia' && (
         <div className="transfer-info">
-          <div className="info-icon">🏦</div>
+          <div className="info-icon"><LuBuilding2 size={28} color="#555" /></div>
           <h3>Transferencia Bancaria</h3>
           <p>Al confirmar tu pedido recibirás los datos bancarios por email. Tenés <strong>48hs</strong> para realizar el pago.</p>
           <div className="bank-data">
@@ -158,19 +178,28 @@ const StepPago = ({ cart, getCartTotal, onNext, onBack, loading }) => {
         <div className="checkout-order-row">
           <span>Subtotal</span><span>{formatPrice(subtotal)}</span>
         </div>
-        <div className="checkout-order-row">
-          <span>Envío</span><span style={{ color: MP_GREEN }}>Gratis</span>
+        <div className="checkout-order-row" style={{ flexDirection: 'column', gap: '4px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+            <span>Envío</span>
+            <span style={{ color: MP_GREEN, fontWeight: 'bold' }}>Gratis</span>
+          </div>
+          <span style={{ fontSize: '0.82rem', color: '#777' }}>Entrega estimada: 3 a 5 días hábiles</span>
         </div>
-        <div className="checkout-order-row checkout-order-total">
+        <div className="checkout-order-row checkout-order-total" style={{ marginTop: '12px' }}>
           <span>Total</span><span>{formatPrice(total)}</span>
         </div>
       </div>
 
       <div className="checkout-nav-btns">
-        <button className="btn-checkout-back" onClick={onBack} disabled={loading}>← Volver</button>
-        <button className="btn-checkout-next" onClick={() => onNext({ metodoPago: metodo, total, envio, subtotal })} disabled={loading}>
-          {loading ? 'Procesando...' : 'Confirmar y pagar'}
-          {!loading && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>}
+        <button className="btn-checkout-back" onClick={onBack} disabled={loading} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <LuChevronLeft size={18} /> Volver
+        </button>
+        <button className="btn-checkout-next" onClick={() => onNext({ metodoPago: metodo, total, envio, subtotal })} disabled={loading} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {loading ? (
+            <><span className="spinner-border"></span>Procesando seguro...</>
+          ) : (
+            <><LuShieldCheck size={18} />Confirmar y pagar</>
+          )}
         </button>
       </div>
     </div>
@@ -252,7 +281,18 @@ const Checkout = () => {
   const { cart, getCartTotal, clearCart } = useContext(CartContext);
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
-  const [subStep, setSubStep] = useState(0); // 0=entrega, 1=pago, 2=resumen
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Mapeamos el parámetro de la URL (0, 1, 2)
+  const pasoQuery = parseInt(searchParams.get('paso'), 10);
+  const subStep = isNaN(pasoQuery) || pasoQuery < 0 || pasoQuery > 2 ? 0 : pasoQuery;
+
+  // Envoltorio para mantener compatibilidad con componentes que usan setState
+  const setSubStep = (stepOrUpdater) => {
+    const nextStep = typeof stepOrUpdater === 'function' ? stepOrUpdater(subStep) : stepOrUpdater;
+    setSearchParams({ paso: nextStep });
+  };
+
   const [loading, setLoading] = useState(false);
   const [finalOrderData, setFinalOrderData] = useState(null);
   const stepKey = STEP_KEYS[subStep + 1]; // offset: carrito is step 0 in indicator
@@ -283,7 +323,7 @@ const Checkout = () => {
             nombre: item.nombre,
             precio: item.precio,
             cantidad: item.quantity,
-            imagen: item.imagen,
+            imagen: item.imagen || (item.imagenes && item.imagenes.length > 0 ? item.imagenes[0] : ''),
             esCombo: item.esCombo || false
           })),
           datosEntrega: entrega,
@@ -328,7 +368,7 @@ const Checkout = () => {
 
       <div className="checkout-container container">
         {subStep === 0 && (
-          <StepEntrega data={entrega} onChange={handleEntregaChange} onNext={advanceStep} />
+          <StepEntrega data={entrega} onChange={handleEntregaChange} onNext={advanceStep} onBack={backStep} />
         )}
         {subStep === 1 && (
           <StepPago cart={cart} getCartTotal={getCartTotal} onNext={advanceStep} onBack={backStep} loading={loading} />

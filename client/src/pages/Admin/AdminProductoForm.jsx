@@ -20,6 +20,7 @@ const AdminProductoForm = ({ isCombo = false }) => {
     disponible: true,
     destacado: false,
   });
+  const [caracteristicas, setCaracteristicas] = useState([{ nombre: '', valor: '' }]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [subiendoImagen, setSubiendoImagen] = useState(false);
@@ -28,6 +29,11 @@ const AdminProductoForm = ({ isCombo = false }) => {
   // Validation state
   const [touched, setTouched] = useState({});
   const [displayPrice, setDisplayPrice] = useState('');
+  
+  // Categoría en línea
+  const [showNuevaCategoria, setShowNuevaCategoria] = useState(false);
+  const [nuevaCategoriaNombre, setNuevaCategoriaNombre] = useState('');
+  const [creandoCategoria, setCreandoCategoria] = useState(false);
 
   useEffect(() => {
     // Cargar categorías dinámicas
@@ -43,6 +49,9 @@ const AdminProductoForm = ({ isCombo = false }) => {
           });
           if (data.precio) {
             setDisplayPrice(new Intl.NumberFormat('es-AR').format(data.precio));
+          }
+          if (data.caracteristicas && data.caracteristicas.length > 0) {
+            setCaracteristicas(data.caracteristicas);
           }
         } catch (err) {
           setError('Error al cargar el producto para editar');
@@ -87,6 +96,26 @@ const AdminProductoForm = ({ isCombo = false }) => {
     return touched[name] && (formData[name] === '' || formData[name] < 0);
   };
 
+  const handleCrearCategoria = async () => {
+    if (!nuevaCategoriaNombre || nuevaCategoriaNombre.trim() === '') {
+      setError('El nombre de la categoría es obligatorio.');
+      return;
+    }
+    setCreandoCategoria(true);
+    setError(null);
+    try {
+      const nuevaCat = await categoriaService.crearCategoria(nuevaCategoriaNombre);
+      setCategorias([...categorias, nuevaCat]);
+      setFormData({ ...formData, categoria: nuevaCat.nombre });
+      setShowNuevaCategoria(false);
+      setNuevaCategoriaNombre('');
+      setCreandoCategoria(false);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Error al crear la categoría.');
+      setCreandoCategoria(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -106,7 +135,8 @@ const AdminProductoForm = ({ isCombo = false }) => {
       ...formData,
       precio: Number(formData.precio),
       stock: Number(formData.stock),
-      imagenes: formData.imagenes.split(',').map(url => url.trim()).filter(url => url !== '')
+      imagenes: formData.imagenes.split(',').map(url => url.trim()).filter(url => url !== ''),
+      caracteristicas: caracteristicas.filter(c => c.nombre.trim() !== '' && c.valor.trim() !== '')
     };
 
     try {
@@ -196,24 +226,97 @@ const AdminProductoForm = ({ isCombo = false }) => {
             {isCombo ? (
               <input type="text" value="Combos" disabled className="admin-input-control" />
             ) : (
-              <select
-                name="categoria"
-                className="admin-input-control"
-                value={formData.categoria}
-                onChange={handleChange}
-              >
-                {categorias.length === 0 ? (
-                  <option value="">— Sin categorías (creá una en el panel) —</option>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {!showNuevaCategoria ? (
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <select
+                      name="categoria"
+                      className="admin-input-control"
+                      value={formData.categoria}
+                      onChange={handleChange}
+                      style={{ flex: 1 }}
+                    >
+                      {categorias.length === 0 ? (
+                        <option value="">— Sin categorías (creá una) —</option>
+                      ) : (
+                        <>
+                          <option value="" disabled>— Seleccionar categoría —</option>
+                          {categorias.map((cat) => (
+                            <option key={cat._id} value={cat.nombre}>{cat.nombre}</option>
+                          ))}
+                          <option value="Sin categoría" style={{ color: '#856404', fontWeight: 'bold' }}>Sin categoría</option>
+                        </>
+                      )}
+                    </select>
+                    <button 
+                      type="button" 
+                      onClick={() => setShowNuevaCategoria(true)}
+                      style={{ 
+                        backgroundColor: 'var(--color-dark)', 
+                        color: '#fff', 
+                        border: 'none', 
+                        borderRadius: '6px', 
+                        padding: '0 16px', 
+                        cursor: 'pointer', 
+                        fontWeight: 'bold',
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
+                      + Nueva
+                    </button>
+                  </div>
                 ) : (
-                  <>
-                    <option value="" disabled>— Seleccionar categoría —</option>
-                    {categorias.map((cat) => (
-                      <option key={cat._id} value={cat.nombre}>{cat.nombre}</option>
-                    ))}
-                    <option value="Sin categoría" style={{ color: '#856404', fontWeight: 'bold' }}>Sin categoría</option>
-                  </>
+                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                    <input 
+                      type="text" 
+                      className="admin-input-control" 
+                      value={nuevaCategoriaNombre}
+                      onChange={(e) => setNuevaCategoriaNombre(e.target.value)}
+                      placeholder="Nombre de la nueva categoría..."
+                      style={{ flex: 1 }}
+                      autoFocus
+                    />
+                    <button 
+                      type="button" 
+                      onClick={handleCrearCategoria}
+                      disabled={creandoCategoria}
+                      style={{ 
+                        backgroundColor: 'var(--color-primary)', 
+                        color: '#fff', 
+                        border: 'none', 
+                        borderRadius: '6px', 
+                        padding: '0 16px', 
+                        cursor: creandoCategoria ? 'not-allowed' : 'pointer', 
+                        fontWeight: 'bold',
+                        height: '100%',
+                        minHeight: '44px'
+                      }}
+                    >
+                      {creandoCategoria ? '...' : 'Crear'}
+                    </button>
+                    <button 
+                      type="button" 
+                      onClick={() => {
+                        setShowNuevaCategoria(false);
+                        setNuevaCategoriaNombre('');
+                      }}
+                      style={{ 
+                        backgroundColor: 'white', 
+                        color: 'var(--color-dark)', 
+                        border: '1px solid #ccc', 
+                        borderRadius: '6px', 
+                        padding: '0 16px', 
+                        cursor: 'pointer', 
+                        fontWeight: 'bold',
+                        height: '100%',
+                        minHeight: '44px'
+                      }}
+                    >
+                      Cancelar
+                    </button>
+                  </div>
                 )}
-              </select>
+              </div>
             )}
           </div>
         </div>
@@ -366,6 +469,59 @@ const AdminProductoForm = ({ isCombo = false }) => {
                </div>
              )}
           </div>
+        </div>
+
+        {/* SECCIÓN: ESPECIFICACIONES TÉCNICAS */}
+        <div className="admin-form-section">
+          <h3 className="admin-form-section-title">Especificaciones Técnicas</h3>
+          <p style={{ color: '#888', fontSize: '0.9rem', marginBottom: '16px' }}>Agregá filas con las specs del producto. Ej: Potencia → 2HP, Material → Acero Inoxidable</p>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {caracteristicas.map((spec, idx) => (
+              <div key={idx} style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <input
+                  type="text"
+                  className="admin-input-control"
+                  placeholder="Nombre (ej: Potencia)"
+                  value={spec.nombre}
+                  onChange={e => {
+                    const updated = [...caracteristicas];
+                    updated[idx] = { ...updated[idx], nombre: e.target.value };
+                    setCaracteristicas(updated);
+                  }}
+                  style={{ flex: 1 }}
+                />
+                <input
+                  type="text"
+                  className="admin-input-control"
+                  placeholder="Valor (ej: 2HP)"
+                  value={spec.valor}
+                  onChange={e => {
+                    const updated = [...caracteristicas];
+                    updated[idx] = { ...updated[idx], valor: e.target.value };
+                    setCaracteristicas(updated);
+                  }}
+                  style={{ flex: 1 }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setCaracteristicas(caracteristicas.filter((_, i) => i !== idx))}
+                  style={{ backgroundColor: '#fff', border: '1px solid #f5c2c7', borderRadius: '6px', color: '#dc3545', fontWeight: 'bold', width: '38px', height: '38px', cursor: 'pointer', fontSize: '1.1rem', flexShrink: 0 }}
+                  title="Eliminar fila"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setCaracteristicas([...caracteristicas, { nombre: '', valor: '' }])}
+            style={{ marginTop: '14px', backgroundColor: 'transparent', border: '1px dashed var(--color-primary)', borderRadius: '6px', color: 'var(--color-primary)', fontWeight: 'bold', padding: '10px 20px', cursor: 'pointer', width: '100%' }}
+          >
+            + Agregar especificación
+          </button>
         </div>
 
         <div style={{ marginTop: '30px', marginBottom: '40px' }}>
