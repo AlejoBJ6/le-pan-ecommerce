@@ -10,8 +10,9 @@ const fallbackData = {
   opiniones: 31,
   cuotas: 6,
   caracteristicas: [
-    { nombre: 'Garantía', valor: '12 meses' },
-    { nombre: 'Envío', valor: 'A convenir' }
+    { nombre: 'Material', valor: 'Acero Inoxidable' },
+    { nombre: 'Producción', valor: 'Uso Industrial Intensivo' },
+    { nombre: 'Eficiencia', valor: 'Alta precisión y durabilidad' }
   ]
 };
 
@@ -155,7 +156,9 @@ const ProductDetail = () => {
 
               {/* Info Section */}
               <div className="product-info">
-                <h1 className="product-title">{producto.nombre}</h1>
+                <h1 className="product-title" style={{ textTransform: 'capitalize', fontSize: '1.6rem', fontWeight: 600, color: '#444' }}>
+                  {producto.nombre.toLowerCase()}
+                </h1>
 
                 <div className="product-price-section">
                   {producto.precioAnterior > producto.precio && (
@@ -169,15 +172,18 @@ const ProductDetail = () => {
                       </span>
                     )}
                   </div>
-                  <div className="payment-installments">
-                    en {producto.cuotas}x de {precioFormat(producto.precio / producto.cuotas)} sin interés
+                  <div className="payment-installments" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#444' }}>
+                    <svg viewBox="0 0 24 24" fill="none" width="20" height="20" stroke="#00a650" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                    <span>Pagá en cuotas con <strong style={{ color: '#00a650' }}>Mercado Pago</strong></span>
                   </div>
                 </div>
 
                 <div className="product-features">
-                  <h3>Lo que tenés que saber de este producto</h3>
+                  <h3>Especificaciones Técnicas Principales</h3>
                   <ul>
-                    {producto.caracteristicas.map((c, idx) => (
+                    {producto.caracteristicas
+                      .filter(c => !c.nombre.toLowerCase().includes('garantía') && !c.nombre.toLowerCase().includes('envío'))
+                      .map((c, idx) => (
                       <li key={idx}>
                         <strong>{c.nombre}:</strong> {c.valor}
                       </li>
@@ -198,13 +204,13 @@ const ProductDetail = () => {
           <div className="product-sidebar">
             <div className="purchase-card">
 
-              <div className="manufacturer-info">
-                <div className="manufacturer-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 00-1-1h-2a1 1 0 00-1 1v5m4 0H9"></path></svg>
+              <div className="manufacturer-info" style={{ display: 'flex', alignItems: 'center', backgroundColor: '#fff9eb', padding: '12px', borderRadius: '8px', border: '1px solid #ffe8b3' }}>
+                <div style={{ color: '#E8820C', marginRight: '12px' }}>
+                  <svg viewBox="0 0 24 24" fill="none" width="28" height="28" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
                 </div>
                 <div className="manufacturer-text">
-                  <span className="manufacturer-title">Fabricante directo</span>
-                  <span className="manufacturer-subtitle">Lé Pan — fabricación propia</span>
+                  <span className="manufacturer-title" style={{ display: 'block', fontWeight: 'bold', color: '#B36200' }}>Vendedor Verificado</span>
+                  <span className="manufacturer-subtitle" style={{ fontSize: '0.85rem', color: '#666' }}>Lé Pan — Fabricante Directo</span>
                 </div>
               </div>
 
@@ -236,13 +242,16 @@ const ProductDetail = () => {
               </div>
 
               <div className="purchase-guarantees">
-                <div className="guarantee-item">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                  <span><strong>Garantía de fábrica</strong>: 12 meses</span>
+                <div className="guarantee-item" style={{ marginBottom: '16px', display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                  <svg viewBox="0 0 24 24" fill="none" width="24" height="24" stroke="#00a650" strokeWidth="2" style={{ marginTop: '2px' }}><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                  <div>
+                    <span style={{ display: 'block', color: '#00a650', fontWeight: 'bold', fontSize: '1.05rem' }}>Envío GRATIS</span>
+                    <span style={{ fontSize: '0.85rem', color: '#666' }}>Entrega a coordinar (Sin cargo)</span>
+                  </div>
                 </div>
-                <div className="guarantee-item">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-                  <span><strong>Envío</strong> a coordinar con el equipo</span>
+                <div className="guarantee-item" style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                  <svg viewBox="0 0 24 24" fill="none" width="20" height="20" stroke="#666" strokeWidth="2" style={{ marginTop: '2px' }}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                  <span style={{ color: '#444' }}><strong>Garantía de fábrica</strong>: 12 meses</span>
                 </div>
               </div>
             </div>

@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { CartContext } from '../../context/CartContext.jsx';
 import { AuthContext } from '../../context/AuthContext.jsx';
 import StepIndicator from '../../components/StepIndicator/StepIndicator.jsx';
@@ -9,7 +9,7 @@ import './Checkout.css';
 const MP_GREEN = '#00a650';
 
 /* ─── STEP 1: Entrega ───────────────────────────────────── */
-const StepEntrega = ({ data, onChange, onNext }) => {
+const StepEntrega = ({ data, onChange, onNext, onBack }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     onNext();
@@ -72,10 +72,17 @@ const StepEntrega = ({ data, onChange, onNext }) => {
           <label>Notas adicionales</label>
           <textarea placeholder="Instrucciones especiales para la entrega..." value={data.notas} onChange={e => onChange('notas', e.target.value)} rows="2" />
         </div>
-        <button type="submit" className="btn-checkout-next">
-          Continuar al pago
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-        </button>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '20px' }}>
+          <button type="submit" className="btn-checkout-next" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+            Continuar al pago
+            <svg viewBox="0 0 24 24" fill="none" width="20" height="20" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+          
+          <button type="button" onClick={onBack} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '100%', padding: '15px', backgroundColor: 'transparent', border: '1px solid #ccc', borderRadius: '8px', fontWeight: 'bold', color: '#666', cursor: 'pointer', transition: 'all 0.2s' }}>
+            <svg viewBox="0 0 24 24" fill="none" width="18" height="18" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            Volver al carrito
+          </button>
+        </div>
       </form>
     </div>
   );
@@ -279,7 +286,18 @@ const Checkout = () => {
   const { cart, getCartTotal, clearCart } = useContext(CartContext);
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
-  const [subStep, setSubStep] = useState(0); // 0=entrega, 1=pago, 2=resumen
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Mapeamos el parámetro de la URL (0, 1, 2)
+  const pasoQuery = parseInt(searchParams.get('paso'), 10);
+  const subStep = isNaN(pasoQuery) || pasoQuery < 0 || pasoQuery > 2 ? 0 : pasoQuery;
+
+  // Envoltorio para mantener compatibilidad con componentes que usan setState
+  const setSubStep = (stepOrUpdater) => {
+    const nextStep = typeof stepOrUpdater === 'function' ? stepOrUpdater(subStep) : stepOrUpdater;
+    setSearchParams({ paso: nextStep });
+  };
+
   const [loading, setLoading] = useState(false);
   const [finalOrderData, setFinalOrderData] = useState(null);
   const stepKey = STEP_KEYS[subStep + 1]; // offset: carrito is step 0 in indicator
@@ -355,7 +373,7 @@ const Checkout = () => {
 
       <div className="checkout-container container">
         {subStep === 0 && (
-          <StepEntrega data={entrega} onChange={handleEntregaChange} onNext={advanceStep} />
+          <StepEntrega data={entrega} onChange={handleEntregaChange} onNext={advanceStep} onBack={backStep} />
         )}
         {subStep === 1 && (
           <StepPago cart={cart} getCartTotal={getCartTotal} onNext={advanceStep} onBack={backStep} loading={loading} />
