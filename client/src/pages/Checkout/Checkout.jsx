@@ -4,6 +4,7 @@ import { CartContext } from '../../context/CartContext.jsx';
 import { AuthContext } from '../../context/AuthContext.jsx';
 import StepIndicator from '../../components/StepIndicator/StepIndicator.jsx';
 import pedidoService from '../../services/pedidoService.js';
+import { LuChevronRight, LuChevronLeft, LuShieldCheck, LuPhone, LuTruck, LuCreditCard, LuBuilding2 } from 'react-icons/lu';
 import './Checkout.css';
 
 const MP_GREEN = '#00a650';
@@ -73,13 +74,13 @@ const StepEntrega = ({ data, onChange, onNext, onBack }) => {
           <textarea placeholder="Instrucciones especiales para la entrega..." value={data.notas} onChange={e => onChange('notas', e.target.value)} rows="2" />
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '20px' }}>
-          <button type="submit" className="btn-checkout-next" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+          <button type="submit" className="btn-checkout-next" style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}>
             Continuar al pago
-            <svg viewBox="0 0 24 24" fill="none" width="20" height="20" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            <LuChevronRight size={20} />
           </button>
           
           <button type="button" onClick={onBack} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '100%', padding: '15px', backgroundColor: 'transparent', border: '1px solid #ccc', borderRadius: '8px', fontWeight: 'bold', color: '#666', cursor: 'pointer', transition: 'all 0.2s' }}>
-            <svg viewBox="0 0 24 24" fill="none" width="18" height="18" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            <LuChevronLeft size={18} />
             Volver al carrito
           </button>
         </div>
@@ -107,8 +108,8 @@ const StepPago = ({ cart, getCartTotal, onNext, onBack, loading }) => {
       {/* Method Tabs */}
       <div className="payment-method-tabs">
         {[
-          { key: 'mercado_pago', label: 'Mercado Pago', icon: '💳' },
-          { key: 'transferencia', label: 'Transferencia Bancaria', icon: '🏦' },
+          { key: 'mercado_pago', label: 'Mercado Pago', icon: <LuCreditCard size={20} /> },
+          { key: 'transferencia', label: 'Transferencia Bancaria', icon: <LuBuilding2 size={20} /> },
         ].map(m => (
           <button
             key={m.key}
@@ -152,7 +153,7 @@ const StepPago = ({ cart, getCartTotal, onNext, onBack, loading }) => {
 
       {metodo === 'transferencia' && (
         <div className="transfer-info">
-          <div className="info-icon">🏦</div>
+          <div className="info-icon"><LuBuilding2 size={28} color="#555" /></div>
           <h3>Transferencia Bancaria</h3>
           <p>Al confirmar tu pedido recibirás los datos bancarios por email. Tenés <strong>48hs</strong> para realizar el pago.</p>
           <div className="bank-data">
@@ -190,20 +191,14 @@ const StepPago = ({ cart, getCartTotal, onNext, onBack, loading }) => {
       </div>
 
       <div className="checkout-nav-btns">
-        <button className="btn-checkout-back" onClick={onBack} disabled={loading}>← Volver</button>
-        <button className="btn-checkout-next" onClick={() => onNext({ metodoPago: metodo, total, envio, subtotal })} disabled={loading}>
+        <button className="btn-checkout-back" onClick={onBack} disabled={loading} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <LuChevronLeft size={18} /> Volver
+        </button>
+        <button className="btn-checkout-next" onClick={() => onNext({ metodoPago: metodo, total, envio, subtotal })} disabled={loading} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           {loading ? (
-            <>
-              <span className="spinner-border"></span>
-              Procesando seguro...
-            </>
+            <><span className="spinner-border"></span>Procesando seguro...</>
           ) : (
-            <>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ width: '18px', marginRight: '4px' }}>
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-              </svg>
-              Confirmar y pagar
-            </>
+            <><LuShieldCheck size={18} />Confirmar y pagar</>
           )}
         </button>
       </div>

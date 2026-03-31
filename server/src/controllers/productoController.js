@@ -69,7 +69,7 @@ export const obtenerProductos = async (req, res) => {
 // @access  Public
 export const obtenerProductoPorId = async (req, res) => {
   try {
-    const producto = await Producto.findById(req.params.id).populate('productosIncluidos', 'stock disponible eliminado nombre');
+    const producto = await Producto.findById(req.params.id).populate('productosIncluidos', 'stock disponible eliminado nombre caracteristicas');
 
     if (producto) {
       let prodData = producto.toObject();
@@ -108,6 +108,7 @@ export const crearProducto = async (req, res) => {
       disponible,
       destacado,
       productosIncluidos,
+      caracteristicas,
     } = req.body;
 
     const producto = new Producto({
@@ -122,6 +123,7 @@ export const crearProducto = async (req, res) => {
       disponible,
       destacado,
       productosIncluidos,
+      caracteristicas: caracteristicas || [],
     });
 
     const productoCreado = await producto.save();
@@ -149,6 +151,7 @@ export const actualizarProducto = async (req, res) => {
       destacado,
       eliminado,
       productosIncluidos,
+      caracteristicas,
     } = req.body;
 
     const producto = await Producto.findById(req.params.id);
@@ -166,6 +169,7 @@ export const actualizarProducto = async (req, res) => {
       producto.destacado = destacado !== undefined ? destacado : producto.destacado;
       producto.eliminado = eliminado !== undefined ? eliminado : producto.eliminado;
       producto.productosIncluidos = productosIncluidos !== undefined ? productosIncluidos : producto.productosIncluidos;
+      producto.caracteristicas = caracteristicas !== undefined ? caracteristicas : producto.caracteristicas;
 
       const productoActualizado = await producto.save();
       res.json(productoActualizado);

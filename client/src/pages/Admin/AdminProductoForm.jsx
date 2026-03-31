@@ -20,6 +20,7 @@ const AdminProductoForm = ({ isCombo = false }) => {
     disponible: true,
     destacado: false,
   });
+  const [caracteristicas, setCaracteristicas] = useState([{ nombre: '', valor: '' }]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [subiendoImagen, setSubiendoImagen] = useState(false);
@@ -48,6 +49,9 @@ const AdminProductoForm = ({ isCombo = false }) => {
           });
           if (data.precio) {
             setDisplayPrice(new Intl.NumberFormat('es-AR').format(data.precio));
+          }
+          if (data.caracteristicas && data.caracteristicas.length > 0) {
+            setCaracteristicas(data.caracteristicas);
           }
         } catch (err) {
           setError('Error al cargar el producto para editar');
@@ -131,7 +135,8 @@ const AdminProductoForm = ({ isCombo = false }) => {
       ...formData,
       precio: Number(formData.precio),
       stock: Number(formData.stock),
-      imagenes: formData.imagenes.split(',').map(url => url.trim()).filter(url => url !== '')
+      imagenes: formData.imagenes.split(',').map(url => url.trim()).filter(url => url !== ''),
+      caracteristicas: caracteristicas.filter(c => c.nombre.trim() !== '' && c.valor.trim() !== '')
     };
 
     try {
@@ -464,6 +469,59 @@ const AdminProductoForm = ({ isCombo = false }) => {
                </div>
              )}
           </div>
+        </div>
+
+        {/* SECCIÓN: ESPECIFICACIONES TÉCNICAS */}
+        <div className="admin-form-section">
+          <h3 className="admin-form-section-title">Especificaciones Técnicas</h3>
+          <p style={{ color: '#888', fontSize: '0.9rem', marginBottom: '16px' }}>Agregá filas con las specs del producto. Ej: Potencia → 2HP, Material → Acero Inoxidable</p>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {caracteristicas.map((spec, idx) => (
+              <div key={idx} style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <input
+                  type="text"
+                  className="admin-input-control"
+                  placeholder="Nombre (ej: Potencia)"
+                  value={spec.nombre}
+                  onChange={e => {
+                    const updated = [...caracteristicas];
+                    updated[idx] = { ...updated[idx], nombre: e.target.value };
+                    setCaracteristicas(updated);
+                  }}
+                  style={{ flex: 1 }}
+                />
+                <input
+                  type="text"
+                  className="admin-input-control"
+                  placeholder="Valor (ej: 2HP)"
+                  value={spec.valor}
+                  onChange={e => {
+                    const updated = [...caracteristicas];
+                    updated[idx] = { ...updated[idx], valor: e.target.value };
+                    setCaracteristicas(updated);
+                  }}
+                  style={{ flex: 1 }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setCaracteristicas(caracteristicas.filter((_, i) => i !== idx))}
+                  style={{ backgroundColor: '#fff', border: '1px solid #f5c2c7', borderRadius: '6px', color: '#dc3545', fontWeight: 'bold', width: '38px', height: '38px', cursor: 'pointer', fontSize: '1.1rem', flexShrink: 0 }}
+                  title="Eliminar fila"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setCaracteristicas([...caracteristicas, { nombre: '', valor: '' }])}
+            style={{ marginTop: '14px', backgroundColor: 'transparent', border: '1px dashed var(--color-primary)', borderRadius: '6px', color: 'var(--color-primary)', fontWeight: 'bold', padding: '10px 20px', cursor: 'pointer', width: '100%' }}
+          >
+            + Agregar especificación
+          </button>
         </div>
 
         <div style={{ marginTop: '30px', marginBottom: '40px' }}>

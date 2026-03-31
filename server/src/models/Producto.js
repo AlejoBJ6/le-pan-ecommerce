@@ -56,6 +56,12 @@ const productoSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    caracteristicas: [
+      {
+        nombre: { type: String, trim: true },
+        valor: { type: String, trim: true },
+      }
+    ],
     eliminado: {
       type: Boolean,
       default: false,
