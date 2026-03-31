@@ -44,6 +44,10 @@ const productoSchema = new mongoose.Schema(
       default: 0,
       min: [0, 'El stock no puede ser negativo'],
     },
+    productosIncluidos: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Producto'
+    }],
     disponible: {
       type: Boolean,
       default: true,

@@ -28,6 +28,11 @@ const AdminProductoForm = ({ isCombo = false }) => {
   // Validation state
   const [touched, setTouched] = useState({});
   const [displayPrice, setDisplayPrice] = useState('');
+  
+  // Categoría en línea
+  const [showNuevaCategoria, setShowNuevaCategoria] = useState(false);
+  const [nuevaCategoriaNombre, setNuevaCategoriaNombre] = useState('');
+  const [creandoCategoria, setCreandoCategoria] = useState(false);
 
   useEffect(() => {
     // Cargar categorías dinámicas
@@ -85,6 +90,26 @@ const AdminProductoForm = ({ isCombo = false }) => {
 
   const isInvalidNum = (name) => {
     return touched[name] && (formData[name] === '' || formData[name] < 0);
+  };
+
+  const handleCrearCategoria = async () => {
+    if (!nuevaCategoriaNombre || nuevaCategoriaNombre.trim() === '') {
+      setError('El nombre de la categoría es obligatorio.');
+      return;
+    }
+    setCreandoCategoria(true);
+    setError(null);
+    try {
+      const nuevaCat = await categoriaService.crearCategoria(nuevaCategoriaNombre);
+      setCategorias([...categorias, nuevaCat]);
+      setFormData({ ...formData, categoria: nuevaCat.nombre });
+      setShowNuevaCategoria(false);
+      setNuevaCategoriaNombre('');
+      setCreandoCategoria(false);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Error al crear la categoría.');
+      setCreandoCategoria(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -196,24 +221,97 @@ const AdminProductoForm = ({ isCombo = false }) => {
             {isCombo ? (
               <input type="text" value="Combos" disabled className="admin-input-control" />
             ) : (
-              <select
-                name="categoria"
-                className="admin-input-control"
-                value={formData.categoria}
-                onChange={handleChange}
-              >
-                {categorias.length === 0 ? (
-                  <option value="">— Sin categorías (creá una en el panel) —</option>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {!showNuevaCategoria ? (
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <select
+                      name="categoria"
+                      className="admin-input-control"
+                      value={formData.categoria}
+                      onChange={handleChange}
+                      style={{ flex: 1 }}
+                    >
+                      {categorias.length === 0 ? (
+                        <option value="">— Sin categorías (creá una) —</option>
+                      ) : (
+                        <>
+                          <option value="" disabled>— Seleccionar categoría —</option>
+                          {categorias.map((cat) => (
+                            <option key={cat._id} value={cat.nombre}>{cat.nombre}</option>
+                          ))}
+                          <option value="Sin categoría" style={{ color: '#856404', fontWeight: 'bold' }}>Sin categoría</option>
+                        </>
+                      )}
+                    </select>
+                    <button 
+                      type="button" 
+                      onClick={() => setShowNuevaCategoria(true)}
+                      style={{ 
+                        backgroundColor: 'var(--color-dark)', 
+                        color: '#fff', 
+                        border: 'none', 
+                        borderRadius: '6px', 
+                        padding: '0 16px', 
+                        cursor: 'pointer', 
+                        fontWeight: 'bold',
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
+                      + Nueva
+                    </button>
+                  </div>
                 ) : (
-                  <>
-                    <option value="" disabled>— Seleccionar categoría —</option>
-                    {categorias.map((cat) => (
-                      <option key={cat._id} value={cat.nombre}>{cat.nombre}</option>
-                    ))}
-                    <option value="Sin categoría" style={{ color: '#856404', fontWeight: 'bold' }}>Sin categoría</option>
-                  </>
+                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                    <input 
+                      type="text" 
+                      className="admin-input-control" 
+                      value={nuevaCategoriaNombre}
+                      onChange={(e) => setNuevaCategoriaNombre(e.target.value)}
+                      placeholder="Nombre de la nueva categoría..."
+                      style={{ flex: 1 }}
+                      autoFocus
+                    />
+                    <button 
+                      type="button" 
+                      onClick={handleCrearCategoria}
+                      disabled={creandoCategoria}
+                      style={{ 
+                        backgroundColor: 'var(--color-primary)', 
+                        color: '#fff', 
+                        border: 'none', 
+                        borderRadius: '6px', 
+                        padding: '0 16px', 
+                        cursor: creandoCategoria ? 'not-allowed' : 'pointer', 
+                        fontWeight: 'bold',
+                        height: '100%',
+                        minHeight: '44px'
+                      }}
+                    >
+                      {creandoCategoria ? '...' : 'Crear'}
+                    </button>
+                    <button 
+                      type="button" 
+                      onClick={() => {
+                        setShowNuevaCategoria(false);
+                        setNuevaCategoriaNombre('');
+                      }}
+                      style={{ 
+                        backgroundColor: 'white', 
+                        color: 'var(--color-dark)', 
+                        border: '1px solid #ccc', 
+                        borderRadius: '6px', 
+                        padding: '0 16px', 
+                        cursor: 'pointer', 
+                        fontWeight: 'bold',
+                        height: '100%',
+                        minHeight: '44px'
+                      }}
+                    >
+                      Cancelar
+                    </button>
+                  </div>
                 )}
-              </select>
+              </div>
             )}
           </div>
         </div>

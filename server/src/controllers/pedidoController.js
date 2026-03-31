@@ -1,6 +1,6 @@
 import Pedido from '../models/Pedido.js';
+import Producto from '../models/Producto.js';
 import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
-
 
 // @desc    Crear un nuevo pedido
 // @route   POST /api/pedidos
@@ -179,7 +179,32 @@ export const webhookMercadoPago = async (req, res) => {
         if (pedido) {
           // 5. Actualizar el estado de pago del Pedido
           if (paymentInfo.status === 'approved') {
+            const eraAprobado = pedido.estadoPago === 'Aprobado';
             pedido.estadoPago = 'Aprobado';
+            
+            // 6. Descontar stock único (Prevenir doble descuento por reintentos de Webhook)
+            if (!eraAprobado) {
+              for (const item of pedido.pedidosData) {
+                const prod = await Producto.findById(item.productoId).populate('productosIncluidos');
+                if (prod) {
+                  // Si el producto comprado es un Combo y tiene ítems referenciados
+                  if (prod.categoria === 'Combos' && prod.productosIncluidos && prod.productosIncluidos.length > 0) {
+                    for (const incProd of prod.productosIncluidos) {
+                      // Descontamos por cada combo comprado la cantidad de veces especificada
+                      incProd.stock = Math.max((incProd.stock || 0) - Number(item.cantidad), 0);
+                      // Si llega a 0, lo marcamos agotado visualmente
+                      if (incProd.stock === 0) incProd.disponible = false;
+                      await incProd.save();
+                    }
+                  } else {
+                    // Si es un producto normal (Amasadora, Horno, etc...)
+                    prod.stock = Math.max((prod.stock || 0) - Number(item.cantidad), 0);
+                    if (prod.stock === 0) prod.disponible = false;
+                    await prod.save();
+                  }
+                }
+              }
+            }
           } else if (paymentInfo.status === 'rejected' || paymentInfo.status === 'cancelled') {
             pedido.estadoPago = 'Rechazado';
           } else if (paymentInfo.status === 'in_process' || paymentInfo.status === 'pending') {

@@ -341,9 +341,20 @@ const AdminComboConfig = () => {
   const toggleCategoria = (field, cat) => {
     setConfig(c => {
       const arr = c[field] || [];
-      return arr.includes(cat)
-        ? { ...c, [field]: arr.filter(x => x !== cat) }
-        : { ...c, [field]: [...arr, cat] };
+      const isAdding = !arr.includes(cat);
+      const otherField = field === 'categoriasPrincipal' ? 'categoriasComplemento' : 'categoriasPrincipal';
+      
+      let newConfig = { ...c };
+      
+      if (isAdding) {
+        // Añade al actual
+        newConfig[field] = [...arr, cat];
+        // Quita del otro
+        newConfig[otherField] = (c[otherField] || []).filter(x => x !== cat);
+      } else {
+        newConfig[field] = arr.filter(x => x !== cat);
+      }
+      return newConfig;
     });
   };
 

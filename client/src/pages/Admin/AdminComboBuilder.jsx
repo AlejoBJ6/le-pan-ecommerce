@@ -102,6 +102,7 @@ const AdminComboBuilder = () => {
       stock: 5,
       disponible: true,
       destacado: true,
+      productosIncluidos: seleccionados.map(p => p._id),
     };
 
     try {
