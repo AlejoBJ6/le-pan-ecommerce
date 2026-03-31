@@ -254,17 +254,20 @@ const AdminPedidos = () => {
             
             <div style={{ padding: '30px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '30px' }}>
-                <div style={{ backgroundColor: '#f8f9fa', padding: '15px', borderRadius: '8px', border: '1px solid #e9ecef' }}>
-                  <h4 style={{ margin: '0 0 10px 0', color: '#495057', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Datos del Cliente</h4>
-                  <p style={{ margin:'4px 0', fontWeight: 'bold' }}>{selectedPedido.datosEntrega.nombre} {selectedPedido.datosEntrega.apellido}</p>
-                  <p style={{ margin:'4px 0', color: '#666', fontSize: '0.95rem' }}><a href={`mailto:${selectedPedido.datosEntrega.email}`} style={{ color: 'var(--color-primary)' }}>{selectedPedido.datosEntrega.email}</a></p>
-                  <p style={{ margin:'4px 0', color: '#666', fontSize: '0.95rem' }}>📞 {selectedPedido.datosEntrega.telefono}</p>
+                <div style={{ backgroundColor: '#f8f9fa', padding: '15px', borderRadius: '8px', border: '1px solid #e9ecef', minHeight: '140px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <h4 style={{ margin: '0 0 6px 0', color: '#495057', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Datos del Cliente</h4>
+                  <p style={{ margin: 0, fontWeight: 'bold' }}>{selectedPedido.datosEntrega.nombre} {selectedPedido.datosEntrega.apellido}</p>
+                  <p style={{ margin: 0, fontSize: '0.95rem' }}><a href={`mailto:${selectedPedido.datosEntrega.email}`} style={{ color: '#444', textDecoration: 'none' }}>✉️ {selectedPedido.datosEntrega.email}</a></p>
+                  <p style={{ margin: 0, color: '#444', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                    {selectedPedido.datosEntrega.telefono}
+                  </p>
                 </div>
-                <div style={{ backgroundColor: '#f8f9fa', padding: '15px', borderRadius: '8px', border: '1px solid #e9ecef' }}>
-                  <h4 style={{ margin: '0 0 10px 0', color: '#495057', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Lugar de Entrega</h4>
-                  <p style={{ margin:'4px 0', fontWeight: 'bold' }}>{selectedPedido.datosEntrega.ciudad}, {selectedPedido.datosEntrega.provincia}</p>
-                  <p style={{ margin:'4px 0', color: '#666', fontSize: '0.95rem' }}>{selectedPedido.datosEntrega.direccion} {selectedPedido.datosEntrega.piso ? `(${selectedPedido.datosEntrega.piso})` : ''}</p>
-                  <p style={{ margin:'4px 0', color: '#666', fontSize: '0.95rem' }}>CP: {selectedPedido.datosEntrega.cp}</p>
+                <div style={{ backgroundColor: '#f8f9fa', padding: '15px', borderRadius: '8px', border: '1px solid #e9ecef', minHeight: '140px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <h4 style={{ margin: '0 0 6px 0', color: '#495057', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Lugar de Entrega</h4>
+                  <p style={{ margin: 0, fontWeight: 'bold', textTransform: 'capitalize' }}>{selectedPedido.datosEntrega.ciudad}, {selectedPedido.datosEntrega.provincia}</p>
+                  <p style={{ margin: 0, color: '#444', fontSize: '0.95rem' }}>{selectedPedido.datosEntrega.direccion} {selectedPedido.datosEntrega.piso ? `(${selectedPedido.datosEntrega.piso})` : ''}</p>
+                  <p style={{ margin: 0, color: '#444', fontSize: '0.95rem' }}>CP: {selectedPedido.datosEntrega.cp}</p>
                 </div>
               </div>
 
@@ -278,17 +281,32 @@ const AdminPedidos = () => {
               <h4 style={{ margin: '0 0 15px 0', borderBottom: '2px solid #eee', paddingBottom: '10px' }}>Artículos del Pedido</h4>
               <div style={{ marginBottom: '20px' }}>
                 {selectedPedido.pedidosData.map((item, idx) => (
-                  <div key={idx} style={{ display:'flex', justifyContent:'space-between', padding: '12px 10px', borderBottom: '1px solid #eee' }}>
-                    <div>
-                      <span style={{ fontWeight: 'bold', marginRight: '10px' }}>{item.cantidad}x</span> 
-                      <span>{item.nombre}</span>
+                  <div key={idx} style={{ display:'flex', justifyContent:'space-between', alignItems: 'center', padding: '12px 10px', borderBottom: '1px solid #eee' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                      {item.imagen ? (
+                        <img src={item.imagen} alt={item.nombre} style={{ width: '45px', height: '45px', objectFit: 'cover', borderRadius: '6px' }} />
+                      ) : (
+                        <div style={{ width: '45px', height: '45px', backgroundColor: '#e9ecef', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <svg width="20" height="20" fill="none" stroke="#adb5bd" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                        </div>
+                      )}
+                      <div>
+                        <span style={{ fontWeight: 'bold', marginRight: '6px', color: 'var(--color-primary)' }}>{item.cantidad}x</span> 
+                        <span style={{ fontWeight: '500' }}>{item.nombre}</span>
+                      </div>
                     </div>
                     <strong>{formatPrice(item.precio * item.cantidad)}</strong>
                   </div>
                 ))}
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div style={{ alignSelf: 'flex-end', padding: '0 10px' }}>
+                  <div style={{ padding: '6px 12px', backgroundColor: selectedPedido.estadoPago === 'Aprobado' ? '#e8f5e9' : '#e9ecef', border: `1px solid ${selectedPedido.estadoPago === 'Aprobado' ? '#c8e6c9' : '#ced4da'}`, borderRadius: '6px', display: 'inline-flex', flexDirection: 'column', gap: '4px' }}>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#666', textTransform: 'uppercase' }}>Método de pago</span>
+                    <strong style={{ color: selectedPedido.estadoPago === 'Aprobado' ? '#2e7d32' : '#495057' }}>{selectedPedido.metodoPago.replace('_', ' ').toUpperCase()}</strong>
+                  </div>
+                </div>
                 <div style={{ width: '250px' }}>
                   <div style={{ display:'flex', justifyContent:'space-between', padding: '5px 10px', color: '#666' }}>
                     <span>Subtotal</span><span>{formatPrice(selectedPedido.totales.subtotal)}</span>
@@ -299,14 +317,19 @@ const AdminPedidos = () => {
                   <div style={{ display:'flex', justifyContent:'space-between', margin: '15px 0 0 0', padding: '15px 10px', backgroundColor: '#f8f9fa', borderRadius: '8px', border: '1px solid #e9ecef', fontSize: '1.1rem' }}>
                     <strong>TOTAL</strong><strong style={{ color: 'var(--color-primary)' }}>{formatPrice(selectedPedido.totales.total)}</strong>
                   </div>
-                  <div style={{ textAlign: 'center', marginTop: '10px' }}>
-                    <small style={{ color: '#888' }}>Pago vía {selectedPedido.metodoPago.toUpperCase()}</small>
-                  </div>
                 </div>
               </div>
             </div>
             
             <div style={{ padding: '20px 30px', backgroundColor: '#f8f9fa', borderTop: '1px solid #eee', borderRadius: '0 0 12px 12px', display: 'flex', justifyContent: 'flex-end' }}>
+              <button 
+                onClick={() => window.print()} 
+                style={{ padding:'10px 24px', backgroundColor:'transparent', color: 'var(--color-dark)', border:'2px solid var(--color-dark)', borderRadius:'6px', cursor:'pointer', fontWeight: 'bold', transition: 'all 0.2s', marginRight: '12px' }} 
+                onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--color-dark)'; e.currentTarget.style.color = '#fff'; }} 
+                onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--color-dark)'; }}
+              >
+                Imprimir PDF
+              </button>
               <button 
                 onClick={() => setSelectedPedido(null)}
                 style={{ padding:'10px 24px', backgroundColor:'var(--color-dark)', color:'#fff', border:'none', borderRadius:'6px', cursor:'pointer', fontWeight: 'bold', transition: 'background-color 0.2s' }}

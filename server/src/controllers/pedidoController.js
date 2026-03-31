@@ -68,11 +68,10 @@ export const crearPedido = async (req, res) => {
              email: datosEntrega.email
            },
            back_urls: {
-             success: ((process.env.FRONTEND_URL || '').trim() || 'http://localhost:5173') + '/checkout-success',
-             failure: ((process.env.FRONTEND_URL || '').trim() || 'http://localhost:5173') + '/checkout-failure',
-             pending: ((process.env.FRONTEND_URL || '').trim() || 'http://localhost:5173') + '/checkout-pending'
+             success: ((process.env.FRONTEND_URL || '').trim() || 'http://localhost:5173').replace(/\/$/, '') + '/checkout-success',
+             failure: ((process.env.FRONTEND_URL || '').trim() || 'http://localhost:5173').replace(/\/$/, '') + '/checkout-failure',
+             pending: ((process.env.FRONTEND_URL || '').trim() || 'http://localhost:5173').replace(/\/$/, '') + '/checkout-pending'
            },
-           auto_return: 'approved',
            external_reference: createdPedido._id.toString()
          };
 
