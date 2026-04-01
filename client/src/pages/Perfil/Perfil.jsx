@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import authService from '../../services/authService';
 import pedidoService from '../../services/pedidoService';
+import { LuTruck } from 'react-icons/lu';
 
 const EyeIcon = ({ show }) => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -165,7 +166,7 @@ const Perfil = () => {
                   value={confirmPassword} 
                   onChange={(e) => setConfirmPassword(e.target.value)} 
                   placeholder="Repite la nueva contraseña" 
-                  required={!!password} /* Requerido solo si password tiene algo */
+                  required={!!password}
                   style={{ width: '100%', padding: '12px', paddingRight: '40px', borderRadius: '6px', border: '1px solid #ddd', backgroundColor: '#fdfdfd', color: 'var(--color-dark)', fontSize: '1rem' }} 
                 />
                 <button 
@@ -237,12 +238,13 @@ const Perfil = () => {
                      </span>
                    </div>
                    {pedido.estadoEntrega !== 'Entregado' && pedido.estadoEntrega !== 'Cancelado' && fMin && (
-                     <div style={{ marginTop: '10px', fontSize: '0.85rem', color: '#17a2b8' }}>
-                       🚚 Entrega estimada: {fMin} a {fMax}
+                     <div style={{ marginTop: '10px', fontSize: '0.85rem', color: '#17a2b8', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                       <LuTruck size={16} /> Entrega estimada: {fMin} a {fMax}
                      </div>
                    )}
                  </div>
-               )})}
+                 );
+               })}
              </div>
            )}
         </div>

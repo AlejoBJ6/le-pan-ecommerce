@@ -3,6 +3,7 @@ import { CartContext } from '../../context/CartContext.jsx';
 import productoService from '../../services/productoService.js';
 import categoriaService from '../../services/categoriaService.js';
 import comboConfigService from '../../services/comboConfigService.js';
+import { LuPackage, LuCirclePlus, LuShoppingCart, LuCheck } from 'react-icons/lu';
 import './ArmaCombo.css';
 
 const SelectableCard = ({ producto, isSelected, onSelect, onVerDetalle, selectionCount }) => (
@@ -225,7 +226,7 @@ const ArmaCombo = () => {
             
             <div className="summary-list">
               <div className="summary-item">
-                <span className="summary-label">🛒 Principales ({items1.length}/{comboConfig.maxPrincipal})</span>
+                <span className="summary-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><LuPackage size={18} /> Principales ({items1.length}/{comboConfig.maxPrincipal})</span>
                 <div className="summary-details">
                   {items1.length === 0 ? (
                     <span className="summary-empty">Sin seleccionar...</span>
@@ -239,7 +240,7 @@ const ArmaCombo = () => {
               </div>
               
               <div className="summary-item">
-                <span className="summary-label">➕ Complementos ({items2.length}/{comboConfig.maxComplemento})</span>
+                <span className="summary-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><LuCirclePlus size={18} /> Complementos ({items2.length}/{comboConfig.maxComplemento})</span>
                 <div className="summary-details">
                   {items2.length === 0 ? (
                     <span className="summary-empty">Sin seleccionar...</span>
@@ -274,8 +275,9 @@ const ArmaCombo = () => {
               className={`btn-checkout-combo ${isAdded ? 'btn-added' : ''}`} 
               disabled={!comboComplete}
               onClick={handleAddToCart}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
             >
-              {isAdded ? '¡Combo Añadido! ✓' : (comboComplete ? '🛒 Añadir Combo al Carrito' : `Completá los ${items1.length < comboConfig.maxPrincipal ? 'productos' : 'complementos'} para continuar`)}
+              {isAdded ? <><LuCheck size={20} /> ¡Combo Añadido!</> : (comboComplete ? <><LuShoppingCart size={20} /> Añadir Combo al Carrito</> : `Completá los ${items1.length < comboConfig.maxPrincipal ? 'productos' : 'complementos'} para continuar`)}
             </button>
             {!comboComplete && <p className="combo-hint">El descuento {comboConfig.tipoDescuento === 'porcentaje' ? `del ${comboConfig.descuento}%` : `fijo de $${comboConfig.descuento.toLocaleString('es-AR')}`} se activa al completar ambos pasos.</p>}
           </div>
