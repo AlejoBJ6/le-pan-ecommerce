@@ -52,6 +52,8 @@
   }
 
   .whatsapp-btn.whatsapp-btn-arma {
-    bottom: 220px; /* Ajustado para quedar más cerca del cuadro pero sin entrar a él */
+    bottom: 220px;
+    right: 2px;
+    border-radius: 22px;
   }
 }
