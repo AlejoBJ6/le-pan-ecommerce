@@ -49,6 +49,10 @@ const pedidoSchema = new mongoose.Schema({
     type: String,
     enum: ['Pendiente', 'En preparación', 'Enviado', 'Entregado', 'Cancelado'],
     default: 'Pendiente'
+  },
+  stockDescontado: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true

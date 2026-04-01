@@ -2,6 +2,67 @@ import Pedido from '../models/Pedido.js';
 import Producto from '../models/Producto.js';
 import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
 
+/**
+ * Helper para descontar stock de forma atómica y segura.
+ * Se encarga de productos individuales y de desglosar combos.
+ */
+const descontarStockPedido = async (pedido) => {
+  if (pedido.stockDescontado) return;
+
+  // 1. Recolectar todos los productos a descontar (desglosando combos si aplica)
+  const aDescontar = [];
+  for (const item of pedido.pedidosData) {
+    const prod = await Producto.findById(item.productoId).populate('productosIncluidos');
+    if (!prod) continue;
+
+    if (prod.categoria === 'Combos' && prod.productosIncluidos?.length > 0) {
+      for (const incProd of prod.productosIncluidos) {
+        aDescontar.push({
+          id: incProd._id,
+          cantidad: Number(item.cantidad),
+          nombre: incProd.nombre
+        });
+      }
+    } else {
+      aDescontar.push({
+        id: item.productoId,
+        cantidad: Number(item.cantidad),
+        nombre: item.nombre
+      });
+    }
+  }
+
+  // 2. Verificar disponibilidad de stock para TODOS antes de empezar a descontar
+  for (const item of aDescontar) {
+    const p = await Producto.findById(item.id);
+    if (!p || p.stock < item.cantidad) {
+      throw new Error(`Stock insuficiente para "${item.nombre}". Disponible: ${p?.stock || 0}, Requerido: ${item.cantidad}`);
+    }
+  }
+
+  // 3. Aplicar descuentos atómicamente ($inc negativo)
+  for (const item of aDescontar) {
+    const result = await Producto.updateOne(
+      { _id: item.id, stock: { $gte: item.cantidad } },
+      { $inc: { stock: -item.cantidad } }
+    );
+
+    if (result.modifiedCount === 0) {
+      throw new Error(`Error de concurrencia al descontar "${item.nombre}". Intente nuevamente.`);
+    }
+
+    // Si el stock llega a 0, marcar como no disponible
+    const pActualizado = await Producto.findById(item.id);
+    if (pActualizado && pActualizado.stock === 0) {
+      pActualizado.disponible = false;
+      await pActualizado.save();
+    }
+  }
+
+  // 4. Marcar pedido como stock descontado para evitar duplicados
+  pedido.stockDescontado = true;
+};
+
 // @desc    Crear un nuevo pedido
 // @route   POST /api/pedidos
 // @access  Privado (Cliente)
@@ -137,6 +198,12 @@ export const updateEstadoPedido = async (req, res) => {
 
     if (pedido) {
       if (estadoEntrega) pedido.estadoEntrega = estadoEntrega;
+      
+      // Si cambia a Aprobado y antes no lo estaba, descontamos stock
+      if (estadoPago === 'Aprobado' && pedido.estadoPago !== 'Aprobado') {
+        await descontarStockPedido(pedido);
+      }
+      
       if (estadoPago) pedido.estadoPago = estadoPago;
 
       const updatedPedido = await pedido.save();
@@ -146,6 +213,10 @@ export const updateEstadoPedido = async (req, res) => {
     }
   } catch (error) {
     console.error('Error updating pedido:', error);
+    // Si es un error de stock o validación controlada, enviamos 400 y el mensaje
+    if (error.message.includes('Stock insuficiente') || error.message.includes('concurrencia')) {
+      return res.status(400).json({ message: error.message });
+    }
     res.status(500).json({ message: 'Error del servidor al actualizar pedido' });
   }
 };
@@ -181,29 +252,8 @@ export const webhookMercadoPago = async (req, res) => {
             const eraAprobado = pedido.estadoPago === 'Aprobado';
             pedido.estadoPago = 'Aprobado';
             
-            // 6. Descontar stock único (Prevenir doble descuento por reintentos de Webhook)
-            if (!eraAprobado) {
-              for (const item of pedido.pedidosData) {
-                const prod = await Producto.findById(item.productoId).populate('productosIncluidos');
-                if (prod) {
-                  // Si el producto comprado es un Combo y tiene ítems referenciados
-                  if (prod.categoria === 'Combos' && prod.productosIncluidos && prod.productosIncluidos.length > 0) {
-                    for (const incProd of prod.productosIncluidos) {
-                      // Descontamos por cada combo comprado la cantidad de veces especificada
-                      incProd.stock = Math.max((incProd.stock || 0) - Number(item.cantidad), 0);
-                      // Si llega a 0, lo marcamos agotado visualmente
-                      if (incProd.stock === 0) incProd.disponible = false;
-                      await incProd.save();
-                    }
-                  } else {
-                    // Si es un producto normal (Amasadora, Horno, etc...)
-                    prod.stock = Math.max((prod.stock || 0) - Number(item.cantidad), 0);
-                    if (prod.stock === 0) prod.disponible = false;
-                    await prod.save();
-                  }
-                }
-              }
-            }
+            // 6. Descontar stock usando el helper (maneja duplicados con stockDescontado)
+            await descontarStockPedido(pedido);
           } else if (paymentInfo.status === 'rejected' || paymentInfo.status === 'cancelled') {
             pedido.estadoPago = 'Rechazado';
           } else if (paymentInfo.status === 'in_process' || paymentInfo.status === 'pending') {
