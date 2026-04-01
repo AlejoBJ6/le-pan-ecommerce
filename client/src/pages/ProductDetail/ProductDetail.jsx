@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { CartContext } from '../../context/CartContext.jsx';
 import productoService from '../../services/productoService';
-import { LuSettings, LuShieldCheck, LuTruck, LuCreditCard, LuBadgeCheck } from 'react-icons/lu';
+import { LuWrench, LuShieldCheck, LuTruck, LuCreditCard, LuBadgeCheck } from 'react-icons/lu';
 import './ProductDetail.css';
 
 const fallbackData = {
@@ -31,8 +31,24 @@ const ProductDetail = () => {
     const fetchProd = async () => {
       try {
         const prodData = await productoService.obtenerProductoPorId(id);
-        setProducto({ ...fallbackData, ...prodData });
-        setImagenActiva(prodData.imagenes?.length > 0 ? prodData.imagenes[0] : 'https://via.placeholder.com/300x300?text=No+Image');
+        
+        let imagenesTotales = prodData.imagenes?.length > 0 ? [...prodData.imagenes] : [];
+        
+        // Si es un combo, integramos la primera imagen de cada producto incluido si no está ya
+        if (prodData.categoria === 'Combos' && prodData.productosIncluidos) {
+          prodData.productosIncluidos.forEach(p => {
+            if (p.imagenes && p.imagenes.length > 0) {
+              const img = p.imagenes[0];
+              if (!imagenesTotales.includes(img)) {
+                imagenesTotales.push(img);
+              }
+            }
+          });
+        }
+
+        const extendedProd = { ...fallbackData, ...prodData, imagenes: imagenesTotales };
+        setProducto(extendedProd);
+        setImagenActiva(imagenesTotales.length > 0 ? imagenesTotales[0] : 'https://via.placeholder.com/300x300?text=No+Image');
       } catch (err) {
         console.error("Error cargando detalles del producto", err);
       } finally {
@@ -182,7 +198,7 @@ const ProductDetail = () => {
                       {producto.productosIncluidos.map((prod, idx) => (
                         <div key={idx}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                          <LuSettings size={16} color="var(--color-primary, #E8820C)" />
+                          <LuWrench size={16} color="var(--color-primary, #E8820C)" />
                             <strong style={{ color: '#333', fontSize: '0.95rem', textTransform: 'capitalize' }}>
                               {prod.nombre.toLowerCase()}
                             </strong>
@@ -190,8 +206,9 @@ const ProductDetail = () => {
                           {prod.caracteristicas && prod.caracteristicas.length > 0 ? (
                             <ul style={{ margin: 0, paddingLeft: '24px' }}>
                               {prod.caracteristicas.map((c, cidx) => (
-                                <li key={cidx} style={{ fontSize: '0.9rem', color: '#555', padding: '2px 0' }}>
-                                  <strong>{c.nombre}:</strong> {c.valor}
+                                <li key={cidx} style={{ fontSize: '0.9rem', color: '#555', padding: '2px 0', listStyle: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                  <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#ccc' }}></div>
+                                  <span><strong>{c.nombre}:</strong> {c.valor}</span>
                                 </li>
                               ))}
                             </ul>
@@ -206,10 +223,11 @@ const ProductDetail = () => {
 
                   /* PRODUCTO INDIVIDUAL: sus propias specs */
                   ) : producto.caracteristicas && producto.caracteristicas.length > 0 ? (
-                    <ul>
+                     <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                       {producto.caracteristicas.map((c, idx) => (
-                        <li key={idx}>
-                          <strong>{c.nombre}:</strong> {c.valor}
+                        <li key={idx} style={{ fontSize: '0.9rem', color: '#555', padding: '4px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <LuWrench size={14} color="var(--color-primary, #E8820C)" />
+                          <span><strong>{c.nombre}:</strong> {c.valor}</span>
                         </li>
                       ))}
                     </ul>

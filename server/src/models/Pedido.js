@@ -8,7 +8,7 @@ const pedidoSchema = new mongoose.Schema({
   },
   pedidosData: [ // Renamed from items to pedidosData or just items. Let's stick to items.
     {
-      productoId: { type: mongoose.Schema.Types.ObjectId, required: true }, // Puede ser Producto o Combo
+      productoId: { type: mongoose.Schema.Types.Mixed }, // Mixed: acepta ObjectId o string (ej: combos dinámicos)
       nombre: { type: String, required: true },
       precio: { type: Number, required: true },
       cantidad: { type: Number, required: true },
@@ -49,6 +49,10 @@ const pedidoSchema = new mongoose.Schema({
     type: String,
     enum: ['Pendiente', 'En preparación', 'Enviado', 'Entregado', 'Cancelado'],
     default: 'Pendiente'
+  },
+  stockDescontado: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true

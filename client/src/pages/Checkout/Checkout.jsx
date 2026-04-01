@@ -4,7 +4,7 @@ import { CartContext } from '../../context/CartContext.jsx';
 import { AuthContext } from '../../context/AuthContext.jsx';
 import StepIndicator from '../../components/StepIndicator/StepIndicator.jsx';
 import pedidoService from '../../services/pedidoService.js';
-import { LuChevronRight, LuChevronLeft, LuShieldCheck, LuPhone, LuTruck, LuCreditCard, LuBuilding2 } from 'react-icons/lu';
+import { LuChevronRight, LuChevronLeft, LuShieldCheck, LuPhone, LuTruck, LuCreditCard, LuBuilding2, LuPackage, LuNotebook } from 'react-icons/lu';
 import './Checkout.css';
 
 const MP_GREEN = '#00a650';
@@ -73,15 +73,12 @@ const StepEntrega = ({ data, onChange, onNext, onBack }) => {
           <label>Notas adicionales</label>
           <textarea placeholder="Instrucciones especiales para la entrega..." value={data.notas} onChange={e => onChange('notas', e.target.value)} rows="2" />
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '20px' }}>
-          <button type="submit" className="btn-checkout-next" style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}>
-            Continuar al pago
-            <LuChevronRight size={20} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '24px' }}>
+          <button type="submit" className="btn-checkout-next" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '100%' }}>
+            Continuar al pago <LuChevronRight size={20} />
           </button>
-          
-          <button type="button" onClick={onBack} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '100%', padding: '15px', backgroundColor: 'transparent', border: '1px solid #ccc', borderRadius: '8px', fontWeight: 'bold', color: '#666', cursor: 'pointer', transition: 'all 0.2s' }}>
-            <LuChevronLeft size={18} />
-            Volver al carrito
+          <button type="button" className="btn-checkout-back" onClick={onBack} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', width: '100%' }}>
+            <LuChevronLeft size={18} /> Volver
           </button>
         </div>
       </form>
@@ -190,16 +187,16 @@ const StepPago = ({ cart, getCartTotal, onNext, onBack, loading }) => {
         </div>
       </div>
 
-      <div className="checkout-nav-btns">
-        <button className="btn-checkout-back" onClick={onBack} disabled={loading} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <LuChevronLeft size={18} /> Volver
-        </button>
-        <button className="btn-checkout-next" onClick={() => onNext({ metodoPago: metodo, total, envio, subtotal })} disabled={loading} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '8px' }}>
+        <button className="btn-checkout-next" onClick={() => onNext({ metodoPago: metodo, total, envio, subtotal })} disabled={loading} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '100%' }}>
           {loading ? (
             <><span className="spinner-border"></span>Procesando seguro...</>
           ) : (
             <><LuShieldCheck size={18} />Confirmar y pagar</>
           )}
+        </button>
+        <button className="btn-checkout-back" onClick={onBack} disabled={loading} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', width: '100%' }}>
+          <LuChevronLeft size={18} /> Volver
         </button>
       </div>
     </div>
@@ -230,16 +227,16 @@ const StepResumen = ({ entrega, finalOrderData }) => {
         <p className="order-email">Te enviaremos la confirmación a <strong>{entrega.email}</strong></p>
 
         {fMin && fMax && (
-          <div style={{ marginTop: '10px', padding: '10px', backgroundColor: '#e9f5ff', borderRadius: '8px', border: '1px solid #bce0fd' }}>
-            <strong>🚚 Entrega estimada:</strong><br />
-            Entre el {fMin} y el {fMax}
+          <div style={{ marginTop: '10px', padding: '10px', backgroundColor: '#e9f5ff', borderRadius: '8px', border: '1px solid #bce0fd', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+            <LuTruck size={18} color="#17a2b8" />
+            <strong>Entrega estimada:</strong> Entre el {fMin} y el {fMax}
           </div>
         )}
       </div>
 
       <div className="resumen-cards">
         <div className="resumen-card">
-          <h4>📦 Productos</h4>
+          <h4 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><LuPackage size={18} /> Productos</h4>
           {finalOrderData && finalOrderData.pedidosData ? finalOrderData.pedidosData.map((item, idx) => (
             <div key={idx} className="checkout-order-item">
               <span>{item.nombre} × {item.cantidad}</span>
@@ -253,12 +250,12 @@ const StepResumen = ({ entrega, finalOrderData }) => {
         </div>
 
         <div className="resumen-card">
-          <h4>🚚 Datos de entrega</h4>
+          <h4 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><LuTruck size={18} /> Datos de entrega</h4>
           <p><strong>{entrega.nombre} {entrega.apellido}</strong></p>
           <p>{entrega.direccion}{entrega.piso ? `, ${entrega.piso}` : ''}</p>
           <p>{entrega.ciudad}, {entrega.provincia} ({entrega.cp})</p>
-          <p>📞 {entrega.telefono}</p>
-          {entrega.notas && <p className="notas-entrega">📝 {entrega.notas}</p>}
+          <p style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><LuPhone size={15} /> {entrega.telefono}</p>
+          {entrega.notas && <p className="notas-entrega" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><LuNotebook size={15} /> {entrega.notas}</p>}
         </div>
       </div>
 

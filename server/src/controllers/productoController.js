@@ -35,7 +35,7 @@ export const obtenerProductos = async (req, res) => {
     }
     
     // Ejecutar consulta Mongoose
-    let dbQuery = Producto.find(query).populate('productosIncluidos', 'stock disponible eliminado');
+    let dbQuery = Producto.find(query).populate('productosIncluidos', 'stock disponible eliminado nombre caracteristicas imagenes');
     
     if (limit) {
       dbQuery = dbQuery.limit(Number(limit));
@@ -69,7 +69,7 @@ export const obtenerProductos = async (req, res) => {
 // @access  Public
 export const obtenerProductoPorId = async (req, res) => {
   try {
-    const producto = await Producto.findById(req.params.id).populate('productosIncluidos', 'stock disponible eliminado nombre caracteristicas');
+    const producto = await Producto.findById(req.params.id).populate('productosIncluidos', 'stock disponible eliminado nombre caracteristicas imagenes');
 
     if (producto) {
       let prodData = producto.toObject();

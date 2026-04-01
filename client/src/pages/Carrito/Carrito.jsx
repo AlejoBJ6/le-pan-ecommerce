@@ -67,7 +67,11 @@ const Carrito = () => {
                       </div>
                       
                       <div className="item-details">
-                        <Link to={`/producto/${itemId}`} className="item-name">{item.nombre}</Link>
+                        {String(itemId).startsWith('combo-dinamico-') ? (
+                          <span className="item-name" style={{ cursor: 'default' }}>{item.nombre}</span>
+                        ) : (
+                          <Link to={`/producto/${itemId}`} className="item-name">{item.nombre}</Link>
+                        )}
                         <button className="btn-remove" onClick={() => removeFromCart(itemId)}>
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <polyline points="3 6 5 6 21 6"></polyline>
