@@ -79,8 +79,8 @@
   justify-content: space-between;
   align-items: flex-end;
   border-bottom: 2px solid var(--color-gold);
-  padding-bottom: 12px;
-  margin-bottom: 35px;
+  padding-bottom: 18px; /* Más aire para que el título no esté pegado a la línea */
+  margin-bottom: 45px;
   gap: 20px;
 }
 
@@ -89,10 +89,11 @@
   font-weight: 800;
   margin: 0;
   line-height: 1.2;
+  letter-spacing: 0.02em; /* Un poco de aire para la Playfair Display */
 }
 
 .home-section-header.secondary {
-  margin-top: 60px;
+  margin-top: 80px;
 }
 
 .home-section-header.secondary .section-title {
@@ -103,15 +104,13 @@
   color: var(--color-primary);
   font-weight: 600;
   text-decoration: none;
-  font-size: 0.95rem;
+  font-size: 1rem; /* Un pelín más grande */
   transition: var(--transition);
   white-space: nowrap;
   display: flex;
   align-items: center;
-  margin-bottom: 4px;
-  /* Alinear visualmente con la linea base del titulo */
+  margin-bottom: 6px;
   margin-left: auto;
-  /* Empujar a la derecha pero con margen si el titulo es largo */
 }
 
 .catalog-link:hover {
