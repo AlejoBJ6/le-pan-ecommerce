@@ -3,25 +3,32 @@
   position: sticky;
   top: 0;
   z-index: 2000;
-  /* Increased to stay above everything */
   box-shadow: var(--shadow-sm);
-  background: var(--color-white);
+  background: var(--nav-bottom-bg, #FFFFFF);
 
-  /* Override dark mode variables to keep original colors */
-  --color-dark: #1A1A1A;
-  --color-dark-2: #2C2C2C;
-  --color-gray: #6B6B6B;
-  --color-gray-light: #F5F5F5;
+  /* Specific Navbar Variables for better control */
+  --nav-top-bg: #1A1A1A;
+  --nav-top-text: #FFFFFF;
+  --nav-bottom-bg: #FFFFFF;
+  --nav-bottom-text: #1A1A1A;
+}
+
+body.dark-theme .navbar-wrapper {
+  --nav-bottom-bg: #1A1A1A;
+  --nav-bottom-text: #FFFFFF;
+}
+
+/* Light mode default for the wrapper's white space */
+body:not(.dark-theme) .navbar-wrapper {
   --color-white: #FFFFFF;
 }
 
-/* Nivel Superior Dorado */
+/* Nivel Superior */
 .navbar-top {
-  background-color: var(--color-dark);
-  /* Dark background for better logo contrast */
-  color: var(--color-white);
-  padding: 8px 0;
-  min-height: 100px;
+  background-color: var(--nav-top-bg);
+  color: var(--nav-top-text);
+  padding: 0;
+  min-height: 80px;
   display: flex;
   align-items: center;
 }
@@ -51,17 +58,14 @@
 }
 
 .logo-img {
-  height: 115px;
-  /* Scaled down slightly to fit better */
+  height: 85px;
   width: auto;
   max-width: 400px;
   object-fit: contain;
   transition: transform 0.3s ease;
   display: block;
-  margin: -10px 0;
-  /* Subtler overflow */
+  margin: 0;
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
-  /* Stronger shadow for the dark bg */
 }
 
 .logo-img:hover {
@@ -70,26 +74,30 @@
 
 @media (max-width: 768px) {
   .logo-img {
-    height: 70px;
-    /* Reduced to avoid overflow/cut-off */
-    margin: -10px 0;
+    height: 60px;
+    margin: 0;
   }
 }
 
 .navbar-search {
   flex-grow: 1;
-  max-width: 500px;
+  max-width: 480px;
   display: flex;
   align-items: center;
-  background-color: var(--color-white);
-  /* White background as requested */
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 4px;
-  padding: 0 4px 0 16px;
-  height: 40px;
+  background-color: #ffffff;
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
+  border-radius: 6px;
+  padding: 0 6px 0 14px;
+  height: 42px;
   order: 3;
   width: 100%;
   position: relative;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.navbar-search:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(226, 88, 34, 0.15);
 }
 
 .navbar-search input {
@@ -114,8 +122,8 @@
 }
 
 .navbar-search input::placeholder {
-  color: rgba(0, 0, 0, 0.5);
-  /* Dark placeholder for white background */
+  color: rgba(0, 0, 0, 0.42);
+  font-size: 13.5px;
 }
 
 .navbar-search .search-btn {
@@ -181,8 +189,7 @@
 .action-link {
   background: none;
   border: none;
-  color: var(--color-white);
-  /* White text for dark background */
+  color: var(--nav-top-text);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -193,12 +200,13 @@
 
 .action-link:hover {
   opacity: 0.8;
-  color: var(--color-white);
+  color: var(--nav-top-text);
 }
 
 .action-link svg {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
+  stroke-width: 2;
 }
 
 .cart-badge-inline {
@@ -226,7 +234,7 @@
 
 /* Nivel Inferior Blanco */
 .navbar-bottom {
-  background-color: var(--color-white);
+  background-color: var(--nav-bottom-bg);
   border-bottom: 2px solid var(--color-primary);
   /* Línea naranja divisoria */
   padding: 8px 0;
@@ -263,7 +271,7 @@
 .navbar-links a {
   font-weight: 600;
   font-size: 13px;
-  color: var(--color-dark);
+  color: var(--nav-bottom-text);
   text-transform: uppercase;
   transition: color var(--transition);
 }
@@ -280,8 +288,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-white);
-  /* White icons for dark background */
+  color: var(--nav-top-text);
   cursor: pointer;
   padding: 4px;
   transition: var(--transition);
@@ -435,11 +442,9 @@
 
   .navbar-search {
     order: unset;
-    /* Vuelve al centro */
-    margin: 0 40px;
-    border: 1px solid rgba(0, 0, 0, 0.2);
-    /* Borde sutil oscuro */
-    background-color: rgba(255, 255, 255, 0.6);
+    margin: 0 24px;
+    background-color: #ffffff;
+    border: 1.5px solid rgba(255, 255, 255, 0.35);
   }
 
   .navbar-menu-btn {
@@ -448,7 +453,6 @@
 
   .navbar-links {
     display: flex;
-    /* Todavía existe si se quiere usar */
   }
 }
 

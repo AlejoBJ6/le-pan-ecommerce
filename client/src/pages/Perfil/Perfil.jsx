@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import authService from '../../services/authService';
 import pedidoService from '../../services/pedidoService';
-import { LuTruck } from 'react-icons/lu';
+import { LuTruck, LuLink } from 'react-icons/lu';
+import './Perfil.css';
 
 const EyeIcon = ({ show }) => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -22,7 +23,7 @@ const EyeIcon = ({ show }) => (
 );
 
 const Perfil = () => {
-  const { user, logout } = useContext(AuthContext);
+  const { logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const [nombre, setNombre] = useState('');
@@ -75,7 +76,7 @@ const Perfil = () => {
     setLoading(true);
     try {
       await authService.updateUserProfile({ nombre, email, password });
-      setMensaje('Perfil actualizado correctamente. Refresca la página si no ves tu nombre actualizado arriba.');
+      setMensaje('Perfil actualizado correctamente.');
       setPassword('');
       setConfirmPassword('');
       setLoading(false);
@@ -90,31 +91,21 @@ const Perfil = () => {
     navigate('/');
   };
 
+  // Helper to determine status badge class
+  const getStatusClass = (status) => {
+    if (status === 'Aprobado' || status === 'Entregado') return 'status-approved';
+    if (status === 'Pendiente') return 'status-pending';
+    return 'status-default';
+  };
+
   return (
-    <div className="container" style={{ padding: '60px 16px', minHeight: '60vh' }}>
-      <div style={{ maxWidth: '600px', margin: '0 auto', backgroundColor: 'var(--color-white)', padding: '30px', boxShadow: 'var(--shadow-md)', borderRadius: 'var(--radius-sm)' }}>
+    <div className="perfil-container bg-gray-light">
+      <div className="perfil-card">
         
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-          <h2 style={{ margin: 0, color: 'var(--color-primary)' }}>Mi Perfil</h2>
-          <button 
-            onClick={handleLogout} 
-            style={{ 
-              backgroundColor: 'transparent', 
-              color: '#dc3545', 
-              border: '1px solid #dc3545', 
-              padding: '8px 16px', 
-              borderRadius: '6px', 
-              cursor: 'pointer', 
-              fontWeight: '600',
-              transition: 'all 0.2s ease',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px'
-            }}
-            onMouseOver={(e) => { e.currentTarget.style.backgroundColor = '#fff5f5'; }}
-            onMouseOut={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <div className="perfil-header">
+          <h2 className="perfil-title">Mi Perfil</h2>
+          <button onClick={handleLogout} className="btn-logout">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
               <polyline points="16 17 21 12 16 7"></polyline>
               <line x1="21" y1="12" x2="9" y2="12"></line>
@@ -123,33 +114,46 @@ const Perfil = () => {
           </button>
         </div>
         
-        {mensaje && <div style={{ backgroundColor: '#d4edda', color: '#155724', padding: '12px 15px', borderRadius: '6px', marginBottom: '20px', border: '1px solid #c3e6cb' }}>{mensaje}</div>}
-        {error && <div style={{ backgroundColor: '#f8d7da', color: '#721c24', padding: '12px 15px', borderRadius: '6px', marginBottom: '20px', border: '1px solid #f5c6cb' }}>{error}</div>}
+        {mensaje && <div className="alert-success">{mensaje}</div>}
+        {error && <div className="alert-error">{error}</div>}
 
-        <form onSubmit={submitHandler} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <div>
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: 'var(--color-dark)' }}>Nombre</label>
-            <input type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} required style={{ width: '100%', padding: '12px', borderRadius: '6px', border: '1px solid #ddd', backgroundColor: '#fdfdfd', color: 'var(--color-dark)', fontSize: '1rem' }} />
-          </div>
-          <div>
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: 'var(--color-dark)' }}>Correo Electrónico</label>
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required style={{ width: '100%', padding: '12px', borderRadius: '6px', border: '1px solid #ddd', backgroundColor: '#fdfdfd', color: 'var(--color-dark)', fontSize: '1rem' }} />
+        <form onSubmit={submitHandler} className="profile-form">
+          <div className="form-group">
+            <label>Nombre</label>
+            <input 
+              type="text" 
+              value={nombre} 
+              onChange={(e) => setNombre(e.target.value)} 
+              required 
+              className="form-input" 
+            />
           </div>
 
-          <div style={{ position: 'relative' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: 'var(--color-dark)' }}>Nueva Contraseña (opcional)</label>
-            <div style={{ position: 'relative' }}>
+          <div className="form-group">
+            <label>Correo Electrónico</label>
+            <input 
+              type="email" 
+              value={email} 
+              required 
+              className="form-input" 
+              disabled
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Nueva Contraseña (opcional)</label>
+            <div className="password-input-wrapper">
               <input 
                 type={showPassword ? "text" : "password"} 
                 value={password} 
                 onChange={(e) => setPassword(e.target.value)} 
                 placeholder="Dejar en blanco para conservar la actual" 
-                style={{ width: '100%', padding: '12px', paddingRight: '40px', borderRadius: '6px', border: '1px solid #ddd', backgroundColor: '#fdfdfd', color: 'var(--color-dark)', fontSize: '1rem' }} 
+                className="form-input"
               />
               <button 
                 type="button" 
                 onClick={() => setShowPassword(!showPassword)}
-                style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#888', display: 'flex', alignItems: 'center' }}
+                className="btn-password-toggle"
                 aria-label="Ver contraseña"
               >
                 <EyeIcon show={showPassword} />
@@ -158,21 +162,21 @@ const Perfil = () => {
           </div>
 
           {password && (
-            <div style={{ position: 'relative', animation: 'fadeIn 0.3s ease' }}>
-              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: 'var(--color-dark)' }}>Confirmar Contraseña</label>
-              <div style={{ position: 'relative' }}>
+            <div className="form-group">
+              <label>Confirmar Nueva Contraseña</label>
+              <div className="password-input-wrapper">
                 <input 
                   type={showConfirmPassword ? "text" : "password"} 
                   value={confirmPassword} 
                   onChange={(e) => setConfirmPassword(e.target.value)} 
                   placeholder="Repite la nueva contraseña" 
                   required={!!password}
-                  style={{ width: '100%', padding: '12px', paddingRight: '40px', borderRadius: '6px', border: '1px solid #ddd', backgroundColor: '#fdfdfd', color: 'var(--color-dark)', fontSize: '1rem' }} 
+                  className="form-input"
                 />
                 <button 
                   type="button" 
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#888', display: 'flex', alignItems: 'center' }}
+                  className="btn-password-toggle"
                   aria-label="Ver contraseña"
                 >
                   <EyeIcon show={showConfirmPassword} />
@@ -181,68 +185,70 @@ const Perfil = () => {
             </div>
           )}
 
-          <button type="submit" disabled={loading} style={{ backgroundColor: 'var(--color-primary)', color: 'white', padding: '14px', border: 'none', borderRadius: '6px', fontSize: '1.1rem', fontWeight: 'bold', marginTop: '10px', transition: 'background-color 0.3s', cursor: 'pointer', boxShadow: '0 4px 6px rgba(226, 88, 34, 0.2)' }}>
+          <button type="submit" disabled={loading} className="btn-update">
             {loading ? 'Actualizando...' : 'Actualizar Perfil'}
           </button>
         </form>
 
-        <div style={{ marginTop: '50px', paddingTop: '30px', borderTop: '1px solid #eee' }}>
-           <h3 style={{ color: 'var(--color-dark)', marginBottom: '20px', fontSize: '1.4rem' }}>Mis Órdenes</h3>
+        <div className="orders-section">
+           <h3 className="orders-title">Mis Órdenes</h3>
            
            {loadingPedidos ? (
-             <p>Cargando tus órdenes...</p>
+             <p className="loading-text">Cargando tus órdenes...</p>
            ) : pedidos.length === 0 ? (
-             <div style={{ padding: '40px 20px', backgroundColor: '#faf9f6', borderRadius: '8px', textAlign: 'center', border: '1px dashed #ddd', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px' }}>
-                <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#ccc" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+             <div className="empty-orders">
+                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.3 }}>
                   <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
                   <line x1="3" y1="6" x2="21" y2="6"></line>
                   <path d="M16 10a4 4 0 0 1-8 0"></path>
                 </svg>
-               <p style={{ color: 'var(--color-dark-2)', margin: 0, fontSize: '1.05rem' }}>No tienes órdenes registradas por el momento.</p>
-               <button 
-                  onClick={() => navigate('/productos')} 
-                  style={{ marginTop: '5px', backgroundColor: 'var(--color-dark)', color: 'var(--color-white)', border: 'none', padding: '10px 24px', borderRadius: '30px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.95rem', transition: 'all 0.2s', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }}
-                  onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; }}
-                  onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; }}
-                >
+               <p>No tienes órdenes registradas por el momento.</p>
+               <button onClick={() => navigate('/productos')} className="btn-go-shop">
                  Ir a la tienda
                </button>
              </div>
            ) : (
-             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+             <div className="orders-list">
                {pedidos.map(pedido => {
                  const fMin = pedido.datosEntrega.fechaEstimadaMin ? new Date(pedido.datosEntrega.fechaEstimadaMin).toLocaleDateString() : '';
                  const fMax = pedido.datosEntrega.fechaEstimadaMax ? new Date(pedido.datosEntrega.fechaEstimadaMax).toLocaleDateString() : '';
+                 
                  return (
-                 <div key={pedido._id} style={{ border: '1px solid #eee', borderRadius: '8px', padding: '20px', backgroundColor: '#fff', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
-                   <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #eee', paddingBottom: '10px', marginBottom: '10px' }}>
-                     <div>
-                       <strong>Pedido #{pedido._id.slice(-6).toUpperCase()}</strong>
-                       <span style={{ display: 'block', fontSize: '0.85rem', color: '#888' }}>{new Date(pedido.createdAt).toLocaleDateString()}</span>
-                     </div>
-                     <div style={{ textAlign: 'right' }}>
-                       <strong>${pedido.totales.total.toLocaleString('es-AR')}</strong>
-                     </div>
-                   </div>
-                   <div style={{ fontSize: '0.9rem', marginBottom: '10px' }}>
-                     {pedido.pedidosData.map((item, i) => (
-                       <div key={i}>{item.cantidad}x {item.nombre}</div>
-                     ))}
-                   </div>
-                   <div style={{ display: 'flex', gap: '10px' }}>
-                     <span style={{ padding: '4px 8px', borderRadius: '12px', fontSize: '0.8rem', backgroundColor: pedido.estadoEntrega === 'Entregado' ? '#d4edda' : '#e2e3e5', color: pedido.estadoEntrega === 'Entregado' ? '#155724' : '#383d41' }}>
-                       Envío: {pedido.estadoEntrega}
-                     </span>
-                     <span style={{ padding: '4px 8px', borderRadius: '12px', fontSize: '0.8rem', backgroundColor: pedido.estadoPago === 'Aprobado' ? '#d4edda' : '#fff3cd', color: pedido.estadoPago === 'Aprobado' ? '#155724' : '#856404' }}>
-                       Pago: {pedido.estadoPago}
-                     </span>
-                   </div>
-                   {pedido.estadoEntrega !== 'Entregado' && pedido.estadoEntrega !== 'Cancelado' && fMin && (
-                     <div style={{ marginTop: '10px', fontSize: '0.85rem', color: '#17a2b8', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                       <LuTruck size={16} /> Entrega estimada: {fMin} a {fMax}
-                     </div>
-                   )}
-                 </div>
+                  <div key={pedido._id} className="order-card">
+                    <div className="order-header">
+                      <div>
+                        <span className="order-id">Pedido #{pedido._id.slice(-6).toUpperCase()}</span>
+                        <span className="order-date">{new Date(pedido.createdAt).toLocaleDateString()}</span>
+                      </div>
+                      <div className="order-total">
+                        ${pedido.totales.allTotal ? pedido.totales.allTotal.toLocaleString('es-AR') : (pedido.totales.total?.toLocaleString('es-AR') || '0')}
+                      </div>
+                    </div>
+                    
+                    <div className="order-items">
+                      {pedido.pedidosData.map((item, i) => (
+                        <div key={i} className="order-item-row" style={{ marginBottom: '4px' }}>
+                          <strong>{item.cantidad}x</strong> {item.nombre}
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <div className="order-status-row">
+                      <span className={`status-badge ${getStatusClass(pedido.estadoEntrega)}`}>
+                        Envío: {pedido.estadoEntrega}
+                      </span>
+                      <span className={`status-badge ${getStatusClass(pedido.estadoPago)}`}>
+                        Pago: {pedido.estadoPago}
+                      </span>
+                    </div>
+                    
+                    {pedido.estadoEntrega !== 'Entregado' && pedido.estadoEntrega !== 'Cancelado' && fMin && (
+                      <div className="order-shipping-info">
+                        <LuTruck size={18} /> 
+                        <span>Entrega estimada: {fMin} a {fMax}</span>
+                      </div>
+                    )}
+                  </div>
                  );
                })}
              </div>

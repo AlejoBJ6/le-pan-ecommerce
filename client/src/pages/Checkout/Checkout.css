@@ -575,3 +575,196 @@
   .checkout-nav-btns { flex-direction: column; }
   .btn-checkout-back, .btn-checkout-next { width: 100%; justify-content: center; }
 }
+
+/* ── Mercado Pago Info Box ─── */
+.mp-info-box {
+  background-color: #f9f9fa;
+  padding: 24px;
+  border-radius: 12px;
+  text-align: left;
+  border: 1px solid #e0e0e0;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 24px;
+}
+
+.mp-info-text {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #444;
+  line-height: 1.5;
+}
+
+.mp-methods-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  color: #4b5563;
+  font-size: 0.95rem;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mp-methods-list li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mp-method-badge {
+  display: flex;
+  gap: 8px;
+  background: #fff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+}
+
+.mp-method-badge.text-only {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #333;
+  letter-spacing: 0.5px;
+}
+
+/* ── Dark Mode Overrides ─── */
+body.dark-theme .checkout-page {
+  background: #0a0a0a;
+}
+
+body.dark-theme .checkout-step {
+  background: #1A1A1A;
+  box-shadow: 0 4px 25px rgba(0,0,0,0.4);
+}
+
+body.dark-theme .checkout-step-title {
+  color: #FAEDCB;
+  border-bottom: 2px solid rgba(255,255,255,0.05);
+}
+
+body.dark-theme .form-group label {
+  color: #aaa;
+}
+
+body.dark-theme .form-group input,
+body.dark-theme .form-group select,
+body.dark-theme .form-group textarea {
+  background: #252525;
+  border-color: #333;
+  color: #eee;
+}
+
+body.dark-theme .form-group input:focus,
+body.dark-theme .form-group select:focus,
+body.dark-theme .form-group textarea:focus {
+  background: #2a2a2a;
+  border-color: var(--color-primary);
+}
+
+body.dark-theme .mp-banner {
+  background: #2a1b0a;
+  border-color: #5a3a1a;
+}
+
+body.dark-theme .mp-banner-text {
+  color: #FAEDCB;
+}
+
+body.dark-theme .mp-info-box {
+  background-color: #1e1e1e;
+  border-color: #333;
+}
+
+body.dark-theme .mp-info-text,
+body.dark-theme .mp-methods-list {
+  color: #ccc;
+}
+
+body.dark-theme .mp-method-badge {
+  background: #2a2a2a;
+  border-color: #444;
+}
+
+body.dark-theme .mp-method-badge.text-only {
+  color: #eee;
+}
+
+body.dark-theme .method-tab {
+  background: #252525;
+  border-color: #333;
+  color: #aaa;
+}
+
+body.dark-theme .method-tab.active {
+  background: #3e2723;
+  border-color: var(--color-primary);
+  color: #FAEDCB;
+}
+
+body.dark-theme .bank-data {
+  background: #252525;
+}
+
+body.dark-theme .bank-row {
+  border-bottom-color: #333;
+  color: #eee;
+}
+
+body.dark-theme .checkout-order-summary {
+  background: #252525;
+}
+
+body.dark-theme .checkout-order-summary h4,
+body.dark-theme .checkout-order-total {
+  color: #FAEDCB;
+}
+
+body.dark-theme .checkout-order-item,
+body.dark-theme .checkout-order-row {
+  color: #aaa; /* Mejor legibilidad de los detalles del pedido */
+}
+
+body.dark-theme .checkout-order-sep {
+  border-top-color: #333;
+}
+
+body.dark-theme .resumen-card {
+  background: #252525;
+}
+
+body.dark-theme .resumen-card h4 {
+  color: #FAEDCB;
+}
+
+body.dark-theme .resumen-card p {
+  color: #ccc;
+}
+
+body.dark-theme .order-number {
+  color: #aaa;
+}
+
+body.dark-theme .btn-checkout-back {
+  border-color: #444;
+  color: #aaa;
+}
+
+body.dark-theme .btn-checkout-back:hover {
+  border-color: #666;
+  color: #eee;
+}
+
+body.dark-theme .cuota-option {
+  background: #252525;
+  border-color: #333;
+}
+
+body.dark-theme .cuota-n {
+  color: #FAEDCB;
+}
+
+body.dark-theme .cuota-valor {
+  color: #aaa;
+}

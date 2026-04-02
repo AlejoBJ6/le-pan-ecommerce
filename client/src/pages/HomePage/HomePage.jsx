@@ -53,11 +53,11 @@ const HomePage = () => {
         <main className="main-content" style={{ width: '100%' }}>
 
           <section className="productos-destacados-section">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderBottom: '2px solid var(--color-gold)', paddingBottom: '10px', marginBottom: '30px' }}>
-              <h2 className="section-title" style={{ fontSize: '1.8rem', fontWeight: '800', margin: 0 }}>
+            <div className="home-section-header">
+              <h2 className="section-title">
                 Productos Destacados
               </h2>
-              <Link to="/productos" style={{ color: 'var(--color-primary)', fontWeight: '600', textDecoration: 'none', fontSize: '0.9rem', transition: 'var(--transition)' }}>
+              <Link to="/productos" className="catalog-link">
                 Ver catálogo completo →
               </Link>
             </div>
@@ -80,12 +80,12 @@ const HomePage = () => {
           {/* DYNAMIC CATEGORY RENDER */}
           {Object.entries(productosPorCategoria).map(([categoria, productosDeCategoria]) => (
             productosDeCategoria.length > 0 && (
-              <section className="productos-extra-section" style={{ marginTop: '60px' }} key={categoria}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderBottom: '2px solid var(--color-gold)', paddingBottom: '10px', marginBottom: '30px' }}>
-                  <h2 className="section-title" style={{ fontSize: '1.6rem', fontWeight: '800', margin: 0, textAlign: 'left' }}>
+              <section className="productos-extra-section" key={categoria}>
+                <div className="home-section-header secondary">
+                  <h2 className="section-title">
                     Lo Mejor en {categoria}
                   </h2>
-                  <Link to={`/productos?categoria=${encodeURIComponent(categoria)}`} style={{ color: 'var(--color-primary)', fontWeight: '600', textDecoration: 'none', fontSize: '0.9rem', transition: 'var(--transition)' }}>
+                  <Link to={`/productos?categoria=${encodeURIComponent(categoria)}`} className="catalog-link">
                     Ver catálogo de {categoria.toLowerCase()} →
                   </Link>
                 </div>

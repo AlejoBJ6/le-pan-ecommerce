@@ -12,7 +12,8 @@
 
 .main-content {
   flex-grow: 1;
-  min-width: 0; /* Evitar overflow en flex */
+  min-width: 0;
+  /* Evitar overflow en flex */
 }
 
 @media (min-width: 768px) {
@@ -27,12 +28,15 @@
   display: flex;
   overflow-x: auto;
   gap: 16px;
-  padding-bottom: 24px; /* Espacio para la barra de scroll y sombra */
-  padding-top: 8px; /* Espacio para sombra superior si la hubiera */
+  padding-bottom: 24px;
+  /* Espacio para la barra de scroll y sombra */
+  padding-top: 8px;
+  /* Espacio para sombra superior si la hubiera */
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
-  margin: 0 -10px; /* Sacar un poco de margen para que no se corte cortante */
+  margin: 0 -10px;
+  /* Sacar un poco de margen para que no se corte cortante */
   padding-left: 10px;
   padding-right: 10px;
 }
@@ -41,26 +45,93 @@
 .home-productos-slider::-webkit-scrollbar {
   height: 8px;
 }
+
 .home-productos-slider::-webkit-scrollbar-track {
   background: var(--color-gray-light);
   border-radius: 4px;
 }
+
 .home-productos-slider::-webkit-scrollbar-thumb {
   background: #ccc;
   border-radius: 4px;
 }
+
 .home-productos-slider::-webkit-scrollbar-thumb:hover {
   background: var(--color-primary);
 }
 
-.home-productos-slider > div {
+.home-productos-slider>div {
   flex: 0 0 auto;
-  width: 260px; /* Ancho fijo para cada tarjeta de producto */
+  width: 260px;
+  /* Ancho fijo para cada tarjeta de producto */
   scroll-snap-align: start;
 }
 
 @media (max-width: 576px) {
-  .home-productos-slider > div {
-    width: 220px; /* Tarjetas ligeramente mas pequeñas en móvil */
+  .home-productos-slider>div {
+    width: 220px;
+    /* Tarjetas ligeramente mas pequeñas en móvil */
+  }
+}
+
+.home-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  border-bottom: 2px solid var(--color-gold);
+  padding-bottom: 18px; /* Más aire para que el título no esté pegado a la línea */
+  margin-bottom: 45px;
+  gap: 20px;
+}
+
+.home-section-header .section-title {
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin: 0;
+  line-height: 1.2;
+  letter-spacing: 0.02em; /* Un poco de aire para la Playfair Display */
+}
+
+.home-section-header.secondary {
+  margin-top: 80px;
+}
+
+.home-section-header.secondary .section-title {
+  font-size: 1.6rem;
+}
+
+.catalog-link {
+  color: var(--color-primary);
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 1rem; /* Un pelín más grande */
+  transition: var(--transition);
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  margin-bottom: 6px;
+  margin-left: auto;
+}
+
+.catalog-link:hover {
+  transform: translateX(5px);
+  color: var(--color-dark);
+}
+
+@media (max-width: 576px) {
+  .home-section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 25px;
+  }
+
+  .home-section-header .section-title {
+    font-size: 1.4rem;
+  }
+
+  .catalog-link {
+    margin-left: 0;
+    font-size: 0.85rem;
   }
 }

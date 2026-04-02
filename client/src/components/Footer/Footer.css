@@ -1,9 +1,17 @@
 .footer-curve {
   background-color: var(--color-dark);
   color: var(--color-white);
-  padding: 40px 0 90px; /* Ampliado para que el botón de WhatsApp no tape el texto en mobile */
+  padding: 40px 0 90px;
+  /* Ampliado para que el botón de WhatsApp no tape el texto en mobile */
   margin-top: 40px;
   position: relative;
+  transition: background-color 0.3s ease;
+}
+
+body.dark-theme .footer-curve {
+  background-color: #0A0A0A;
+  /* Slightly darker than the #121212 body for differentiation */
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .footer-content {

@@ -224,12 +224,16 @@ body.dark-theme .zoom-window {
 }
 
 .product-title {
-  font-size: 1.9rem;
+  font-size: 1.8rem;
   font-weight: 800;
-  color: var(--color-dark);
-  line-height: 1.15;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
+  color: #222;
+  line-height: 1.25;
+  text-transform: capitalize;
+  letter-spacing: -0.01em;
+}
+
+body.dark-theme .product-title {
+  color: #FAEDCB !important;
 }
 
 .product-price-section {
@@ -256,6 +260,10 @@ body.dark-theme .zoom-window {
   color: var(--color-dark);
 }
 
+body.dark-theme .current-price {
+  color: #FFFFFF;
+}
+
 .discount-tag {
   color: #00a650;
   /* Verde Mercado Libre */
@@ -268,37 +276,96 @@ body.dark-theme .discount-tag {
 }
 
 .payment-installments {
-  color: #4a5568;
-  font-size: 1rem;
-  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #555;
+  font-size: 0.95rem;
+  margin-top: 8px;
 }
 
+.mp-icon { color: #00a650; flex-shrink: 0; }
+.mp-text { color: #00a650; font-weight: 700; }
+
 body.dark-theme .payment-installments {
-  color: #a0aec0;
+  color: #FAEDCB !important;
+  opacity: 1 !important;
+}
+
+body.dark-theme .mp-icon,
+body.dark-theme .mp-text {
+  color: #00d265 !important;
 }
 
 .product-features {
-  margin-top: 24px;
+  margin-top: 28px;
 }
 
 .product-features h3 {
   font-size: 1.1rem;
-  color: var(--color-dark);
-  margin-bottom: 12px;
+  font-weight: 700;
+  color: #222;
+  margin-bottom: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
-.product-features ul {
+.combo-product-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.combo-product-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #222;
+  text-transform: capitalize;
+}
+
+.product-specs-list {
+  margin: 0 0 20px 0;
+  padding-left: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.product-specs-list-simple {
+  list-style: none;
+  padding: 0;
+  margin: 0;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  list-style: disc;
-  padding-left: 18px;
-  color: var(--color-dark);
-  opacity: 0.9;
 }
 
-.product-features li strong {
-  font-weight: 600;
+.spec-item, .spec-item-simple {
+  font-size: 0.9rem;
+  color: #555;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.spec-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--color-primary);
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-left: 12px;
+}
+
+body.dark-theme .combo-product-name,
+body.dark-theme .product-features h3 {
+  color: #FAEDCB !important;
+}
+
+body.dark-theme .spec-item,
+body.dark-theme .spec-item-simple {
+  color: #eee !important;
 }
 
 /* --- Description --- */
@@ -341,41 +408,44 @@ body.dark-theme .product-description-section {
 
 .manufacturer-info {
   display: flex;
-  gap: 12px;
   align-items: center;
-  padding: 12px 16px;
-  border-radius: 8px;
-  background-color: rgba(232, 130, 12, 0.07);
-  border: 1px solid rgba(232, 130, 12, 0.2);
+  gap: 14px;
+  padding: 14px 18px;
+  border-radius: 10px;
+  background-color: #fff9eb;
+  border: 1px solid #ffe8b3;
 }
 
-body.dark-theme .manufacturer-info {
-  background-color: rgba(232, 130, 12, 0.1);
-  border-color: rgba(232, 130, 12, 0.25);
-}
-
-.manufacturer-icon svg {
-  width: 28px;
-  height: 28px;
-  stroke: var(--color-primary);
+.manufacturer-badge-icon {
+  color: #E8820C;
   flex-shrink: 0;
-}
-
-.manufacturer-text {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  align-items: center;
 }
 
 .manufacturer-title {
-  font-weight: 700;
-  font-size: 0.95rem;
-  color: var(--color-primary);
+  display: block;
+  font-weight: 800;
+  font-size: 1rem;
+  color: #B36200;
 }
 
 .manufacturer-subtitle {
-  font-size: 0.82rem;
-  color: var(--color-gray);
+  font-size: 0.88rem;
+  color: #666;
+}
+
+body.dark-theme .manufacturer-info {
+  background-color: #2a1b0a;
+  border-color: #5a3a1a;
+}
+
+body.dark-theme .manufacturer-title {
+  color: #FAEDCB;
+}
+
+body.dark-theme .manufacturer-subtitle {
+  color: #aaa;
 }
 
 .stock-info h3 {
@@ -463,34 +533,69 @@ body.dark-theme .btn-add-cart {
 }
 
 .purchase-guarantees {
-  border-top: 1px solid var(--color-gray-light);
-  padding-top: 16px;
+  border-top: 1px solid #eee;
+  padding-top: 24px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  font-size: 0.88rem;
-  color: var(--color-gray);
-}
-
-body.dark-theme .purchase-guarantees {
-  border-top-color: rgba(255, 255, 255, 0.08);
+  gap: 18px;
 }
 
 .guarantee-item {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  align-items: flex-start;
+  gap: 12px;
 }
 
-.guarantee-item svg {
-  width: 18px;
-  height: 18px;
+.guarantee-icon {
+  width: 24px;
+  height: 24px;
+  color: #00a650;
+  margin-top: 2px;
   flex-shrink: 0;
-  stroke: var(--color-gray);
 }
 
-.purchase-guarantees strong {
-  color: var(--color-dark);
+.guarantee-title {
+  display: block;
+  color: #00a650;
+  font-weight: 800;
+  font-size: 1.1rem;
+  line-height: 1.2;
+}
+
+.guarantee-subtitle {
+  font-size: 0.88rem;
+  color: #666;
+  display: block;
+  margin-top: 2px;
+}
+
+.guarantee-icon-sec {
+  color: #666;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.guarantee-text {
+  font-size: 0.92rem;
+  color: #444;
+}
+
+body.dark-theme .purchase-guarantees {
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-theme .guarantee-title {
+  color: #00d265;
+}
+
+body.dark-theme .guarantee-subtitle,
+body.dark-theme .guarantee-text,
+body.dark-theme .guarantee-icon-sec {
+  color: #aaa !important;
+}
+
+body.dark-theme .purchase-guarantees strong {
+  color: #eee;
 }
 
 /* --- Mobile Image Modal --- */
@@ -529,3 +634,31 @@ body.dark-theme .purchase-guarantees {
   z-index: 10000;
   padding: 0;
 }
+
+/* --- Dark Mode Final Refinements --- */
+body.dark-theme .breadcrumb .current,
+body.dark-theme .product-features h3,
+body.dark-theme .product-description-section h2,
+body.dark-theme .stock-info h3 {
+  color: #FAEDCB !important;
+}
+
+body.dark-theme .product-features ul,
+body.dark-theme .product-features ul li,
+body.dark-theme .product-description-section p,
+body.dark-theme .quantity-selector,
+body.dark-theme .available-stock,
+body.dark-theme .purchase-guarantees,
+body.dark-theme .purchase-guarantees strong,
+body.dark-theme .manufacturer-subtitle {
+  color: #eee !important;
+  opacity: 1;
+}
+
+body.dark-theme .breadcrumb {
+  color: #999;
+}
+
+body.dark-theme .thumbnail {
+  border-color: #333;
+}
