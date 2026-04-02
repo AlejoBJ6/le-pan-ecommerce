@@ -2,40 +2,46 @@
 
 /* ─── Variables ─────────────────────────────────── */
 :root {
-  --color-primary:    #E8820C;
+  --color-primary: #E8820C;
   --color-primary-hover: #cf7009;
-  --color-gold:       #DCA71B; /* Mostaza según requerimiento */
+  --color-gold: #DCA71B;
+  /* Mostaza según requerimiento */
   --color-gold-light: #FDF3CC;
-  --color-dark:       #1A1A1A;
-  --color-dark-2:     #2C2C2C;
-  --color-gray:       #6B6B6B;
+  --color-dark: #1A1A1A;
+  --color-dark-2: #2C2C2C;
+  --color-gray: #6B6B6B;
   --color-gray-light: #F5F5F5;
-  --color-white:      #FFFFFF;
-  --color-whatsapp:   #25D366;
+  --color-white: #FFFFFF;
+  --color-whatsapp: #25D366;
 
   --radius-sm: 8px;
   --radius-md: 14px;
   --radius-lg: 22px;
   --radius-xl: 30px;
 
-  --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
-  --shadow-md: 0 4px 16px rgba(0,0,0,0.12);
-  --shadow-lg: 0 8px 32px rgba(0,0,0,0.16);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.16);
 
   --font-family: 'Inter', sans-serif;
   --transition: 0.2s ease;
 }
 
 body.dark-theme {
-  --color-dark:       #F5F5F5; /* Textos claros en modo oscuro */
-  --color-dark-2:     #E0E0E0;
-  --color-white:      #121212; /* Fondos oscuros */
-  --color-gray-light: #2A2A2A; /* Fondos secundarios */
-  --color-gray:       #A0A0A0;
+  --color-dark: #F5F5F5;
+  /* Textos claros en modo oscuro */
+  --color-dark-2: #E0E0E0;
+  --color-white: #121212;
+  /* Fondos oscuros */
+  --color-gray-light: #2A2A2A;
+  /* Fondos secundarios */
+  --color-gray: #A0A0A0;
 }
 
 /* ─── Reset ─────────────────────────────────────── */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -69,7 +75,8 @@ a {
   color: inherit;
 }
 
-ul, ol {
+ul,
+ol {
   list-style: none;
 }
 
