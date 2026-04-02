@@ -3,22 +3,30 @@
   position: sticky;
   top: 0;
   z-index: 2000;
-  /* Increased to stay above everything */
   box-shadow: var(--shadow-sm);
-  background: var(--color-white);
+  background: var(--nav-bottom-bg, #FFFFFF);
 
-  /* Override dark mode variables to keep original colors */
-  --color-dark: #1A1A1A;
-  --color-dark-2: #2C2C2C;
-  --color-gray: #6B6B6B;
-  --color-gray-light: #F5F5F5;
+  /* Specific Navbar Variables for better control */
+  --nav-top-bg: #1A1A1A;
+  --nav-top-text: #FFFFFF;
+  --nav-bottom-bg: #FFFFFF;
+  --nav-bottom-text: #1A1A1A;
+}
+
+body.dark-theme .navbar-wrapper {
+  --nav-bottom-bg: #1A1A1A;
+  --nav-bottom-text: #FFFFFF;
+}
+
+/* Light mode default for the wrapper's white space */
+body:not(.dark-theme) .navbar-wrapper {
   --color-white: #FFFFFF;
 }
 
 /* Nivel Superior */
 .navbar-top {
-  background-color: var(--color-dark);
-  color: var(--color-white);
+  background-color: var(--nav-top-bg);
+  color: var(--nav-top-text);
   padding: 0;
   min-height: 80px;
   display: flex;
@@ -181,8 +189,7 @@
 .action-link {
   background: none;
   border: none;
-  color: var(--color-white);
-  /* White text for dark background */
+  color: var(--nav-top-text);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -193,7 +200,7 @@
 
 .action-link:hover {
   opacity: 0.8;
-  color: var(--color-white);
+  color: var(--nav-top-text);
 }
 
 .action-link svg {
@@ -227,7 +234,7 @@
 
 /* Nivel Inferior Blanco */
 .navbar-bottom {
-  background-color: var(--color-white);
+  background-color: var(--nav-bottom-bg);
   border-bottom: 2px solid var(--color-primary);
   /* Línea naranja divisoria */
   padding: 8px 0;
@@ -264,7 +271,7 @@
 .navbar-links a {
   font-weight: 600;
   font-size: 13px;
-  color: var(--color-dark);
+  color: var(--nav-bottom-text);
   text-transform: uppercase;
   transition: color var(--transition);
 }
@@ -281,8 +288,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-white);
-  /* White icons for dark background */
+  color: var(--nav-top-text);
   cursor: pointer;
   padding: 4px;
   transition: var(--transition);

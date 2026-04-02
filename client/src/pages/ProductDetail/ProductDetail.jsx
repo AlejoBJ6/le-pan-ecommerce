@@ -167,7 +167,7 @@ const ProductDetail = () => {
 
               {/* Info Section */}
               <div className="product-info">
-                <h1 className="product-title" style={{ textTransform: 'capitalize', fontSize: '1.6rem', fontWeight: 600, color: '#444' }}>
+                <h1 className="product-title">
                   {producto.nombre.toLowerCase()}
                 </h1>
 
@@ -183,9 +183,9 @@ const ProductDetail = () => {
                       </span>
                     )}
                   </div>
-                  <div className="payment-installments" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#444' }}>
-                    <LuCreditCard size={20} color="#00a650" />
-                    <span>Pagá en cuotas con <strong style={{ color: '#00a650' }}>Mercado Pago</strong></span>
+                  <div className="payment-installments">
+                    <LuCreditCard size={20} className="mp-icon" />
+                    <span>Pagá en cuotas con <strong className="mp-text">Mercado Pago</strong></span>
                   </div>
                 </div>
 
@@ -197,17 +197,17 @@ const ProductDetail = () => {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                       {producto.productosIncluidos.map((prod, idx) => (
                         <div key={idx}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                          <div className="combo-product-header">
                           <LuWrench size={16} color="var(--color-primary, #E8820C)" />
-                            <strong style={{ color: '#333', fontSize: '0.95rem', textTransform: 'capitalize' }}>
+                            <strong className="combo-product-name">
                               {prod.nombre.toLowerCase()}
                             </strong>
                           </div>
                           {prod.caracteristicas && prod.caracteristicas.length > 0 ? (
-                            <ul style={{ margin: 0, paddingLeft: '24px' }}>
+                            <ul className="product-specs-list">
                               {prod.caracteristicas.map((c, cidx) => (
-                                <li key={cidx} style={{ fontSize: '0.9rem', color: '#555', padding: '2px 0', listStyle: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                  <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#ccc' }}></div>
+                                <li key={cidx} className="spec-item">
+                                  <div className="spec-dot"></div>
                                   <span><strong>{c.nombre}:</strong> {c.valor}</span>
                                 </li>
                               ))}
@@ -223,9 +223,9 @@ const ProductDetail = () => {
 
                   /* PRODUCTO INDIVIDUAL: sus propias specs */
                   ) : producto.caracteristicas && producto.caracteristicas.length > 0 ? (
-                     <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                     <ul className="product-specs-list-simple">
                       {producto.caracteristicas.map((c, idx) => (
-                        <li key={idx} style={{ fontSize: '0.9rem', color: '#555', padding: '4px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <li key={idx} className="spec-item-simple">
                           <LuWrench size={14} color="var(--color-primary, #E8820C)" />
                           <span><strong>{c.nombre}:</strong> {c.valor}</span>
                         </li>
@@ -251,13 +251,13 @@ const ProductDetail = () => {
           <div className="product-sidebar">
             <div className="purchase-card">
 
-              <div className="manufacturer-info" style={{ display: 'flex', alignItems: 'center', backgroundColor: '#fff9eb', padding: '12px', borderRadius: '8px', border: '1px solid #ffe8b3' }}>
-                <div style={{ color: '#E8820C', marginRight: '12px' }}>
+              <div className="manufacturer-info">
+                <div className="manufacturer-badge-icon">
                   <LuBadgeCheck size={28} />
                 </div>
                 <div className="manufacturer-text">
-                  <span className="manufacturer-title" style={{ display: 'block', fontWeight: 'bold', color: '#B36200' }}>Vendedor Verificado</span>
-                  <span className="manufacturer-subtitle" style={{ fontSize: '0.85rem', color: '#666' }}>Lé Pan — Fabricante Directo</span>
+                  <span className="manufacturer-title">Vendedor Verificado</span>
+                  <span className="manufacturer-subtitle">Lé Pan — Fabricante Directo</span>
                 </div>
               </div>
 
@@ -289,16 +289,16 @@ const ProductDetail = () => {
               </div>
 
               <div className="purchase-guarantees">
-                <div className="guarantee-item" style={{ marginBottom: '16px', display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-                  <LuTruck size={24} color="#00a650" style={{ marginTop: '2px', flexShrink: 0 }} />
+                <div className="guarantee-item shipping">
+                  <LuTruck size={24} className="guarantee-icon" />
                   <div>
-                    <span style={{ display: 'block', color: '#00a650', fontWeight: 'bold', fontSize: '1.05rem' }}>Envío GRATIS</span>
-                    <span style={{ fontSize: '0.85rem', color: '#666' }}>Entrega a coordinar (Sin cargo)</span>
+                    <span className="guarantee-title">Envío GRATIS</span>
+                    <span className="guarantee-subtitle">Entrega a coordinar (Sin cargo)</span>
                   </div>
                 </div>
-                <div className="guarantee-item" style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-                  <LuShieldCheck size={20} color="#666" style={{ marginTop: '2px', flexShrink: 0 }} />
-                  <span style={{ color: '#444' }}><strong>Garantía de fábrica</strong>: 12 meses</span>
+                <div className="guarantee-item">
+                  <LuShieldCheck size={20} className="guarantee-icon-sec" />
+                  <span className="guarantee-text"><strong>Garantía de fábrica</strong>: 12 meses</span>
                 </div>
               </div>
             </div>

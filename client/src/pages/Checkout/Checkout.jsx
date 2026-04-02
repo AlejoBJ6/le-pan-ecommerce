@@ -120,26 +120,26 @@ const StepPago = ({ cart, getCartTotal, onNext, onBack, loading }) => {
       </div>
 
       {metodo === 'mercado_pago' && (
-        <div className="transfer-info" style={{ backgroundColor: '#f9f9faf0', padding: '24px', borderRadius: '12px', textAlign: 'left', border: '1px solid #e0e0e0', display: 'flex', flexDirection: 'column', gap: '15px', marginBottom: '24px' }}>
-          <p style={{ margin: 0, fontSize: '0.95rem', color: '#444', lineHeight: '1.5' }}>
+        <div className="mp-info-box">
+          <p className="mp-info-text">
             Serás redirigido de forma segura a Mercado Pago para completar tu compra. Podrás abonar con:
           </p>
-          <ul style={{ listStyle: 'none', padding: 0, margin: 0, color: '#4b5563', fontSize: '0.95rem', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <li style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ display: 'flex', gap: '8px', background: '#fff', padding: '6px 10px', borderRadius: '6px', border: '1px solid #ddd' }}>
+          <ul className="mp-methods-list">
+            <li>
+              <div className="mp-method-badge">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Visa.svg" alt="Visa" height="14"/>
                 <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" height="14"/>
               </div>
               Tarjetas de crédito y débito
             </li>
-            <li style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ background: '#fff', padding: '6px 10px', borderRadius: '6px', border: '1px solid #ddd', display: 'flex', alignItems: 'center' }}>
+            <li>
+              <div className="mp-method-badge">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/MercadoPago_logo.png/1200px-MercadoPago_logo.png" alt="MercadoPago" height="14"/>
               </div>
               Dinero en tu cuenta
             </li>
-            <li style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ background: '#fff', padding: '6px 10px', borderRadius: '6px', border: '1px solid #ddd', fontSize: '0.75rem', fontWeight: '800', color: '#333', letterSpacing: '0.5px' }}>
+            <li>
+              <div className="mp-method-badge text-only">
                 EFECTIVO
               </div>
               Pago Fácil / Rapipago
