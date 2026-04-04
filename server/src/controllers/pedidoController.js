@@ -97,9 +97,31 @@ export const crearPedido = async (req, res) => {
     // El envío es siempre 0.
     totales.envio = 0;
 
+    // Fetch comisión from database for each item
+    const itemsConComision = await Promise.all(items.map(async (item) => {
+      let comision = 0;
+      if (item.productoId) {
+        try {
+          const prod = await Producto.findById(item.productoId).populate('productosIncluidos');
+          if (prod) {
+            if (prod.categoria === 'Combos' && prod.productosIncluidos?.length > 0) {
+              // Suma la comisión de todos los productos internos del combo
+              comision = prod.productosIncluidos.reduce((acc, hijo) => acc + (hijo.comision || 0), 0);
+            } else if (prod.comision) {
+              // Si no es combo y tiene comisión configurada
+              comision = prod.comision;
+            }
+          }
+        } catch (err) {
+          console.error(`Error buscando producto para comisión: ${item.productoId}`, err);
+        }
+      }
+      return { ...item, comision };
+    }));
+
     const pedido = new Pedido({
       user: req.user._id, // Viene del middleware de auth
-      pedidosData: items,
+      pedidosData: itemsConComision,
       datosEntrega,
       totales,
       metodoPago,

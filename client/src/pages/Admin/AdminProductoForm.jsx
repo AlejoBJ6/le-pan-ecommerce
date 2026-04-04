@@ -12,6 +12,7 @@ const AdminProductoForm = ({ isCombo = false }) => {
     nombre: '',
     descripcion: '',
     precio: 0,
+    comision: 0,
     categoria: isCombo ? 'Combos' : 'Hornos',
     marca: '',
     modelo: '',
@@ -134,6 +135,7 @@ const AdminProductoForm = ({ isCombo = false }) => {
     const productoData = {
       ...formData,
       precio: Number(formData.precio),
+      comision: Number(formData.comision),
       stock: Number(formData.stock),
       imagenes: formData.imagenes.split(',').map(url => url.trim()).filter(url => url !== ''),
       caracteristicas: caracteristicas.filter(c => c.nombre.trim() !== '' && c.valor.trim() !== '')
@@ -342,6 +344,20 @@ const AdminProductoForm = ({ isCombo = false }) => {
                 />
               </div>
               {isInvalidNum('precio') && <span className="admin-input-error-msg">Ingresa un precio válido.</span>}
+            </div>
+
+            <div className="admin-input-group">
+              <label>Comisión ($)</label>
+              <input 
+                type="number" 
+                name="comision" 
+                className="admin-input-control"
+                value={formData.comision} 
+                onChange={handleChange} 
+                onBlur={handleBlur}
+                min="0" 
+                step="1"
+              />
             </div>
 
             <div className="admin-input-group">
