@@ -12,6 +12,7 @@ const pedidoSchema = new mongoose.Schema({
       nombre: { type: String, required: true },
       precio: { type: Number, required: true },
       cantidad: { type: Number, required: true },
+      comision: { type: Number, default: 0 },
       esCombo: { type: Boolean, default: false },
       imagen: { type: String }
     }
@@ -21,6 +22,7 @@ const pedidoSchema = new mongoose.Schema({
     apellido: { type: String, required: true },
     email: { type: String, required: true },
     telefono: { type: String, required: true },
+    telefonoAlternativo: { type: String, required: true },
     provincia: { type: String, required: true },
     ciudad: { type: String, required: true },
     direccion: { type: String, required: true },

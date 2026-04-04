@@ -51,6 +51,11 @@ const AdminLayout = () => {
               </Link>
             </li>
             <li>
+              <Link to="/admin/ganancias" className={location.pathname.includes('/admin/ganancias') ? 'active' : ''}>
+                Ganancias 💰
+              </Link>
+            </li>
+            <li>
               <Link to="/" className="back-link">
                 ← Volver a la Tienda
               </Link>

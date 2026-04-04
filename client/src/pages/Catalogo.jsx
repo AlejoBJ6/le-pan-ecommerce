@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import productoService from '../services/productoService';
 import categoriaService from '../services/categoriaService';
 import ProductCard from '../components/ProductCard';
@@ -7,33 +7,46 @@ import './Catalogo.css';
 
 const Catalogo = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  
+  // Establecer estado inicial directamente desde la URL para evitar race conditions en el primer render
+  const queryParams = new URLSearchParams(location.search);
+  const initialCategoria = queryParams.get('categoria') || 'Todas';
+  const initialBusqueda = queryParams.get('busqueda') || '';
+
   const [productos, setProductos] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
   const [categoriasExtraidas, setCategoriasExtraidas] = useState(['Todas']);
 
   // Estados de filtros
-  const [busqueda, setBusqueda] = useState('');
-  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState('Todas');
+  const [busqueda, setBusqueda] = useState(initialBusqueda);
+  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState(initialCategoria);
 
   // Sincronizar parámetro 'categoria' y 'busqueda' de la URL con el estado local
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
-    const urlCategoria = searchParams.get('categoria');
-    const urlBusqueda = searchParams.get('busqueda');
+    const urlCategoria = searchParams.get('categoria') || 'Todas';
+    const urlBusqueda = searchParams.get('busqueda') || '';
     
-    if (urlCategoria) {
-      setCategoriaSeleccionada(urlCategoria);
-    } else {
-      setCategoriaSeleccionada('Todas');
-    }
-
-    if (urlBusqueda) {
-      setBusqueda(urlBusqueda);
-    } else {
-      setBusqueda('');
-    }
+    setCategoriaSeleccionada(urlCategoria);
+    setBusqueda(urlBusqueda);
   }, [location.search]);
+
+  // Manejador para cuando se hace click en una pastilla de categoría local
+  const handleCategoryClick = (cat) => {
+    const searchParams = new URLSearchParams(location.search);
+    if (cat === 'Todas') {
+      searchParams.delete('categoria');
+    } else {
+      searchParams.set('categoria', cat);
+    }
+    navigate({
+      pathname: location.pathname,
+      search: searchParams.toString()
+    });
+  };
+
 
   useEffect(() => {
     const fetchDatos = async () => {
@@ -78,7 +91,7 @@ const Catalogo = () => {
               <button 
                 key={cat}
                 className={`category-pill ${categoriaSeleccionada === cat ? 'active' : ''}`}
-                onClick={() => setCategoriaSeleccionada(cat)}
+                onClick={() => handleCategoryClick(cat)}
               >
                 {cat}
               </button>

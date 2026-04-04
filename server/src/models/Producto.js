@@ -22,6 +22,11 @@ const productoSchema = new mongoose.Schema(
       default: 0,
       min: [0, 'El precio anterior no puede ser negativo'],
     },
+    comision: {
+      type: Number,
+      default: 0,
+      min: [0, 'La comisión no puede ser negativa'],
+    },
     categoria: {
       type: String,
       required: [true, 'La categoría es obligatoria'],

@@ -109,6 +109,7 @@ export const crearProducto = async (req, res) => {
       destacado,
       productosIncluidos,
       caracteristicas,
+      comision,
     } = req.body;
 
     const producto = new Producto({
@@ -124,6 +125,7 @@ export const crearProducto = async (req, res) => {
       destacado,
       productosIncluidos,
       caracteristicas: caracteristicas || [],
+      comision: comision || 0,
     });
 
     const productoCreado = await producto.save();
@@ -152,6 +154,7 @@ export const actualizarProducto = async (req, res) => {
       eliminado,
       productosIncluidos,
       caracteristicas,
+      comision,
     } = req.body;
 
     const producto = await Producto.findById(req.params.id);
@@ -170,6 +173,7 @@ export const actualizarProducto = async (req, res) => {
       producto.eliminado = eliminado !== undefined ? eliminado : producto.eliminado;
       producto.productosIncluidos = productosIncluidos !== undefined ? productosIncluidos : producto.productosIncluidos;
       producto.caracteristicas = caracteristicas !== undefined ? caracteristicas : producto.caracteristicas;
+      producto.comision = comision !== undefined ? comision : producto.comision;
 
       const productoActualizado = await producto.save();
       res.json(productoActualizado);
