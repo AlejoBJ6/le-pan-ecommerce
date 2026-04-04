@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import productoService from '../../services/productoService';
+import comboService from '../../services/comboService';
 
 const AdminCombos = () => {
   const [combos, setCombos] = useState([]);
@@ -13,8 +13,13 @@ const AdminCombos = () => {
     const fetchCombos = async () => {
       setLoading(true);
       try {
-        const data = await productoService.obtenerProductos({ eliminados: verPapelera, admin: true });
-        setCombos(data.filter(p => p.categoria === 'Combos'));
+        const data = await comboService.obtenerCombos(true);
+        // Filtrar según disponibilidad si estamos en modo papelera
+        if (verPapelera) {
+          setCombos(data.filter(c => c.disponible === false));
+        } else {
+          setCombos(data.filter(c => c.disponible !== false));
+        }
       } catch (error) {
         console.error("Error cargando combos", error);
       } finally {
@@ -27,7 +32,8 @@ const AdminCombos = () => {
   const handleConfirmDelete = async () => {
     if (!confirmDelete) return;
     try {
-      await productoService.eliminarProducto(confirmDelete.id);
+      const user = JSON.parse(localStorage.getItem('userInfo'));
+      await comboService.eliminarCombo(confirmDelete.id, user.token);
       setCombos(combos.filter(p => p._id !== confirmDelete.id));
       setConfirmDelete(null);
     } catch (error) {
@@ -39,7 +45,8 @@ const AdminCombos = () => {
 
   const handleRestaurar = async (id) => {
     try {
-      await productoService.restaurarProducto(id);
+      const user = JSON.parse(localStorage.getItem('userInfo'));
+      await comboService.actualizarCombo(id, { disponible: true }, user.token);
       setCombos(combos.filter(p => p._id !== id));
       setDeleteError(null);
     } catch (error) {

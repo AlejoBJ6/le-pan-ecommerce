@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ProductCard from '../../components/ProductCard';
-import productoService from '../../services/productoService';
+import comboService from '../../services/comboService';
 import './CombosPage.css';
 
 const CombosPage = () => {
@@ -10,8 +10,8 @@ const CombosPage = () => {
   useEffect(() => {
     const fetchCombos = async () => {
       try {
-        const data = await productoService.obtenerProductos();
-        setCombos(data.filter(p => p.categoria === 'Combos'));
+        const data = await comboService.obtenerCombos();
+        setCombos(data);
       } catch (error) {
         console.error("Error al cargar los combos", error);
       } finally {

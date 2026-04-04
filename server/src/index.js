@@ -20,6 +20,7 @@ import contactoRoutes from './routes/contactoRoutes.js';
 import categoriaRoutes from './routes/categoriaRoutes.js';
 import comboConfigRoutes from './routes/comboConfigRoutes.js';
 import pedidoRoutes from './routes/pedidoRoutes.js';
+import comboRoutes from './routes/comboRoutes.js';
 
 // Configurar variables de entorno
 dotenv.config();
@@ -106,6 +107,7 @@ app.use('/api/contacto', contactoRoutes);
 app.use('/api/categorias', categoriaRoutes);
 app.use('/api/combo-config', comboConfigRoutes);
 app.use('/api/pedidos', pedidoRoutes);
+app.use('/api/combos', comboRoutes);
 
 // Conexión a MongoDB
 mongoose

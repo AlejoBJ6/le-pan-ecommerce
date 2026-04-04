@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import productoService from '../../services/productoService';
+import comboService from '../../services/comboService';
 import categoriaService from '../../services/categoriaService';
 
 const AdminComboBuilder = () => {
@@ -88,25 +88,26 @@ const AdminComboBuilder = () => {
     setSaving(true);
     setError(null);
 
+    const userInfo = JSON.parse(localStorage.getItem('userInfo'));
     const subtotal = seleccionados.reduce((acc, p) => acc + p.precio, 0);
 
-    const productoData = {
+    const comboData = {
       nombre: comboName,
       descripcion: `Combo especial armado que incluye: ${seleccionados.map(p => p.nombre).join(', ')}. Ideal para equipar tu negocio al mejor precio.`,
-      precio: Number(comboPrice),
-      precioAnterior: subtotal,
-      categoria: 'Combos',
-      marca: 'Lé Pan Combos',
-      modelo: 'PACK',
+      precioFinal: Number(comboPrice),
+      descuento: subtotal > 0 ? Math.round((1 - Number(comboPrice) / subtotal) * 100) : 0,
       imagenes: comboImages.split(',').map(url => url.trim()).filter(url => url !== ''),
-      stock: 5,
+      items: seleccionados.map(p => ({
+        producto: p._id,
+        cantidad: 1,
+        precioUnitario: p.precio
+      })),
       disponible: true,
       destacado: true,
-      productosIncluidos: seleccionados.map(p => p._id),
     };
 
     try {
-      await productoService.crearProducto(productoData);
+      await comboService.crearCombo(comboData, userInfo.token);
       navigate('/admin/combos');
     } catch (err) {
       setError(err.response?.data?.message || 'Hubo un error al guardar el combo');

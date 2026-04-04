@@ -78,10 +78,12 @@ const ProductCard = ({ producto }) => {
         </Link>
         <p className="product-category">{producto.categoria}</p>
         <div className="product-price-container" style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', marginBottom: '10px', marginTop: 'auto' }}>
-          <p className="product-price" style={{ margin: 0, fontWeight: 'bold', fontSize: '1.2rem', color: 'var(--color-dark)' }}>${producto.precio.toLocaleString('es-AR')}</p>
-          {producto.precioAnterior > producto.precio && (
+          <p className="product-price" style={{ margin: 0, fontWeight: 'bold', fontSize: '1.2rem', color: 'var(--color-dark)' }}>
+            ${(producto.precio || producto.precioFinal || 0).toLocaleString('es-AR')}
+          </p>
+          {(producto.precioAnterior || producto.precioSinDescuento) > (producto.precio || producto.precioFinal) && (
             <p style={{ margin: 0, textDecoration: 'line-through', color: 'var(--color-gray)', fontSize: '0.9rem' }}>
-              ${producto.precioAnterior.toLocaleString('es-AR')}
+              ${(producto.precioAnterior || producto.precioSinDescuento).toLocaleString('es-AR')}
             </p>
           )}
         </div>
@@ -124,7 +126,7 @@ const ProductCard = ({ producto }) => {
                 }
               }}
             >
-              {isLoadingCombo ? 'Validando...' : 'Crear Combo con esto'}
+              {isLoadingCombo ? 'Validando...' : 'Añadir al combo'}
             </button>
           )}
         </div>

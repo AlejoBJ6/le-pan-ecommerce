@@ -48,6 +48,17 @@ const ProductDetail = () => {
               }
             }
           });
+        } else if (prodData.items && prodData.items.length > 0) {
+          // Nueva lógica para el modelo Combo.js
+          prodData.items.forEach(item => {
+            const p = item.producto;
+            if (p && p.imagenes && p.imagenes.length > 0) {
+              const img = p.imagenes[0];
+              if (!imagenesTotales.includes(img)) {
+                imagenesTotales.push(img);
+              }
+            }
+          });
         }
 
         const extendedProd = { ...fallbackData, ...prodData, imagenes: imagenesTotales };
@@ -209,14 +220,14 @@ const ProductDetail = () => {
                 </h1>
 
                 <div className="product-price-section">
-                  {producto.precioAnterior > producto.precio && (
-                    <div className="old-price">{precioFormat(producto.precioAnterior)}</div>
+                  { (producto.precioAnterior || producto.precioSinDescuento) > (producto.precio || producto.precioFinal) && (
+                    <div className="old-price">{precioFormat(producto.precioAnterior || producto.precioSinDescuento)}</div>
                   )}
                   <div className="current-price-row">
-                    <span className="current-price">{precioFormat(producto.precio)}</span>
-                    {producto.precioAnterior > producto.precio && (
+                    <span className="current-price">{precioFormat(producto.precio || producto.precioFinal)}</span>
+                    { (producto.precioAnterior || producto.precioSinDescuento) > (producto.precio || producto.precioFinal) && (
                       <span className="discount-tag">
-                        {Math.round((1 - producto.precio / producto.precioAnterior) * 100)}% OFF
+                        {Math.round((1 - (producto.precio || producto.precioFinal) / (producto.precioAnterior || producto.precioSinDescuento)) * 100)}% OFF
                       </span>
                     )}
                   </div>
@@ -358,7 +369,7 @@ const ProductDetail = () => {
                       }
                     }}
                   >
-                    {isLoadingCombo ? 'Validando...' : 'Crear Combo con este producto'}
+                    {isLoadingCombo ? 'Validando...' : 'Añadir al combo'}
                   </button>
                 )}
               </div>
