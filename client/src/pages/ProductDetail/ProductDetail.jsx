@@ -2,6 +2,8 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { CartContext } from '../../context/CartContext.jsx';
 import productoService from '../../services/productoService';
+import comboConfigService from '../../services/comboConfigService';
+import { useCustomAlert } from '../../components/useCustomAlert';
 import { LuWrench, LuShieldCheck, LuTruck, LuCreditCard, LuBadgeCheck } from 'react-icons/lu';
 import './ProductDetail.css';
 
@@ -18,8 +20,10 @@ const ProductDetail = () => {
   const [imagenActiva, setImagenActiva] = useState(null);
   const [cantidad, setCantidad] = useState(1);
   const [isAdded, setIsAdded] = useState(false);
+  const [isLoadingCombo, setIsLoadingCombo] = useState(false);
   const [loading, setLoading] = useState(true);
   const { addToCart } = useContext(CartContext);
+  const { showAlert, AlertComponent } = useCustomAlert();
 
   const [showZoom, setShowZoom] = useState(false);
   const [zoomStyle, setZoomStyle] = useState({});
@@ -65,6 +69,39 @@ const ProductDetail = () => {
 
     setIsAdded(true);
     setTimeout(() => setIsAdded(false), 2000);
+  };
+
+  const handleAddToCombo = async () => {
+    if (!producto.stock || producto.stock === 0 || !producto.disponible) return;
+
+    setIsLoadingCombo(true);
+    try {
+      const config = await comboConfigService.obtenerConfig();
+      const cat = producto.categoria;
+      
+      const isAllowedAsPrincipal = config.categoriasPrincipal?.length === 0 || config.categoriasPrincipal?.includes(cat);
+      const isAllowedAsComplemento = config.categoriasComplemento?.length === 0 || config.categoriasComplemento?.includes(cat);
+
+      if (!isAllowedAsPrincipal && !isAllowedAsComplemento) {
+        let allowed = [];
+        if (config.categoriasPrincipal?.length > 0) allowed.push(...config.categoriasPrincipal);
+        if (config.categoriasComplemento?.length > 0) allowed.push(...config.categoriasComplemento);
+        const allowedText = allowed.length > 0 ? allowed.join(', ') : 'cualquier otra';
+        
+        showAlert(
+          'Producto no permitido en combos',
+          `El administrador configuró que la categoría "${cat}" no se puede usar para combos. Permite: ${allowedText}.`,
+          'error'
+        );
+      } else {
+        navigate(`/arma-combo?preselect=${producto._id}`);
+      }
+    } catch (error) {
+      console.error(error);
+      showAlert('Error', 'No se pudo validar la configuración de combos. Intenta de nuevo más tarde.', 'error');
+    } finally {
+      setIsLoadingCombo(false);
+    }
   };
 
   const precioFormat = (precio) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(precio);
@@ -278,7 +315,7 @@ const ProductDetail = () => {
                 </div>
               </div>
 
-              <div className="purchase-actions">
+              <div className="purchase-actions" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <button className="btn-buy-now" onClick={() => {
                   addToCart(producto, cantidad);
                   navigate('/carrito');
@@ -289,6 +326,41 @@ const ProductDetail = () => {
                 >
                   {isAdded ? '¡Añadido al carrito! ✓' : 'Agregar al carrito'}
                 </button>
+                
+                {producto.categoria !== 'Combos' && (
+                  <button 
+                    className="btn-add-combo" 
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      border: '2px solid var(--color-primary)',
+                      background: 'transparent',
+                      color: 'var(--color-primary)',
+                      borderRadius: 'var(--radius-sm, 6px)',
+                      fontWeight: 'bold',
+                      fontSize: '1rem',
+                      cursor: (!producto.stock || producto.stock === 0 || !producto.disponible || isLoadingCombo) ? 'not-allowed' : 'pointer',
+                      opacity: (!producto.stock || producto.stock === 0 || !producto.disponible) ? 0.5 : 1,
+                      transition: 'all 0.2s ease',
+                    }}
+                    disabled={!producto.stock || producto.stock === 0 || !producto.disponible || isLoadingCombo}
+                    onClick={handleAddToCombo}
+                    onMouseOver={(e) => {
+                      if(producto.stock > 0 && producto.disponible && !isLoadingCombo) {
+                        e.target.style.background = 'var(--color-primary)';
+                        e.target.style.color = '#fff';
+                      }
+                    }}
+                    onMouseOut={(e) => {
+                      if(producto.stock > 0 && producto.disponible && !isLoadingCombo) {
+                        e.target.style.background = 'transparent';
+                        e.target.style.color = 'var(--color-primary)';
+                      }
+                    }}
+                  >
+                    {isLoadingCombo ? 'Validando...' : 'Crear Combo con este producto'}
+                  </button>
+                )}
               </div>
 
               <div className="purchase-guarantees">
@@ -317,6 +389,8 @@ const ProductDetail = () => {
           <img src={imagenActiva} alt={producto.nombre} onClick={(e) => e.stopPropagation()} />
         </div>
       )}
+      
+      {AlertComponent}
     </div>
   );
 };

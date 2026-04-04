@@ -35,9 +35,15 @@ const StepEntrega = ({ data, onChange, onNext, onBack }) => {
             <label>Email *</label>
             <input type="email" placeholder="juan@correo.com" value={data.email} onChange={e => onChange('email', e.target.value)} required />
           </div>
+        </div>
+        <div className="form-row">
           <div className="form-group">
-            <label>Teléfono *</label>
+            <label>Teléfono Principal *</label>
             <input type="tel" placeholder="11 1234-5678" value={data.telefono} onChange={e => onChange('telefono', e.target.value.replace(/[^0-9+\-\s()]/g, ''))} required />
+          </div>
+          <div className="form-group">
+            <label>Teléfono Alternativo *</label>
+            <input type="tel" placeholder="11 8765-4321" value={data.telefonoAlternativo} onChange={e => onChange('telefonoAlternativo', e.target.value.replace(/[^0-9+\-\s()]/g, ''))} required />
           </div>
         </div>
         <div className="form-row">
@@ -254,7 +260,8 @@ const StepResumen = ({ entrega, finalOrderData }) => {
           <p><strong>{entrega.nombre} {entrega.apellido}</strong></p>
           <p>{entrega.direccion}{entrega.piso ? `, ${entrega.piso}` : ''}</p>
           <p>{entrega.ciudad}, {entrega.provincia} ({entrega.cp})</p>
-          <p style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><LuPhone size={15} /> {entrega.telefono}</p>
+          <p style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><LuPhone size={15} /> Tel: {entrega.telefono}</p>
+          <p style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><LuPhone size={15} /> Alt: {entrega.telefonoAlternativo}</p>
           {entrega.notas && <p className="notas-entrega" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><LuNotebook size={15} /> {entrega.notas}</p>}
         </div>
       </div>
@@ -295,9 +302,19 @@ const Checkout = () => {
   const stepKey = STEP_KEYS[subStep + 1]; // offset: carrito is step 0 in indicator
 
   const [entrega, setEntrega] = useState({
-    nombre: '', apellido: '', email: '', telefono: '',
+    nombre: '', apellido: '', email: '', telefono: '', telefonoAlternativo: '',
     provincia: '', ciudad: '', direccion: '', piso: '', cp: '', notas: ''
   });
+
+  useEffect(() => {
+    if (user) {
+      setEntrega(prev => ({
+        ...prev,
+        nombre: prev.nombre || user.nombre || '',
+        email: prev.email || user.email || ''
+      }));
+    }
+  }, [user]);
 
   useEffect(() => {
     if (cart.length === 0 && subStep < 2) navigate('/carrito');

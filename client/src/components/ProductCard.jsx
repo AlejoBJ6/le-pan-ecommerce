@@ -1,11 +1,16 @@
 import React, { useState, useContext } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { CartContext } from '../context/CartContext.jsx';
+import comboConfigService from '../services/comboConfigService';
+import { useCustomAlert } from './useCustomAlert';
 import './ProductCard.css';
 
 const ProductCard = ({ producto }) => {
   const [isAdded, setIsAdded] = useState(false);
+  const [isLoadingCombo, setIsLoadingCombo] = useState(false);
   const { addToCart } = useContext(CartContext);
+  const navigate = useNavigate();
+  const { showAlert, AlertComponent } = useCustomAlert();
 
   const handleAddToCart = (e) => {
     // Prevent Link click if it's placed inside one, though here it's independent
@@ -16,6 +21,42 @@ const ProductCard = ({ producto }) => {
     
     setIsAdded(true);
     setTimeout(() => setIsAdded(false), 2000);
+  };
+
+  const handleAddToCombo = async (e) => {
+    if (e) e.preventDefault();
+    if (!producto.stock || producto.stock === 0 || !producto.disponible) return;
+
+    setIsLoadingCombo(true);
+    try {
+      const config = await comboConfigService.obtenerConfig();
+      const cat = producto.categoria;
+      
+      const isAllowedAsPrincipal = config.categoriasPrincipal?.length === 0 || config.categoriasPrincipal?.includes(cat);
+      const isAllowedAsComplemento = config.categoriasComplemento?.length === 0 || config.categoriasComplemento?.includes(cat);
+
+      if (!isAllowedAsPrincipal && !isAllowedAsComplemento) {
+        // Build readable allowed list
+        let allowed = [];
+        if (config.categoriasPrincipal?.length > 0) allowed.push(...config.categoriasPrincipal);
+        if (config.categoriasComplemento?.length > 0) allowed.push(...config.categoriasComplemento);
+        const allowedText = allowed.length > 0 ? allowed.join(', ') : 'cualquier otra';
+        
+        showAlert(
+          'Producto no permitido en combos',
+          `El administrador ha configurado que la categoría "${cat}" no se puede usar para armar combos. Las categorías permitidas son: ${allowedText}.`,
+          'error'
+        );
+      } else {
+        // Redirigir a arma-combo con auto selección
+        navigate(`/arma-combo?preselect=${producto._id}`);
+      }
+    } catch (error) {
+      console.error(error);
+      showAlert('Error', 'No se pudo validar la configuración de combos. Intenta de nuevo más tarde.', 'error');
+    } finally {
+      setIsLoadingCombo(false);
+    }
   };
 
   return (
@@ -44,7 +85,7 @@ const ProductCard = ({ producto }) => {
             </p>
           )}
         </div>
-        <div className="product-actions">
+        <div className="product-actions" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <button 
             className={`btn-add-cart ${isAdded ? 'btn-added' : ''}`} 
             disabled={!producto.stock || producto.stock === 0 || !producto.disponible}
@@ -52,8 +93,43 @@ const ProductCard = ({ producto }) => {
           >
             {isAdded ? '¡Añadido! ✓' : (producto.stock > 0 && producto.disponible ? 'Añadir al carrito' : 'Agotado')}
           </button>
+          
+          {producto.categoria !== 'Combos' && (
+            <button 
+              className="btn-add-combo" 
+              style={{
+                width: '100%',
+                padding: '10px',
+                border: '1.5px solid var(--color-primary)',
+                background: 'transparent',
+                color: 'var(--color-primary)',
+                borderRadius: 'var(--radius-sm, 6px)',
+                fontWeight: 'bold',
+                cursor: (!producto.stock || producto.stock === 0 || !producto.disponible || isLoadingCombo) ? 'not-allowed' : 'pointer',
+                opacity: (!producto.stock || producto.stock === 0 || !producto.disponible) ? 0.5 : 1,
+                transition: 'all 0.2s ease',
+              }}
+              disabled={!producto.stock || producto.stock === 0 || !producto.disponible || isLoadingCombo}
+              onClick={handleAddToCombo}
+              onMouseOver={(e) => {
+                if(producto.stock > 0 && producto.disponible && !isLoadingCombo) {
+                  e.target.style.background = 'var(--color-primary)';
+                  e.target.style.color = '#fff';
+                }
+              }}
+              onMouseOut={(e) => {
+                if(producto.stock > 0 && producto.disponible && !isLoadingCombo) {
+                  e.target.style.background = 'transparent';
+                  e.target.style.color = 'var(--color-primary)';
+                }
+              }}
+            >
+              {isLoadingCombo ? 'Validando...' : 'Crear Combo con esto'}
+            </button>
+          )}
         </div>
       </div>
+      {AlertComponent}
     </div>
   );
 };

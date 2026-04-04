@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useContext } from 'react';
+import { useLocation } from 'react-router-dom';
 import { CartContext } from '../../context/CartContext.jsx';
 import productoService from '../../services/productoService.js';
 import categoriaService from '../../services/categoriaService.js';
 import comboConfigService from '../../services/comboConfigService.js';
+import { useCustomAlert } from '../../components/useCustomAlert';
 import { LuPackage, LuCirclePlus, LuShoppingCart, LuCheck } from 'react-icons/lu';
 import './ArmaCombo.css';
 
@@ -57,6 +59,8 @@ const ArmaCombo = () => {
   const [productoDetalle, setProductoDetalle] = useState(null);
 
   const { addToCart } = useContext(CartContext);
+  const location = useLocation();
+  const { showAlert, AlertComponent } = useCustomAlert();
 
   useEffect(() => {
     const fetchDatos = async () => {
@@ -88,6 +92,45 @@ const ArmaCombo = () => {
     };
     fetchDatos();
   }, []);
+
+  // UseEffect for auto-selection from URL
+  useEffect(() => {
+    if (loading || todosLosProductos.length === 0) return;
+    
+    const searchParams = new URLSearchParams(location.search);
+    const preselectId = searchParams.get('preselect');
+    
+    if (preselectId) {
+      const prod = todosLosProductos.find(p => p._id === preselectId);
+      if (prod) {
+        const cat = prod.categoria;
+        const isPrincipalCat = comboConfig.categoriasPrincipal?.length === 0 || comboConfig.categoriasPrincipal?.includes(cat);
+        // Si califica como principal y no llegó al límite, lo ponemo ahì
+        if (isPrincipalCat && items1.length < comboConfig.maxPrincipal) {
+          if (!items1.find(i => i._id === prod._id)) {
+            setItems1(prev => [...prev, prod]);
+            // Remove preselect from URL silently to avoid re-triggering
+            window.history.replaceState(null, '', '/arma-combo');
+          }
+        } else {
+          // Si no, o es complemento
+          const isCompCat = comboConfig.categoriasComplemento?.length === 0 || comboConfig.categoriasComplemento?.includes(cat);
+          if (isCompCat && items2.length < comboConfig.maxComplemento) {
+            if (!items2.find(i => i._id === prod._id)) {
+              setItems2(prev => [...prev, prod]);
+              window.history.replaceState(null, '', '/arma-combo');
+              
+              const nextStep = document.getElementById('paso-2');
+              if (nextStep) {
+                const y = nextStep.getBoundingClientRect().top + window.scrollY - 120;
+                window.scrollTo({ top: y, behavior: 'smooth' });
+              }
+            }
+          }
+        }
+      }
+    }
+  }, [loading, todosLosProductos, location.search, comboConfig.maxPrincipal, comboConfig.maxComplemento, items1, items2, comboConfig.categoriasPrincipal, comboConfig.categoriasComplemento]);
 
   const toggleItem = (list, setList, producto, max) => {
     const exists = list.find(p => p._id === producto._id);
@@ -151,7 +194,20 @@ const ArmaCombo = () => {
   const total = Math.max(0, subtotal - discountAmount);
 
   const handleAddToCart = () => {
-    if (!comboComplete || isAdded) return;
+    if (!comboComplete) {
+      // Show explicit error via custom alert
+      const missingPrincipal = Math.max(0, comboConfig.maxPrincipal - items1.length);
+      const missingComplemento = Math.max(0, comboConfig.maxComplemento - items2.length);
+      
+      let mensaje = 'Para finalizar y armar este combo, te falta seleccionar:\n\n';
+      if (missingPrincipal > 0) mensaje += `• ${missingPrincipal} producto(s) principal(es).\n`;
+      if (missingComplemento > 0) mensaje += `• ${missingComplemento} complemento(s).\n`;
+      
+      showAlert('Combo Incompleto', mensaje, 'error');
+      return;
+    }
+    
+    if (isAdded) return;
     
     const allNames = [...items1, ...items2].map(p => p.nombre).join(' + ');
     addToCart({
@@ -308,14 +364,19 @@ const ArmaCombo = () => {
             </div>
 
             <button 
-              className={`btn-checkout-combo ${isAdded ? 'btn-added' : ''}`} 
-              disabled={!comboComplete}
+              className={`btn-checkout-combo ${isAdded ? 'btn-added' : ''} ${!comboComplete ? 'btn-incomplete' : ''}`}
               onClick={handleAddToCart}
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                gap: '8px',
+                opacity: 1 // Override default disabled opacity to keep it visible
+              }}
             >
-              {isAdded ? <><LuCheck size={20} /> ¡Combo Añadido!</> : (comboComplete ? <><LuShoppingCart size={20} /> Añadir Combo al Carrito</> : `Completá los ${items1.length < comboConfig.maxPrincipal ? 'productos' : 'complementos'} para continuar`)}
+              {isAdded ? <><LuCheck size={20} /> ¡Combo Añadido!</> : (comboComplete ? <><LuShoppingCart size={20} /> Añadir Combo al Carrito</> : `Añadir Combo al Carrito`)}
             </button>
-            {!comboComplete && <p className="combo-hint">El descuento {comboConfig.tipoDescuento === 'porcentaje' ? `del ${comboConfig.descuento}%` : `fijo de $${comboConfig.descuento.toLocaleString('es-AR')}`} se activa al completar ambos pasos.</p>}
+            {!comboComplete && <p className="combo-hint" style={{ color: 'var(--color-primary)' }}>Requiere armar el combo completo para poder llevar al carrito.</p>}
           </div>
         </aside>
 
@@ -366,6 +427,8 @@ const ArmaCombo = () => {
           </div>
         </div>
       )}
+      
+      {AlertComponent}
     </div>
   );
 };
