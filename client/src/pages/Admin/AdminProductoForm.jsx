@@ -30,6 +30,7 @@ const AdminProductoForm = ({ isCombo = false }) => {
   // Validation state
   const [touched, setTouched] = useState({});
   const [displayPrice, setDisplayPrice] = useState('');
+  const [displayComision, setDisplayComision] = useState('');
   
   // Categoría en línea
   const [showNuevaCategoria, setShowNuevaCategoria] = useState(false);
@@ -50,6 +51,9 @@ const AdminProductoForm = ({ isCombo = false }) => {
           });
           if (data.precio) {
             setDisplayPrice(new Intl.NumberFormat('es-AR').format(data.precio));
+          }
+          if (data.comision) {
+            setDisplayComision(new Intl.NumberFormat('es-AR').format(data.comision));
           }
           if (data.caracteristicas && data.caracteristicas.length > 0) {
             setCaracteristicas(data.caracteristicas);
@@ -87,6 +91,19 @@ const AdminProductoForm = ({ isCombo = false }) => {
     // Format visual display (e.g. 1.500.000)
     setDisplayPrice(new Intl.NumberFormat('es-AR').format(numValue));
     setFormData({ ...formData, precio: numValue });
+  };
+
+  const handleComisionChange = (e) => {
+    // Solo permitir números
+    const rawValue = e.target.value.replace(/\D/g, '');
+    if (rawValue === '') {
+      setDisplayComision('');
+      setFormData({ ...formData, comision: 0 });
+      return;
+    }
+    const numValue = parseInt(rawValue, 10);
+    setDisplayComision(new Intl.NumberFormat('es-AR').format(numValue));
+    setFormData({ ...formData, comision: numValue });
   };
 
   const isInvalid = (name) => {
@@ -348,16 +365,19 @@ const AdminProductoForm = ({ isCombo = false }) => {
 
             <div className="admin-input-group">
               <label>Comisión ($)</label>
-              <input 
-                type="number" 
-                name="comision" 
-                className="admin-input-control"
-                value={formData.comision} 
-                onChange={handleChange} 
-                onBlur={handleBlur}
-                min="0" 
-                step="1"
-              />
+              <div style={{ position: 'relative' }}>
+                <span style={{ position: 'absolute', left: '12px', top: '12px', color: 'var(--color-dark)', fontWeight: 600 }}>$</span>
+                <input 
+                  type="text" 
+                  name="comision" 
+                  className={`admin-input-control ${isInvalidNum('comision') ? 'has-error' : ''}`}
+                  value={displayComision} 
+                  onChange={handleComisionChange} 
+                  onBlur={() => setTouched({ ...touched, comision: true })}
+                  style={{ paddingLeft: '28px' }}
+                  placeholder="0"
+                />
+              </div>
             </div>
 
             <div className="admin-input-group">

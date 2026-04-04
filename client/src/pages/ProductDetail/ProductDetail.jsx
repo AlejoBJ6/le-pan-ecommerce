@@ -279,7 +279,10 @@ const ProductDetail = () => {
               </div>
 
               <div className="purchase-actions">
-                <button className="btn-buy-now" onClick={() => navigate('/carrito')}>Comprar ahora</button>
+                <button className="btn-buy-now" onClick={() => {
+                  addToCart(producto, cantidad);
+                  navigate('/carrito');
+                }}>Comprar ahora</button>
                 <button
                   className={`btn-add-cart ${isAdded ? 'btn-added' : ''}`}
                   onClick={handleAddToCart}
