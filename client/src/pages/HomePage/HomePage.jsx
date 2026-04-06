@@ -5,22 +5,35 @@ import './HomePage.css';
 
 // Importamos el servicio y la tarjeta "libre" construida por el compañero
 import productoService from '../../services/productoService.js';
+import comboService from '../../services/comboService.js';
 import ProductCard from '../../components/ProductCard.jsx';
 
 const HomePage = () => {
   const [productosDestacados, setProductosDestacados] = useState([]);
+  const [combosArmados, setCombosArmados] = useState([]);
   const [productosPorCategoria, setProductosPorCategoria] = useState({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchProductos = async () => {
+    const fetchData = async () => {
       try {
-        // Obtenemos TODOS los productos del backend
-        const todosLosProductos = await productoService.obtenerProductos();
+        // Obtenemos TODOS los productos y Combos en paralelo
+        const [todosLosProductos, todosLosCombos] = await Promise.all([
+          productoService.obtenerProductos(),
+          comboService.obtenerCombos()
+        ]);
 
-        // Destacados directos
-        const destacados = todosLosProductos.filter(p => p.destacado);
+        // Destacados directos (Mix de Productos y Combos)
+        const destacados = [
+          ...todosLosProductos.filter(p => p.destacado),
+          ...todosLosCombos.filter(c => c.destacado).map(c => ({...c, categoria: 'Combos'})) // Set mock categoria for visual card
+        ];
+        
+        // Shuffle or Sort here if wanted, but order is fine
         setProductosDestacados(destacados);
+        
+        // Save all combos into their own section
+        setCombosArmados(todosLosCombos.map(c => ({...c, categoria: 'Combos'})));
 
         // Agrupar el resto por categorías (omitimos "Combos" porque tienen su propia página)
         const categoriasMap = {};
@@ -35,13 +48,13 @@ const HomePage = () => {
 
         setProductosPorCategoria(categoriasMap);
       } catch (error) {
-        console.error("Error al obtener productos:", error);
+        console.error("Error al obtener datos principales:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProductos();
+    fetchData();
   }, []);
 
   return (
@@ -76,6 +89,25 @@ const HomePage = () => {
               <p style={{ textAlign: 'center' }}>No se encontraron productos destacados.</p>
             )}
           </section>
+
+          {/* COMBOS ARMADOS SECTION */}
+          {!loading && combosArmados.length > 0 && (
+            <section className="productos-extra-section">
+              <div className="home-section-header secondary">
+                <h2 className="section-title">
+                  Combos Armados
+                </h2>
+                <Link to="/combos" className="catalog-link">
+                  Ver todos los combos →
+                </Link>
+              </div>
+              <div className="home-productos-slider">
+                {combosArmados.map((combo) => (
+                  <ProductCard key={combo._id || combo.id} producto={combo} />
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* DYNAMIC CATEGORY RENDER */}
           {Object.entries(productosPorCategoria).map(([categoria, productosDeCategoria]) => (

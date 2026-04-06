@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useParams } from 'react-router-dom';
 import comboService from '../../services/comboService';
 import categoriaService from '../../services/categoriaService';
 import productoService from '../../services/productoService';
@@ -18,7 +18,10 @@ const AdminComboBuilder = () => {
   const [comboPrice, setComboPrice] = useState(0);
   const [comboPriceManual, setComboPriceManual] = useState(false);
   const [comboImages, setComboImages] = useState('');
+  const [destacado, setDestacado] = useState(false);
 
+  const { id } = useParams();
+  const isEdit = Boolean(id);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [subiendoImagen, setSubiendoImagen] = useState(false);
@@ -31,32 +34,51 @@ const AdminComboBuilder = () => {
           productoService.obtenerProductos({ admin: true }),
           categoriaService.obtenerCategorias()
         ]);
-        setProductos(data.filter(p => p.categoria !== 'Combos'));
+        const dbCat = data.filter(p => p.categoria !== 'Combos');
+        setProductos(dbCat);
         setCategorias(['Todas', ...cats.filter(c => c.nombre !== 'Combos').map(c => c.nombre)]);
+
+        if (id) {
+          const comboObj = await comboService.obtenerComboPorId(id);
+          setComboName(comboObj.nombre);
+          setComboPrice(comboObj.precioFinal);
+          setComboPriceManual(true);
+          setComboImages(comboObj.imagenes?.join(', ') || '');
+          setDestacado(comboObj.destacado || false);
+          
+          if (comboObj.items) {
+             const preselect = comboObj.items.map(item => {
+               const foundId = item.producto?._id || item.producto;
+               return dbCat.find(p => p._id === foundId);
+             }).filter(Boolean);
+             setSeleccionados(preselect);
+          }
+        }
       } catch (err) {
-        setError('Error al cargar catálogo');
+        setError('Error al cargar datos');
       } finally {
         setLoading(false);
       }
     };
     fetchData();
-  }, []);
+  }, [id]);
 
   useEffect(() => {
     if (seleccionados.length > 0) {
-      const suggestedName = 'Combo Especial: ' + seleccionados.map(p => p.nombre).join(' + ');
-      const subtotal = seleccionados.reduce((acc, p) => acc + p.precio, 0);
-      const suggestedPrice = Math.round(subtotal * 0.9); // 10% baseline
-      setComboName(suggestedName);
+      if (!isEdit) {
+        const suggestedName = 'Combo Especial: ' + seleccionados.map(p => p.nombre).join(' + ');
+        setComboName(suggestedName);
+      }
       if (!comboPriceManual) {
+        const subtotal = seleccionados.reduce((acc, p) => acc + p.precio, 0);
+        const suggestedPrice = Math.round(subtotal * 0.9);
         setComboPrice(suggestedPrice);
       }
     } else {
-      setComboName('');
-      setComboPrice(0);
-      setComboPriceManual(false);
+      if (!isEdit) setComboName('');
+      if (!comboPriceManual) setComboPrice(0);
     }
-  }, [seleccionados]);
+  }, [seleccionados, isEdit, comboPriceManual]);
 
   const toggleSeleccion = (producto) => {
     if (seleccionados.find(p => p._id === producto._id)) {
@@ -104,11 +126,15 @@ const AdminComboBuilder = () => {
         precioUnitario: p.precio
       })),
       disponible: true,
-      destacado: true,
+      destacado: destacado,
     };
 
     try {
-      await comboService.crearCombo(comboData, userInfo.token);
+      if (isEdit) {
+        await comboService.actualizarCombo(id, comboData, userInfo.token);
+      } else {
+        await comboService.crearCombo(comboData, userInfo.token);
+      }
       navigate('/admin/combos');
     } catch (err) {
       console.error(err);
@@ -144,7 +170,7 @@ const AdminComboBuilder = () => {
       {/* Left Column: Catalog Selectable */}
       <div style={{ flex: '1', minWidth: '400px', backgroundColor: 'var(--color-white)', padding: '20px', borderRadius: '8px', boxShadow: 'var(--shadow-sm)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-          <h2 style={{ marginTop: 0, color: 'var(--color-dark)' }}>Paso 1: Construye tu Combo</h2>
+          <h2 style={{ marginTop: 0, color: 'var(--color-dark)' }}>{isEdit ? 'Editar Combo' : 'Paso 1: Construye tu Combo'}</h2>
           {/* Floating counter badge */}
           {seleccionados.length > 0 && (
             <span style={{
@@ -239,7 +265,7 @@ const AdminComboBuilder = () => {
       {/* Right Column: Combo Builder Details */}
       <div style={{ width: '100%', maxWidth: '450px', backgroundColor: 'var(--color-white)', padding: '25px', borderRadius: '8px', boxShadow: 'var(--shadow-sm)', position: 'sticky', top: '20px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <h2 style={{ margin: 0, color: 'var(--color-dark)' }}>Paso 2: Lanzar Oferta</h2>
+          <h2 style={{ margin: 0, color: 'var(--color-dark)' }}>{isEdit ? 'Guardar Cambios' : 'Paso 2: Lanzar Oferta'}</h2>
           <Link to="/admin/combos" style={{ color: 'var(--color-gray)', textDecoration: 'none', fontSize: '0.9em' }}>Cancelar</Link>
         </div>
 
@@ -335,6 +361,19 @@ const AdminComboBuilder = () => {
             {comboImages && <p style={{ fontSize: '0.8rem', color: 'green', margin: '5px 0 0 0' }}>¡Imagen cargada lista para usarse!</p>}
           </div>
 
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', backgroundColor: '#f0f8ff', padding: '12px', borderRadius: '4px', border: '1px solid #cce5ff' }}>
+            <input
+              type="checkbox"
+              id="destacado_checkbox"
+              checked={destacado}
+              onChange={(e) => setDestacado(e.target.checked)}
+              style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+            />
+            <label htmlFor="destacado_checkbox" style={{ fontWeight: 'bold', color: '#004085', cursor: 'pointer', margin: 0 }}>
+              ★ Destacar este combo en el Inicio
+            </label>
+          </div>
+
           <button
             type="submit"
             disabled={saving || seleccionados.length === 0}
@@ -350,7 +389,7 @@ const AdminComboBuilder = () => {
               fontSize: '1rem'
             }}
           >
-            {saving ? 'Publicando...' : 'Publicar Combo de Inmediato 🚀'}
+            {saving ? 'Guardando...' : (isEdit ? 'Actualizar Combo' : 'Publicar Combo de Inmediato 🚀')}
           </button>
         </form>
       </div>

@@ -174,7 +174,7 @@ const StepPago = ({ cart, getCartTotal, onNext, onBack, loading }) => {
         {cart.map(item => (
           <div key={item._id} className="checkout-order-item">
             <span className="checkout-order-name">{item.nombre} × {item.quantity}</span>
-            <span>{formatPrice((item.precio || 0) * item.quantity)}</span>
+            <span>{formatPrice((item.precio || item.precioFinal || 0) * item.quantity)}</span>
           </div>
         ))}
         <div className="checkout-order-sep"></div>
@@ -246,7 +246,7 @@ const StepResumen = ({ entrega, finalOrderData }) => {
           {finalOrderData && finalOrderData.pedidosData ? finalOrderData.pedidosData.map((item, idx) => (
             <div key={idx} className="checkout-order-item">
               <span>{item.nombre} × {item.cantidad}</span>
-              <span>{formatPrice((item.precio || 0) * item.cantidad)}</span>
+              <span>{formatPrice((item.precio || item.precioFinal || 0) * item.cantidad)}</span>
             </div>
           )) : null}
           <div className="checkout-order-sep"></div>
@@ -335,7 +335,7 @@ const Checkout = () => {
           items: cart.map(item => ({
             productoId: item._id, // Usamos el ID de combo o producto normal
             nombre: item.nombre,
-            precio: item.precio,
+            precio: item.precio || item.precioFinal,
             cantidad: item.quantity,
             imagen: item.imagen || (item.imagenes && item.imagenes.length > 0 ? item.imagenes[0] : ''),
             esCombo: item.esCombo || false

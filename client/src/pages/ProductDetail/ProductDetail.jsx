@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { CartContext } from '../../context/CartContext.jsx';
 import productoService from '../../services/productoService';
 import comboConfigService from '../../services/comboConfigService';
+import comboService from '../../services/comboService';
 import { useCustomAlert } from '../../components/useCustomAlert';
 import { LuWrench, LuShieldCheck, LuTruck, LuCreditCard, LuBadgeCheck } from 'react-icons/lu';
 import './ProductDetail.css';
@@ -34,22 +35,21 @@ const ProductDetail = () => {
     window.scrollTo(0, 0);
     const fetchProd = async () => {
       try {
-        const prodData = await productoService.obtenerProductoPorId(id);
+        let prodData;
+        let isComboModel = false;
+        try {
+          prodData = await productoService.obtenerProductoPorId(id);
+        } catch (err) {
+          // Si falla como producto, probamos como combo
+          prodData = await comboService.obtenerComboPorId(id);
+          prodData.categoria = 'Combos'; // Mock categorization para mantener diseño de UI
+          isComboModel = true;
+        }
         
         let imagenesTotales = prodData.imagenes?.length > 0 ? [...prodData.imagenes] : [];
         
-        // Si es un combo, integramos la primera imagen de cada producto incluido si no está ya
-        if (prodData.categoria === 'Combos' && prodData.productosIncluidos) {
-          prodData.productosIncluidos.forEach(p => {
-            if (p.imagenes && p.imagenes.length > 0) {
-              const img = p.imagenes[0];
-              if (!imagenesTotales.includes(img)) {
-                imagenesTotales.push(img);
-              }
-            }
-          });
-        } else if (prodData.items && prodData.items.length > 0) {
-          // Nueva lógica para el modelo Combo.js
+        // Extraer imagenes hijo si es Combo
+        if (isComboModel && prodData.items && prodData.items.length > 0) {
           prodData.items.forEach(item => {
             const p = item.producto;
             if (p && p.imagenes && p.imagenes.length > 0) {
@@ -241,9 +241,9 @@ const ProductDetail = () => {
                   <h3>Especificaciones Técnicas</h3>
 
                   {/* COMBO: heredamos specs de cada producto incluido */}
-                  {producto.categoria === 'Combos' && producto.productosIncluidos && producto.productosIncluidos.length > 0 ? (
+                  {producto.categoria === 'Combos' && ((producto.items && producto.items.length > 0) || (producto.productosIncluidos && producto.productosIncluidos.length > 0)) ? (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                      {producto.productosIncluidos.map((prod, idx) => (
+                      {(producto.items ? producto.items.map(i => i.producto).filter(Boolean) : producto.productosIncluidos).map((prod, idx) => (
                         <div key={idx}>
                           <div className="combo-product-header">
                           <LuWrench size={16} color="var(--color-primary, #E8820C)" />
