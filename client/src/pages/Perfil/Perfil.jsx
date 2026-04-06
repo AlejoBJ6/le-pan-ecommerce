@@ -3,7 +3,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import authService from '../../services/authService';
 import pedidoService from '../../services/pedidoService';
-import { LuTruck, LuLink } from 'react-icons/lu';
+import uploadService from '../../services/uploadService';
+import { LuTruck, LuLink, LuUploadCloud, LuCheckCircle2 } from 'react-icons/lu';
 import './Perfil.css';
 
 const EyeIcon = ({ show }) => (
@@ -39,6 +40,7 @@ const Perfil = () => {
   const [loading, setLoading] = useState(false);
   const [pedidos, setPedidos] = useState([]);
   const [loadingPedidos, setLoadingPedidos] = useState(true);
+  const [uploadingOrder, setUploadingOrder] = useState(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -96,6 +98,28 @@ const Perfil = () => {
     if (status === 'Aprobado' || status === 'Entregado') return 'status-approved';
     if (status === 'Pendiente') return 'status-pending';
     return 'status-default';
+  };
+
+  const handleUploadComprobante = async (pedidoId, file) => {
+    if (!file) return;
+    setUploadingOrder(pedidoId);
+    setError(null);
+    setMensaje(null);
+    try {
+      const uploadRes = await uploadService.uploadImage(file);
+      await pedidoService.subirComprobante(pedidoId, uploadRes.imageUrl);
+      
+      // Update local state to reflect the uploaded receipt
+      setPedidos(pedidos.map(p => 
+        p._id === pedidoId ? { ...p, comprobanteTransferencia: uploadRes.imageUrl } : p
+      ));
+      setMensaje('Comprobante subido y asociado correctamente al pedido.');
+    } catch (err) {
+      console.error(err);
+      setError('Hubo un error al subir el comprobante. Intenta nuevamente.');
+    } finally {
+      setUploadingOrder(null);
+    }
   };
 
   return (
@@ -248,6 +272,44 @@ const Perfil = () => {
                         <span>Entrega estimada: {fMin} a {fMax}</span>
                       </div>
                     )}
+                    
+                    {pedido.metodoPago === 'transferencia' && (
+                      <div className="order-receipt-section" style={{ marginTop: '16px', padding: '12px', backgroundColor: '#f8f9fa', borderRadius: '8px', border: '1px solid #e9ecef' }}>
+                        {pedido.comprobanteTransferencia ? (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#2e7d32', fontSize: '0.9rem', fontWeight: '500' }}>
+                            <LuCheckCircle2 size={20} />
+                            Comprobante enviado (en revisión)
+                            <a href={pedido.comprobanteTransferencia} target="_blank" rel="noreferrer" style={{ marginLeft: 'auto', color: 'var(--color-primary)', textDecoration: 'underline' }}>Ver archivo</a>
+                          </div>
+                        ) : (
+                          <div>
+                            <p style={{ margin: '0 0 10px 0', fontSize: '0.85rem', color: '#495057' }}>
+                              <strong>Pago por transferencia:</strong> Adjuntá tu comprobante para que podamos aprobar tu pedido.
+                            </p>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                              <input 
+                                type="file" 
+                                accept="image/*,.pdf" 
+                                id={`file-${pedido._id}`}
+                                style={{ display: 'none' }}
+                                onChange={(e) => handleUploadComprobante(pedido._id, e.target.files[0])}
+                              />
+                              <button 
+                                onClick={() => document.getElementById(`file-${pedido._id}`).click()}
+                                disabled={uploadingOrder === pedido._id}
+                                style={{
+                                  padding: '8px 16px', backgroundColor: 'var(--color-primary)', color: 'white', borderRadius: '6px', border: 'none', cursor: uploadingOrder === pedido._id ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 'bold'
+                                }}
+                              >
+                                <LuUploadCloud size={16} />
+                                {uploadingOrder === pedido._id ? 'Subiendo...' : 'Subir Comprobante'}
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
                   </div>
                  );
                })}

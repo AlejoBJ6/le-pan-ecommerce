@@ -4,7 +4,8 @@ import { CartContext } from '../../context/CartContext.jsx';
 import { AuthContext } from '../../context/AuthContext.jsx';
 import StepIndicator from '../../components/StepIndicator/StepIndicator.jsx';
 import pedidoService from '../../services/pedidoService.js';
-import { LuChevronRight, LuChevronLeft, LuShieldCheck, LuPhone, LuTruck, LuCreditCard, LuBuilding2, LuPackage, LuNotebook } from 'react-icons/lu';
+import uploadService from '../../services/uploadService.js';
+import { LuChevronRight, LuChevronLeft, LuShieldCheck, LuPhone, LuTruck, LuCreditCard, LuBuilding2, LuPackage, LuNotebook, LuUploadCloud, LuCheckCircle2 } from 'react-icons/lu';
 import './Checkout.css';
 
 const MP_GREEN = '#00a650';
@@ -212,9 +213,27 @@ const StepPago = ({ cart, getCartTotal, onNext, onBack, loading }) => {
 /* ─── STEP 3: Resumen / Confirmación ─────────────────────── */
 const StepResumen = ({ entrega, finalOrderData }) => {
   const navigate = useNavigate();
+  const [uploading, setUploading] = useState(false);
+  const [comprobante, setComprobante] = useState(null);
+
   const total = finalOrderData ? finalOrderData.totales.total : 0;
   const orderNum = finalOrderData ? finalOrderData._id.slice(-6).toUpperCase() : Math.floor(Math.random() * 900000) + 100000;
   const formatPrice = (p) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(p);
+
+  const handleUploadComprobante = async (file) => {
+    if (!file || !finalOrderData) return;
+    setUploading(true);
+    try {
+      const uploadRes = await uploadService.uploadImage(file);
+      await pedidoService.subirComprobante(finalOrderData._id, uploadRes.imageUrl);
+      setComprobante(uploadRes.imageUrl);
+    } catch (err) {
+      console.error(err);
+      alert('Error al subir el comprobante. Tal vez tu imagen sea demasiado pesada.');
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const fMin = finalOrderData && finalOrderData.datosEntrega?.fechaEstimadaMin ? new Date(finalOrderData.datosEntrega.fechaEstimadaMin).toLocaleDateString() : '';
   const fMax = finalOrderData && finalOrderData.datosEntrega?.fechaEstimadaMax ? new Date(finalOrderData.datosEntrega.fechaEstimadaMax).toLocaleDateString() : '';
@@ -236,6 +255,45 @@ const StepResumen = ({ entrega, finalOrderData }) => {
           <div style={{ marginTop: '10px', padding: '10px', backgroundColor: '#e9f5ff', borderRadius: '8px', border: '1px solid #bce0fd', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             <LuTruck size={18} color="#17a2b8" />
             <strong>Entrega estimada:</strong> Entre el {fMin} y el {fMax}
+          </div>
+        )}
+
+        {finalOrderData?.metodoPago === 'transferencia' && (
+          <div className="checkout-receipt-upload" style={{ marginTop: '20px', padding: '16px', backgroundColor: '#f8f9fa', borderRadius: '8px', border: '1px solid #e9ecef', textAlign: 'left' }}>
+            {comprobante ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#2e7d32', fontWeight: '500' }}>
+                <LuCheckCircle2 size={24} />
+                ¡Comprobante subido correctamente! Lo revisaremos a la brevedad.
+              </div>
+            ) : (
+              <div>
+                <h4 style={{ margin: '0 0 8px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <LuBuilding2 size={18} /> Pago por Transferencia
+                </h4>
+                <p style={{ margin: '0 0 12px 0', fontSize: '0.9rem', color: '#555' }}>
+                  Ya completaste tu pedido. Ahora realizá la transferencia y adjuntá acá el comprobante, o hacelo más tarde desde <strong>Mi Perfil</strong>.
+                </p>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <input 
+                    type="file" 
+                    accept="image/*,.pdf" 
+                    id="checkout-receipt"
+                    style={{ display: 'none' }}
+                    onChange={(e) => handleUploadComprobante(e.target.files[0])}
+                  />
+                  <button 
+                    onClick={() => document.getElementById('checkout-receipt').click()}
+                    disabled={uploading}
+                    style={{
+                      padding: '10px 20px', backgroundColor: 'var(--color-primary)', color: 'white', borderRadius: '6px', border: 'none', cursor: uploading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold'
+                    }}
+                  >
+                    <LuUploadCloud size={20} />
+                    {uploading ? 'Subiendo archivo...' : 'Adjuntar Comprobante'}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

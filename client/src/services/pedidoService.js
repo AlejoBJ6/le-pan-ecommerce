@@ -43,11 +43,20 @@ const updateEstadoPedido = async (id, estados) => {
     return response.data;
 };
 
+// Subir comprobante (Cliente o Admin)
+const subirComprobante = async (id, comprobanteUrl) => {
+    const response = await axios.put(`${API_URL}/${id}/comprobante`, { comprobanteUrl }, {
+        headers: getAuthHeaders()
+    });
+    return response.data;
+};
+
 const pedidoService = {
     crearPedido,
     getMisPedidos,
     getAllPedidos,
-    updateEstadoPedido
+    updateEstadoPedido,
+    subirComprobante
 };
 
 export default pedidoService;
