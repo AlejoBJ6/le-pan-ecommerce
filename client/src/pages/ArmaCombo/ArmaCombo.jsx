@@ -148,6 +148,11 @@ const ArmaCombo = () => {
     } else {
       if (list.length < max) {
         setList([...list, producto]);
+      } else if (max === 1) {
+        // Auto-reemplaza si el límite es 1
+        setList([producto]);
+      } else {
+        showAlert('Límite alcanzado', `Solo puedes seleccionar hasta ${max} productos en este paso. Desmarcá alguno para elegir este.`, 'info');
       }
     }
   };
@@ -164,13 +169,11 @@ const ArmaCombo = () => {
   const allowedCatsPaso1 = (comboConfig.categoriasPrincipal.length > 0 
     ? comboConfig.categoriasPrincipal 
     : categoriasList.filter(c => c !== 'Todas'))
-    .filter(c => comboConfig.categoriasComplemento.length === 0 || !comboConfig.categoriasComplemento.includes(c))
     .filter(c => !selectedCatsFromPaso2.includes(c));
 
   const allowedCatsPaso2 = (comboConfig.categoriasComplemento.length > 0 
     ? comboConfig.categoriasComplemento 
     : categoriasList.filter(c => c !== 'Todas'))
-    .filter(c => comboConfig.categoriasPrincipal.length === 0 || !comboConfig.categoriasPrincipal.includes(c))
     .filter(c => !selectedCatsFromPaso1.includes(c));
 
   // If the current category filter is no longer in the allowed list, reset to 'Todas'
@@ -282,15 +285,7 @@ const ArmaCombo = () => {
                   isSelected={!!items1.find(i => i._id === p._id)}
                   onSelect={(prod) => {
                     toggleItem(items1, setItems1, prod, comboConfig.maxPrincipal);
-                    if (items1.length + 1 >= comboConfig.maxPrincipal && !items1.find(i => i._id === prod._id)) {
-                      setTimeout(() => {
-                        const nextStep = document.getElementById('paso-2');
-                        if (nextStep) {
-                          const y = nextStep.getBoundingClientRect().top + window.scrollY - 120;
-                          window.scrollTo({ top: y, behavior: 'smooth' });
-                        }
-                      }, 250);
-                    }
+                    // El scroll fue quitado o pospuesto para evitar saltos molestos de pantalla si reemplazan producto
                   }} 
                   onVerDetalle={setProductoDetalle}
                 />
@@ -420,9 +415,13 @@ const ArmaCombo = () => {
                 <button 
                   className="qv-select-btn"
                   onClick={() => {
-                    if (items1.length < comboConfig.maxPrincipal) {
+                    // Detect in which list this belongs contextually
+                    const isComplementoSection = !!productosPaso2.find(p => p._id === productoDetalle._id);
+                    const isPrincipalSection = !!productosPaso1.find(p => p._id === productoDetalle._id);
+
+                    if (isPrincipalSection) {
                       toggleItem(items1, setItems1, productoDetalle, comboConfig.maxPrincipal);
-                    } else {
+                    } else if (isComplementoSection) {
                       toggleItem(items2, setItems2, productoDetalle, comboConfig.maxComplemento);
                     }
                     setProductoDetalle(null);
