@@ -83,7 +83,7 @@ function App() {
             <Route path="productos/:id/editar" element={<AdminProductoForm />} />
             <Route path="combos" element={<AdminCombos />} />
             <Route path="combos/nuevo" element={<AdminComboBuilder />} />
-            <Route path="combos/:id/editar" element={<AdminProductoForm isCombo={true} />} />
+            <Route path="combos/:id/editar" element={<AdminComboBuilder />} />
             <Route path="mensajes" element={<AdminMensajes />} />
             <Route path="categorias" element={<AdminCategorias />} />
             <Route path="combo-config" element={<AdminComboConfig />} />

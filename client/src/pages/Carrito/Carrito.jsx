@@ -101,7 +101,7 @@ const Carrito = () => {
                       </div>
 
                       <div className="item-price">
-                        {formatPrice((item.precio || item.price || 0) * item.quantity)}
+                        {formatPrice((item.precio || item.precioFinal || item.price || 0) * item.quantity)}
                       </div>
                     </li>
                   );

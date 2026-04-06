@@ -4,7 +4,8 @@ import {
   getMisPedidos,
   getAllPedidos,
   updateEstadoPedido,
-  webhookMercadoPago
+  webhookMercadoPago,
+  subirComprobante
 } from '../controllers/pedidoController.js';
 import { protect, admin } from '../middleware/authMiddleware.js'; // Asumo que existe el middleware de Auth.
 
@@ -21,5 +22,6 @@ router.post('/webhook', webhookMercadoPago);
 router.route('/mis-pedidos').get(protect, getMisPedidos);
 
 router.route('/:id/estado').put(protect, admin, updateEstadoPedido);
+router.route('/:id/comprobante').put(protect, subirComprobante);
 
 export default router;

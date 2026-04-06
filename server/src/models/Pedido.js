@@ -55,6 +55,10 @@ const pedidoSchema = new mongoose.Schema({
   stockDescontado: {
     type: Boolean,
     default: false
+  },
+  comprobanteTransferencia: {
+    type: String,
+    default: null
   }
 }, {
   timestamps: true

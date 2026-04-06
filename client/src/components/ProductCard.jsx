@@ -59,6 +59,9 @@ const ProductCard = ({ producto }) => {
     }
   };
 
+  const esComboObj = producto.categoria === 'Combos' || producto.precioFinal !== undefined || (producto.items && producto.items.length > 0);
+  const hasStock = esComboObj ? producto.disponible : (producto.stock > 0 && producto.disponible);
+
   return (
     <div className="product-card">
       <Link to={`/producto/${producto._id || 1}`} style={{ display: 'block' }}>
@@ -78,23 +81,25 @@ const ProductCard = ({ producto }) => {
         </Link>
         <p className="product-category">{producto.categoria}</p>
         <div className="product-price-container" style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', marginBottom: '10px', marginTop: 'auto' }}>
-          <p className="product-price" style={{ margin: 0, fontWeight: 'bold', fontSize: '1.2rem', color: 'var(--color-dark)' }}>${producto.precio.toLocaleString('es-AR')}</p>
-          {producto.precioAnterior > producto.precio && (
+          <p className="product-price" style={{ margin: 0, fontWeight: 'bold', fontSize: '1.2rem', color: 'var(--color-dark)' }}>
+            ${(producto.precio || producto.precioFinal || 0).toLocaleString('es-AR')}
+          </p>
+          {(producto.precioAnterior || producto.precioSinDescuento) > (producto.precio || producto.precioFinal) && (
             <p style={{ margin: 0, textDecoration: 'line-through', color: 'var(--color-gray)', fontSize: '0.9rem' }}>
-              ${producto.precioAnterior.toLocaleString('es-AR')}
+              ${(producto.precioAnterior || producto.precioSinDescuento).toLocaleString('es-AR')}
             </p>
           )}
         </div>
         <div className="product-actions" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <button 
             className={`btn-add-cart ${isAdded ? 'btn-added' : ''}`} 
-            disabled={!producto.stock || producto.stock === 0 || !producto.disponible}
+            disabled={!hasStock || isAdded}
             onClick={handleAddToCart}
           >
-            {isAdded ? '¡Añadido! ✓' : (producto.stock > 0 && producto.disponible ? 'Añadir al carrito' : 'Agotado')}
+            {isAdded ? '¡Añadido! ✓' : (hasStock ? 'Añadir al carrito' : 'Agotado')}
           </button>
           
-          {producto.categoria !== 'Combos' && (
+          {!esComboObj && (
             <button 
               className="btn-add-combo" 
               style={{
@@ -105,26 +110,26 @@ const ProductCard = ({ producto }) => {
                 color: 'var(--color-primary)',
                 borderRadius: 'var(--radius-sm, 6px)',
                 fontWeight: 'bold',
-                cursor: (!producto.stock || producto.stock === 0 || !producto.disponible || isLoadingCombo) ? 'not-allowed' : 'pointer',
-                opacity: (!producto.stock || producto.stock === 0 || !producto.disponible) ? 0.5 : 1,
+                cursor: (!hasStock || isLoadingCombo) ? 'not-allowed' : 'pointer',
+                opacity: (!hasStock) ? 0.5 : 1,
                 transition: 'all 0.2s ease',
               }}
-              disabled={!producto.stock || producto.stock === 0 || !producto.disponible || isLoadingCombo}
+              disabled={!hasStock || isLoadingCombo}
               onClick={handleAddToCombo}
               onMouseOver={(e) => {
-                if(producto.stock > 0 && producto.disponible && !isLoadingCombo) {
+                if(hasStock && !isLoadingCombo) {
                   e.target.style.background = 'var(--color-primary)';
                   e.target.style.color = '#fff';
                 }
               }}
               onMouseOut={(e) => {
-                if(producto.stock > 0 && producto.disponible && !isLoadingCombo) {
+                if(hasStock && !isLoadingCombo) {
                   e.target.style.background = 'transparent';
                   e.target.style.color = 'var(--color-primary)';
                 }
               }}
             >
-              {isLoadingCombo ? 'Validando...' : 'Crear Combo con esto'}
+              {isLoadingCombo ? 'Validando...' : 'Añadir al combo'}
             </button>
           )}
         </div>

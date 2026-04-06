@@ -25,9 +25,9 @@ const storage = new CloudinaryStorage({
 const upload = multer({ storage: storage });
 const router = express.Router();
 
-// Ruta de subida. Solo administradores pueden subir fotos.
+// Ruta de subida. Usuarios logueados pueden subir fotos.
 // Espera un campo de formulario que se llame 'image'
-router.post('/', protect, admin, upload.single('image'), (req, res) => {
+router.post('/', protect, upload.single('image'), (req, res) => {
   if (!req.file) {
     return res.status(400).send({ message: 'No se procesó ninguna imagen' });
   }

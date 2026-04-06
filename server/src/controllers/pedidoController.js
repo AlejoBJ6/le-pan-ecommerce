@@ -1,5 +1,6 @@
 import Pedido from '../models/Pedido.js';
 import Producto from '../models/Producto.js';
+import Combo from '../models/Combo.js';
 import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
 
 /**
@@ -12,23 +13,39 @@ const descontarStockPedido = async (pedido) => {
   // 1. Recolectar todos los productos a descontar (desglosando combos si aplica)
   const aDescontar = [];
   for (const item of pedido.pedidosData) {
-    const prod = await Producto.findById(item.productoId).populate('productosIncluidos');
-    if (!prod) continue;
-
-    if (prod.categoria === 'Combos' && prod.productosIncluidos?.length > 0) {
-      for (const incProd of prod.productosIncluidos) {
+    // Intentar buscar en Producto (catálogo normal o combo antiguo)
+    let prod = await Producto.findById(item.productoId).populate('productosIncluidos');
+    
+    if (prod) {
+      if (prod.categoria === 'Combos' && prod.productosIncluidos?.length > 0) {
+        for (const incProd of prod.productosIncluidos) {
+          aDescontar.push({
+            id: incProd._id,
+            cantidad: Number(item.cantidad),
+            nombre: incProd.nombre
+          });
+        }
+      } else {
         aDescontar.push({
-          id: incProd._id,
+          id: item.productoId,
           cantidad: Number(item.cantidad),
-          nombre: incProd.nombre
+          nombre: item.nombre
         });
       }
     } else {
-      aDescontar.push({
-        id: item.productoId,
-        cantidad: Number(item.cantidad),
-        nombre: item.nombre
-      });
+      // Si no es un producto, buscar en la nueva colección de Combos
+      const combo = await Combo.findById(item.productoId).populate('items.producto');
+      if (combo && combo.items?.length > 0) {
+        for (const comboItem of combo.items) {
+          if (comboItem.producto) {
+            aDescontar.push({
+              id: comboItem.producto._id,
+              cantidad: Number(item.cantidad) * comboItem.cantidad,
+              nombre: comboItem.producto.nombre
+            });
+          }
+        }
+      }
     }
   }
 
@@ -102,14 +119,24 @@ export const crearPedido = async (req, res) => {
       let comision = 0;
       if (item.productoId) {
         try {
+          // Primero buscar en Producto
           const prod = await Producto.findById(item.productoId).populate('productosIncluidos');
           if (prod) {
             if (prod.categoria === 'Combos' && prod.productosIncluidos?.length > 0) {
               // Suma la comisión de todos los productos internos del combo
               comision = prod.productosIncluidos.reduce((acc, hijo) => acc + (hijo.comision || 0), 0);
             } else if (prod.comision) {
-              // Si no es combo y tiene comisión configurada
               comision = prod.comision;
+            }
+          } else {
+            // Si no está, buscar en Combo
+            const combo = await Combo.findById(item.productoId).populate('items.producto');
+            if (combo) {
+              // Suma comisión de los productos dentro del combo
+              comision = combo.items.reduce((acc, itemCombo) => {
+                const comHijo = itemCombo.producto?.comision || 0;
+                return acc + (comHijo * itemCombo.cantidad);
+              }, 0);
             }
           }
         } catch (err) {
@@ -240,6 +267,31 @@ export const updateEstadoPedido = async (req, res) => {
       return res.status(400).json({ message: error.message });
     }
     res.status(500).json({ message: 'Error del servidor al actualizar pedido' });
+  }
+};
+
+// @desc    Subir comprobante de transferencia para un pedido (Cliente o Admin)
+// @route   PUT /api/pedidos/:id/comprobante
+// @access  Privado
+export const subirComprobante = async (req, res) => {
+  try {
+    const { comprobanteUrl } = req.body;
+    const pedido = await Pedido.findById(req.params.id);
+
+    if (pedido) {
+      if (pedido.user.toString() !== req.user._id.toString() && !req.user.isAdmin) {
+        return res.status(401).json({ message: 'No tienes permiso para actualizar este pedido' });
+      }
+
+      pedido.comprobanteTransferencia = comprobanteUrl;
+      const updatedPedido = await pedido.save();
+      res.json(updatedPedido);
+    } else {
+      res.status(404).json({ message: 'Pedido no encontrado' });
+    }
+  } catch (error) {
+    console.error('Error uploading comprobante:', error);
+    res.status(500).json({ message: 'Error del servidor al adjuntar comprobante' });
   }
 };
 
