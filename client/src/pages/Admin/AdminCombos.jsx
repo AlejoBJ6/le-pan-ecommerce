@@ -32,7 +32,7 @@ const AdminCombos = () => {
   const handleConfirmDelete = async () => {
     if (!confirmDelete) return;
     try {
-      const user = JSON.parse(localStorage.getItem('userInfo'));
+      const user = JSON.parse(localStorage.getItem('user'));
       await comboService.eliminarCombo(confirmDelete.id, user.token);
       setCombos(combos.filter(p => p._id !== confirmDelete.id));
       setConfirmDelete(null);
@@ -45,7 +45,7 @@ const AdminCombos = () => {
 
   const handleRestaurar = async (id) => {
     try {
-      const user = JSON.parse(localStorage.getItem('userInfo'));
+      const user = JSON.parse(localStorage.getItem('user'));
       await comboService.actualizarCombo(id, { disponible: true }, user.token);
       setCombos(combos.filter(p => p._id !== id));
       setDeleteError(null);
@@ -161,7 +161,7 @@ const AdminCombos = () => {
                 )}
               </h3>
               <p style={{ margin: '0 0 20px 0', fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-primary)' }}>
-                ${(combo.precio || 0).toLocaleString('es-AR')}
+                ${(combo.precio || combo.precioFinal || 0).toLocaleString('es-AR')}
               </p>
               
               {/* Botones de acción */}

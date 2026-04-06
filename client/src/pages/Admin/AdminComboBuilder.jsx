@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import comboService from '../../services/comboService';
 import categoriaService from '../../services/categoriaService';
+import productoService from '../../services/productoService';
 
 const AdminComboBuilder = () => {
   const navigate = useNavigate();
@@ -88,7 +89,7 @@ const AdminComboBuilder = () => {
     setSaving(true);
     setError(null);
 
-    const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+    const userInfo = JSON.parse(localStorage.getItem('user'));
     const subtotal = seleccionados.reduce((acc, p) => acc + p.precio, 0);
 
     const comboData = {
@@ -110,7 +111,13 @@ const AdminComboBuilder = () => {
       await comboService.crearCombo(comboData, userInfo.token);
       navigate('/admin/combos');
     } catch (err) {
-      setError(err.response?.data?.message || 'Hubo un error al guardar el combo');
+      console.error(err);
+      let errMsg = err.response?.data?.message;
+      if (!errMsg) {
+        errMsg = "Error interno frontend: " + (err.message || String(err));
+        if (err.name === 'AxiosError') errMsg += " (Revisá la conexión con la API o consola)";
+      }
+      setError(errMsg);
       setSaving(false);
     }
   };

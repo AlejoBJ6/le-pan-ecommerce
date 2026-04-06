@@ -96,6 +96,7 @@ export const crearCombo = async (req, res) => {
     const comboCreado = await combo.save();
     res.status(201).json(comboCreado);
   } catch (error) {
+    console.error('Error al crear combo:', error);
     res.status(400).json({ message: 'Error al crear el combo', error: error.message });
   }
 };
