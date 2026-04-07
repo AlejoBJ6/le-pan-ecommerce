@@ -171,6 +171,21 @@ const AdminPedidos = () => {
                 <td style={{ padding: '15px' }}>
                   <strong style={{ fontSize: '1.05em' }}>{formatPrice(pedido.totales.total)}</strong><br/>
                   <small style={{ color: '#17a2b8', fontWeight: 600 }}>{pedido.metodoPago.toUpperCase()}</small>
+                  {pedido.metodoPago === 'transferencia' && (
+                    <div style={{ marginTop: '5px' }}>
+                      {pedido.comprobanteTransferencia ? (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.72rem', fontWeight: '700', backgroundColor: '#dcfce7', color: '#15803d', border: '1px solid #bbf7d0', borderRadius: '12px', padding: '2px 8px' }}>
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>
+                          Comprobante recibido
+                        </span>
+                      ) : (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.72rem', fontWeight: '700', backgroundColor: '#fff7ed', color: '#c2410c', border: '1px solid #fed7aa', borderRadius: '12px', padding: '2px 8px' }}>
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                          Sin comprobante
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </td>
                 <td style={{ padding: '15px' }}>
                   <select 
@@ -319,6 +334,59 @@ const AdminPedidos = () => {
                   </div>
                 </div>
               </div>
+
+              {/* ── Comprobante de Transferencia ── */}
+              {selectedPedido.metodoPago === 'transferencia' && (
+                <div style={{ marginTop: '28px', borderTop: '2px solid #eee', paddingTop: '22px' }}>
+                  <h4 style={{ margin: '0 0 14px 0', display: 'flex', alignItems: 'center', gap: '8px', color: '#333' }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+                    Comprobante de Transferencia
+                  </h4>
+
+                  {selectedPedido.comprobanteTransferencia ? (
+                    <div style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '10px', padding: '18px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>
+                        <span style={{ fontWeight: '600', color: '#15803d' }}>Comprobante adjuntado por el cliente</span>
+                      </div>
+
+                      {/* Vista previa si es imagen */}
+                      {/\.(jpg|jpeg|png|gif|webp)(\?|$)/i.test(selectedPedido.comprobanteTransferencia) ? (
+                        <a href={selectedPedido.comprobanteTransferencia} target="_blank" rel="noreferrer">
+                          <img
+                            src={selectedPedido.comprobanteTransferencia}
+                            alt="Comprobante de transferencia"
+                            style={{ maxWidth: '100%', maxHeight: '320px', objectFit: 'contain', borderRadius: '8px', border: '1px solid #d1fae5', display: 'block', marginBottom: '12px', cursor: 'zoom-in' }}
+                          />
+                        </a>
+                      ) : (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px', padding: '12px', backgroundColor: '#e0f2fe', borderRadius: '8px', border: '1px solid #bae6fd' }}>
+                          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0369a1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                          <span style={{ color: '#0369a1', fontWeight: '500' }}>Archivo PDF adjunto</span>
+                        </div>
+                      )}
+
+                      <a
+                        href={selectedPedido.comprobanteTransferencia}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '9px 18px', backgroundColor: '#16a34a', color: 'white', borderRadius: '6px', textDecoration: 'none', fontWeight: '600', fontSize: '0.9rem' }}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                        Ver / Descargar comprobante
+                      </a>
+                    </div>
+                  ) : (
+                    <div style={{ backgroundColor: '#fffbeb', border: '1px solid #fde68a', borderRadius: '10px', padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                      <div>
+                        <p style={{ margin: 0, fontWeight: '600', color: '#92400e' }}>Comprobante pendiente</p>
+                        <p style={{ margin: '2px 0 0 0', fontSize: '0.85rem', color: '#b45309' }}>El cliente aún no ha subido el comprobante de pago.</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
             
             <div style={{ padding: '20px 30px', backgroundColor: '#f8f9fa', borderTop: '1px solid #eee', borderRadius: '0 0 12px 12px', display: 'flex', justifyContent: 'flex-end' }}>

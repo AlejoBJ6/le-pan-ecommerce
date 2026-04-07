@@ -4,7 +4,7 @@ import { AuthContext } from '../../context/AuthContext';
 import authService from '../../services/authService';
 import pedidoService from '../../services/pedidoService';
 import uploadService from '../../services/uploadService';
-import { LuTruck, LuLink, LuUploadCloud, LuCheckCircle2 } from 'react-icons/lu';
+import { LuTruck, LuLink, LuUpload, LuCircleCheck } from 'react-icons/lu';
 import './Perfil.css';
 
 const EyeIcon = ({ show }) => (
@@ -277,7 +277,7 @@ const Perfil = () => {
                       <div className="order-receipt-section" style={{ marginTop: '16px', padding: '12px', backgroundColor: '#f8f9fa', borderRadius: '8px', border: '1px solid #e9ecef' }}>
                         {pedido.comprobanteTransferencia ? (
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#2e7d32', fontSize: '0.9rem', fontWeight: '500' }}>
-                            <LuCheckCircle2 size={20} />
+                            <LuCircleCheck size={20} />
                             Comprobante enviado (en revisión)
                             <a href={pedido.comprobanteTransferencia} target="_blank" rel="noreferrer" style={{ marginLeft: 'auto', color: 'var(--color-primary)', textDecoration: 'underline' }}>Ver archivo</a>
                           </div>
@@ -301,7 +301,7 @@ const Perfil = () => {
                                   padding: '8px 16px', backgroundColor: 'var(--color-primary)', color: 'white', borderRadius: '6px', border: 'none', cursor: uploadingOrder === pedido._id ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 'bold'
                                 }}
                               >
-                                <LuUploadCloud size={16} />
+                                <LuUpload size={16} />
                                 {uploadingOrder === pedido._id ? 'Subiendo...' : 'Subir Comprobante'}
                               </button>
                             </div>
