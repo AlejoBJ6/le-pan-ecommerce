@@ -51,12 +51,19 @@ const subirComprobante = async (id, comprobanteUrl) => {
     return response.data;
 };
 
+// Verificar pago manual (Failsafe para localtunnel)
+const forceWebhookVerify = async (paymentId) => {
+    const response = await axios.post(`${API_URL}/webhook?type=payment&data.id=${paymentId}`);
+    return response.data;
+};
+
 const pedidoService = {
     crearPedido,
     getMisPedidos,
     getAllPedidos,
     updateEstadoPedido,
-    subirComprobante
+    subirComprobante,
+    forceWebhookVerify
 };
 
 export default pedidoService;

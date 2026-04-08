@@ -12,7 +12,7 @@ const Carrito = () => {
     new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(price);
 
   const subtotal = getCartTotal();
-  const envio = subtotal > 0 ? (subtotal > 2000000 ? 0 : 25000) : 0;
+  const envio = 0; // Envío siempre gratis por decisión del dueño
   const total = subtotal + envio;
 
   const handleCheckout = () => {
