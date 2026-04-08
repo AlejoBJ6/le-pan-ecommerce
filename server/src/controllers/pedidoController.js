@@ -164,6 +164,10 @@ export const crearPedido = async (req, res) => {
        try {
          const client = new MercadoPagoConfig({ accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN || 'TEST-123' });
          const preference = new Preference(client);
+
+         const frontendUrl = (process.env.FRONTEND_URL || '').trim().replace(/\/$/, '');
+         const isLocalhost = !frontendUrl || frontendUrl.includes('localhost') || frontendUrl.includes('127.0.0.1');
+
          const body = {
            items: items.map(item => ({
              id: item.productoId ? item.productoId.toString() : 'item',
@@ -177,13 +181,18 @@ export const crearPedido = async (req, res) => {
              surname: datosEntrega.apellido || '',
              email: datosEntrega.email
            },
-           back_urls: {
-             success: ((process.env.FRONTEND_URL || '').trim() || 'http://localhost:5173').replace(/\/$/, '') + '/checkout-success',
-             failure: ((process.env.FRONTEND_URL || '').trim() || 'http://localhost:5173').replace(/\/$/, '') + '/checkout-failure',
-             pending: ((process.env.FRONTEND_URL || '').trim() || 'http://localhost:5173').replace(/\/$/, '') + '/checkout-pending'
-           },
            external_reference: createdPedido._id.toString()
          };
+
+         // Solo enviamos back_urls si hay una URL pública real (MP las rechaza con localhost en producción)
+         if (!isLocalhost) {
+           body.back_urls = {
+             success: `${frontendUrl}/checkout-success`,
+             failure: `${frontendUrl}/checkout-failure`,
+             pending: `${frontendUrl}/checkout-pending`
+           };
+           body.auto_return = 'approved';
+         }
 
          // Le decimos a MP a dónde enviar exactamente las notificaciones
          if (process.env.BACKEND_URL) {

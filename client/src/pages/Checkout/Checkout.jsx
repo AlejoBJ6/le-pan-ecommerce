@@ -5,7 +5,7 @@ import { AuthContext } from '../../context/AuthContext.jsx';
 import StepIndicator from '../../components/StepIndicator/StepIndicator.jsx';
 import pedidoService from '../../services/pedidoService.js';
 import uploadService from '../../services/uploadService.js';
-import { LuChevronRight, LuChevronLeft, LuShieldCheck, LuPhone, LuTruck, LuCreditCard, LuBuilding2, LuPackage, LuNotebook, LuUploadCloud, LuCheckCircle2 } from 'react-icons/lu';
+import { LuChevronRight, LuChevronLeft, LuShieldCheck, LuPhone, LuTruck, LuCreditCard, LuBuilding2, LuPackage, LuNotebook, LuUpload, LuCircleCheck } from 'react-icons/lu';
 import './Checkout.css';
 
 const MP_GREEN = '#00a650';
@@ -262,7 +262,7 @@ const StepResumen = ({ entrega, finalOrderData }) => {
           <div className="checkout-receipt-upload" style={{ marginTop: '20px', padding: '16px', backgroundColor: '#f8f9fa', borderRadius: '8px', border: '1px solid #e9ecef', textAlign: 'left' }}>
             {comprobante ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#2e7d32', fontWeight: '500' }}>
-                <LuCheckCircle2 size={24} />
+                <LuCircleCheck size={24} />
                 ¡Comprobante subido correctamente! Lo revisaremos a la brevedad.
               </div>
             ) : (
@@ -288,7 +288,7 @@ const StepResumen = ({ entrega, finalOrderData }) => {
                       padding: '10px 20px', backgroundColor: 'var(--color-primary)', color: 'white', borderRadius: '6px', border: 'none', cursor: uploading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold'
                     }}
                   >
-                    <LuUploadCloud size={20} />
+                    <LuUpload size={20} />
                     {uploading ? 'Subiendo archivo...' : 'Adjuntar Comprobante'}
                   </button>
                 </div>
