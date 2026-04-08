@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import StepIndicator from '../../components/StepIndicator/StepIndicator.jsx';
+import pedidoService from '../../services/pedidoService.js';
 import './Checkout.css'; // Usamos los mismos estilos del checkout general
 
 const CheckoutResult = () => {
@@ -14,9 +15,15 @@ const CheckoutResult = () => {
   const orderId = searchParams.get('orderId');
   const paymentId = searchParams.get('payment_id');
 
-  // Nota: En un sistema real, el webhook del backend recibe la notificación de mercado pago
-  // y actualiza la base de datos de "Pendiente" a "Pagado". No debemos confiar solo en este frontend,
-  // pero para mostrar un mensaje al usuario, esto es perfecto.
+  // Failsafe para desarrollo local o bloqueos de Ngrok/Localtunnel:
+  // Si volvemos a esta pantalla con éxito, forzamos manualmente a nuestro backend 
+  // a revisar este pago simulando que llegó el Webhook.
+  useEffect(() => {
+    if (status === 'success' && paymentId) {
+      pedidoService.forceWebhookVerify(paymentId)
+        .catch(err => console.log('Silencioso: Webhook failsafe ya se ejecutó u ocurrió error', err));
+    }
+  }, [status, paymentId]);
 
   return (
     <div className="checkout-page">

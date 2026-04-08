@@ -19,6 +19,10 @@ router.route('/')
 // Esta ruta va sin proteger porque Mercado Pago la llama por detrás
 router.post('/webhook', webhookMercadoPago);
 
+// Ruta para engañar a Mercado Pago localmente y permitir el auto_return
+import { successRedirect } from '../controllers/pedidoController.js';
+router.get('/redirect/success', successRedirect);
+
 router.route('/mis-pedidos').get(protect, getMisPedidos);
 
 router.route('/:id/estado').put(protect, admin, updateEstadoPedido);

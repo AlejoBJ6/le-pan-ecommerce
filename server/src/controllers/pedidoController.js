@@ -80,6 +80,13 @@ const descontarStockPedido = async (pedido) => {
   pedido.stockDescontado = true;
 };
 
+// @desc    Redirigir a frontend (utilizado para engañar regla de localhost de MP)
+export const successRedirect = (req, res) => {
+  const frontendUrl = (process.env.FRONTEND_URL || 'http://localhost:3000').trim().replace(/\/$/, '');
+  const query = new URLSearchParams(req.query).toString();
+  res.redirect(`${frontendUrl}/checkout-success?${query}`);
+};
+
 // @desc    Crear un nuevo pedido
 // @route   POST /api/pedidos
 // @access  Privado (Cliente)
@@ -91,121 +98,86 @@ export const crearPedido = async (req, res) => {
       return res.status(400).json({ message: 'No hay productos en el pedido' });
     }
 
-    // Calcula fechas estimadas
-    // Si es CABA/GBA (Provincia Buenos Aires / Capital Federal) -> 2-3 días extra
-    // Si es Interior -> 5-7 días extra
+    // ... (resto sin cambios)
     const prov = datosEntrega.provincia.toLowerCase();
     const esAMBA = prov.includes('buenos aires') || prov.includes('capital federal') || prov.includes('caba');
-    
-    // Hoy
     const minDays = esAMBA ? 2 : 5;
     const maxDays = esAMBA ? 3 : 7;
-    
-    const fechaMin = new Date();
-    fechaMin.setDate(fechaMin.getDate() + minDays);
-    const fechaMax = new Date();
-    fechaMax.setDate(fechaMax.getDate() + maxDays);
-
+    const fechaMin = new Date(); fechaMin.setDate(fechaMin.getDate() + minDays);
+    const fechaMax = new Date(); fechaMax.setDate(fechaMax.getDate() + maxDays);
     datosEntrega.fechaEstimadaMin = fechaMin;
     datosEntrega.fechaEstimadaMax = fechaMax;
-
-    // TODO: Aquí podrías validar que los totales que envía el front concuerden con los precios reales de los items en base de datos.
-    // Por simplicidad, confiaremos en el payload por ahora asumiendo que el cliente es honesto.
-    // El envío es siempre 0.
     totales.envio = 0;
 
-    // Fetch comisión from database for each item
     const itemsConComision = await Promise.all(items.map(async (item) => {
       let comision = 0;
       if (item.productoId) {
         try {
-          // Primero buscar en Producto
           const prod = await Producto.findById(item.productoId).populate('productosIncluidos');
           if (prod) {
             if (prod.categoria === 'Combos' && prod.productosIncluidos?.length > 0) {
-              // Suma la comisión de todos los productos internos del combo
               comision = prod.productosIncluidos.reduce((acc, hijo) => acc + (hijo.comision || 0), 0);
-            } else if (prod.comision) {
-              comision = prod.comision;
-            }
+            } else if (prod.comision) comision = prod.comision;
           } else {
-            // Si no está, buscar en Combo
             const combo = await Combo.findById(item.productoId).populate('items.producto');
             if (combo) {
-              // Suma comisión de los productos dentro del combo
-              comision = combo.items.reduce((acc, itemCombo) => {
-                const comHijo = itemCombo.producto?.comision || 0;
-                return acc + (comHijo * itemCombo.cantidad);
-              }, 0);
+              comision = combo.items.reduce((acc, itemCombo) => acc + ((itemCombo.producto?.comision || 0) * itemCombo.cantidad), 0);
             }
           }
-        } catch (err) {
-          console.error(`Error buscando producto para comisión: ${item.productoId}`, err);
-        }
+        } catch (err) { console.error(err); }
       }
       return { ...item, comision };
     }));
 
     const pedido = new Pedido({
-      user: req.user._id, // Viene del middleware de auth
+      user: req.user._id,
       pedidosData: itemsConComision,
-      datosEntrega,
-      totales,
-      metodoPago,
-      estadoPago: 'Pendiente', // Asumido pendiente hasta cobrar (o si Mercadopago informa OK)
-      estadoEntrega: 'Pendiente'
+      datosEntrega, totales, metodoPago,
+      estadoPago: 'Pendiente', estadoEntrega: 'Pendiente'
     });
 
     const createdPedido = await pedido.save();
-
     let initPoint = null;
 
     if (metodoPago === 'mercado_pago') {
        try {
          const client = new MercadoPagoConfig({ accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN || 'TEST-123' });
          const preference = new Preference(client);
-
          const frontendUrl = (process.env.FRONTEND_URL || '').trim().replace(/\/$/, '');
          const isLocalhost = !frontendUrl || frontendUrl.includes('localhost') || frontendUrl.includes('127.0.0.1');
 
          const body = {
            items: items.map(item => ({
              id: item.productoId ? item.productoId.toString() : 'item',
-             title: item.nombre,
-             quantity: Number(item.cantidad),
-             unit_price: Number(item.precio),
-             currency_id: 'ARS'
+             title: item.nombre, quantity: Number(item.cantidad),
+             unit_price: Number(item.precio), currency_id: 'ARS'
            })),
            payer: {
-             name: datosEntrega.nombre || '',
-             surname: datosEntrega.apellido || '',
-             email: datosEntrega.email
+             name: datosEntrega.nombre || '', surname: datosEntrega.apellido || '', email: datosEntrega.email
            },
            external_reference: createdPedido._id.toString()
          };
 
-         // Solo enviamos back_urls si hay una URL pública real (MP las rechaza con localhost en producción)
-         if (!isLocalhost) {
-           body.back_urls = {
-             success: `${frontendUrl}/checkout-success`,
-             failure: `${frontendUrl}/checkout-failure`,
-             pending: `${frontendUrl}/checkout-pending`
-           };
-           body.auto_return = 'approved';
-         }
+         // TRUCO: Usamos HTTPS Localtunnel para engañar a MP localmente y ganar auto_return
+         const successUrl = (isLocalhost && process.env.BACKEND_URL) 
+            ? `${process.env.BACKEND_URL}/api/pedidos/redirect/success`
+            : `${frontendUrl}/checkout-success`;
 
-         // Le decimos a MP a dónde enviar exactamente las notificaciones
+         body.back_urls = {
+           success: successUrl,
+           failure: `${frontendUrl}/checkout-failure`,
+           pending: `${frontendUrl}/checkout-pending`
+         };
+         
+         body.auto_return = 'approved';
+
          if (process.env.BACKEND_URL) {
            body.notification_url = `${process.env.BACKEND_URL}/api/pedidos/webhook`;
          }
 
-         console.log('Sending Preference to MP:', JSON.stringify(body, null, 2));
-
          const response = await preference.create({ body });
-         initPoint = response.init_point; // URL para redirigir al usuario a pagar
-       } catch (mpError) {
-         console.error('Error al generar preferencia Mercado Pago:', mpError);
-       }
+         initPoint = response.init_point;
+       } catch (mpError) { console.error('Error al generar preferencia Mercado Pago:', mpError); }
     }
 
     const pedidoResponse = createdPedido.toObject();
