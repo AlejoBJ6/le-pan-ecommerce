@@ -28,6 +28,8 @@ const Perfil = () => {
   const navigate = useNavigate();
 
   const [nombre, setNombre] = useState('');
+  const [apellido, setApellido] = useState('');
+  const [telefono, setTelefono] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -47,6 +49,8 @@ const Perfil = () => {
       try {
         const data = await authService.getUserProfile();
         setNombre(data.nombre);
+        setApellido(data.apellido || '');
+        setTelefono(data.telefono || '');
         setEmail(data.email);
         
         try {
@@ -77,7 +81,7 @@ const Perfil = () => {
 
     setLoading(true);
     try {
-      await authService.updateUserProfile({ nombre, email, password });
+      await authService.updateUserProfile({ nombre, apellido, telefono, email, password });
       setMensaje('Perfil actualizado correctamente.');
       setPassword('');
       setConfirmPassword('');
@@ -142,12 +146,35 @@ const Perfil = () => {
         {error && <div className="alert-error">{error}</div>}
 
         <form onSubmit={submitHandler} className="profile-form">
+          <div className="form-row-2col">
+            <div className="form-group">
+              <label>Nombre</label>
+              <input 
+                type="text" 
+                value={nombre} 
+                onChange={(e) => setNombre(e.target.value)} 
+                required 
+                className="form-input" 
+              />
+            </div>
+            <div className="form-group">
+              <label>Apellido</label>
+              <input 
+                type="text" 
+                value={apellido} 
+                onChange={(e) => setApellido(e.target.value)} 
+                required 
+                className="form-input" 
+              />
+            </div>
+          </div>
+
           <div className="form-group">
-            <label>Nombre</label>
+            <label>Teléfono</label>
             <input 
-              type="text" 
-              value={nombre} 
-              onChange={(e) => setNombre(e.target.value)} 
+              type="tel" 
+              value={telefono} 
+              onChange={(e) => setTelefono(e.target.value)} 
               required 
               className="form-input" 
             />
