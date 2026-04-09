@@ -15,10 +15,10 @@ const generateToken = (id) => {
 // @access  Public
 export const registerUser = async (req, res) => {
   try {
-    const { nombre, email, password } = req.body;
+    const { nombre, apellido, email, telefono, password } = req.body;
 
     // Verificar que llenaron todos los campos
-    if (!nombre || !email || !password) {
+    if (!nombre || !apellido || !email || !telefono || !password) {
       return res.status(400).json({ message: 'Por favor, llena todos los campos' });
     }
 
@@ -31,7 +31,9 @@ export const registerUser = async (req, res) => {
     // Crear el usuario
     const user = await User.create({
       nombre,
+      apellido,
       email,
+      telefono,
       password,
     });
 
@@ -39,7 +41,9 @@ export const registerUser = async (req, res) => {
       res.status(201).json({
         _id: user._id,
         nombre: user.nombre,
+        apellido: user.apellido,
         email: user.email,
+        telefono: user.telefono,
         rol: user.rol,
         token: generateToken(user._id),
       });
@@ -71,7 +75,9 @@ export const loginUser = async (req, res) => {
       res.json({
         _id: user._id,
         nombre: user.nombre,
+        apellido: user.apellido,
         email: user.email,
+        telefono: user.telefono,
         rol: user.rol,
         token: generateToken(user._id),
       });
@@ -95,7 +101,9 @@ export const getUserProfile = async (req, res) => {
       res.json({
         _id: user._id,
         nombre: user.nombre,
+        apellido: user.apellido,
         email: user.email,
+        telefono: user.telefono,
         rol: user.rol,
       });
     } else {
@@ -116,6 +124,8 @@ export const updateUserProfile = async (req, res) => {
 
     if (user) {
       user.nombre = req.body.nombre || user.nombre;
+      user.apellido = req.body.apellido || user.apellido;
+      user.telefono = req.body.telefono || user.telefono;
       user.email = req.body.email || user.email;
 
       // Si viene una contraseña nueva la seteamos (el hook pre-save se encarga del hashing)
@@ -128,7 +138,9 @@ export const updateUserProfile = async (req, res) => {
       res.json({
         _id: updatedUser._id,
         nombre: updatedUser.nombre,
+        apellido: updatedUser.apellido,
         email: updatedUser.email,
+        telefono: updatedUser.telefono,
         rol: updatedUser.rol,
         token: generateToken(updatedUser._id),
       });
@@ -219,7 +231,9 @@ export const resetPassword = async (req, res) => {
     res.status(200).json({
       _id: user._id,
       nombre: user.nombre,
+      apellido: user.apellido,
       email: user.email,
+      telefono: user.telefono,
       rol: user.rol,
       token: generateToken(user._id),
     });

@@ -378,8 +378,7 @@ const ProductDetail = () => {
                 <div className="guarantee-item shipping">
                   <LuTruck size={24} className="guarantee-icon" />
                   <div>
-                    <span className="guarantee-title">Envío GRATIS</span>
-                    <span className="guarantee-subtitle">Entrega a coordinar (Sin cargo)</span>
+                    <span className="guarantee-title">Envío Gratis <span style={{ fontWeight: 500, color: '#777' }}>(A coordinar)</span></span>
                   </div>
                 </div>
                 <div className="guarantee-item">

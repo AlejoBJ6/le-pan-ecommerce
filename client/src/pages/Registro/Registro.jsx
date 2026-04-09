@@ -20,7 +20,9 @@ const EyeOffIcon = () => (
 const Registro = () => {
   const [formData, setFormData] = useState({
     nombre: '',
+    apellido: '',
     email: '',
+    telefono: '',
     password: '',
     confirmPassword: ''
   });
@@ -47,7 +49,9 @@ const Registro = () => {
     try {
       await register({
         nombre: formData.nombre,
+        apellido: formData.apellido,
         email: formData.email,
+        telefono: formData.telefono,
         password: formData.password
       });
       setSuccessMsg('Usuario creado con éxito. Redirigiendo al inicio de sesión...');
@@ -77,16 +81,29 @@ const Registro = () => {
           </div>
           
           <form className="auth-form" onSubmit={handleSubmit}>
-            <div className="input-group">
-              <label htmlFor="nombre">Nombre Completo</label>
-              <input 
-                type="text" 
-                id="nombre" 
-                placeholder="Juan Pérez" 
-                value={formData.nombre}
-                onChange={handleChange}
-                required
-              />
+            <div className="form-row-2col">
+              <div className="input-group">
+                <label htmlFor="nombre">Nombre</label>
+                <input 
+                  type="text" 
+                  id="nombre" 
+                  placeholder="Juan" 
+                  value={formData.nombre}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              <div className="input-group">
+                <label htmlFor="apellido">Apellido</label>
+                <input 
+                  type="text" 
+                  id="apellido" 
+                  placeholder="Pérez" 
+                  value={formData.apellido}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
             </div>
 
             <div className="input-group">
@@ -96,6 +113,18 @@ const Registro = () => {
                 id="email" 
                 placeholder="ejemplo@correo.com" 
                 value={formData.email}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="input-group">
+              <label htmlFor="telefono">Teléfono</label>
+              <input 
+                type="tel" 
+                id="telefono" 
+                placeholder="11 1234-5678" 
+                value={formData.telefono}
                 onChange={handleChange}
                 required
               />

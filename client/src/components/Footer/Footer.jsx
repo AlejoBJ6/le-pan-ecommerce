@@ -22,7 +22,6 @@ const Footer = () => {
         </div>
 
         <div className="footer-links">
-          <Link to="#">Términos y condiciones</Link>
           <Link to="/contacto">Contacto</Link>
         </div>
 

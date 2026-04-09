@@ -80,6 +80,66 @@ const descontarStockPedido = async (pedido) => {
   pedido.stockDescontado = true;
 };
 
+/**
+ * Helper para reponer stock de forma atómica y segura.
+ * Se invoca cuando un pedido pasa de Aprobado a Pendiente/Rechazado/Cancelado.
+ */
+const reponerStockPedido = async (pedido) => {
+  if (!pedido.stockDescontado) return;
+
+  const aReponer = [];
+  for (const item of pedido.pedidosData) {
+    let prod = await Producto.findById(item.productoId).populate('productosIncluidos');
+    
+    if (prod) {
+      if (prod.categoria === 'Combos' && prod.productosIncluidos?.length > 0) {
+        for (const incProd of prod.productosIncluidos) {
+          aReponer.push({
+            id: incProd._id,
+            cantidad: Number(item.cantidad),
+            nombre: incProd.nombre
+          });
+        }
+      } else {
+        aReponer.push({
+          id: item.productoId,
+          cantidad: Number(item.cantidad),
+          nombre: item.nombre
+        });
+      }
+    } else {
+      const combo = await Combo.findById(item.productoId).populate('items.producto');
+      if (combo && combo.items?.length > 0) {
+        for (const comboItem of combo.items) {
+          if (comboItem.producto) {
+            aReponer.push({
+              id: comboItem.producto._id,
+              cantidad: Number(item.cantidad) * comboItem.cantidad,
+              nombre: comboItem.producto.nombre
+            });
+          }
+        }
+      }
+    }
+  }
+
+  for (const item of aReponer) {
+    await Producto.updateOne(
+      { _id: item.id },
+      { $inc: { stock: item.cantidad } }
+    );
+
+    const pActualizado = await Producto.findById(item.id);
+    if (pActualizado && pActualizado.stock > 0 && !pActualizado.disponible) {
+      pActualizado.disponible = true;
+      await pActualizado.save();
+    }
+  }
+
+  pedido.stockDescontado = false;
+};
+
+
 // @desc    Redirigir a frontend (utilizado para engañar regla de localhost de MP)
 export const successRedirect = (req, res) => {
   const frontendUrl = (process.env.FRONTEND_URL || 'http://localhost:3000').trim().replace(/\/$/, '');
@@ -130,7 +190,7 @@ export const crearPedido = async (req, res) => {
     }));
 
     const pedido = new Pedido({
-      user: req.user._id,
+      user: req.user ? req.user._id : null, // null para invitados
       pedidosData: itemsConComision,
       datosEntrega, totales, metodoPago,
       estadoPago: 'Pendiente', estadoEntrega: 'Pendiente'
@@ -229,12 +289,18 @@ export const updateEstadoPedido = async (req, res) => {
     if (pedido) {
       if (estadoEntrega) pedido.estadoEntrega = estadoEntrega;
       
-      // Si cambia a Aprobado y antes no lo estaba, descontamos stock
-      if (estadoPago === 'Aprobado' && pedido.estadoPago !== 'Aprobado') {
-        await descontarStockPedido(pedido);
+      if (estadoPago) {
+        // Si cambia a Aprobado y antes no lo estaba, descontamos stock
+        if (estadoPago === 'Aprobado' && pedido.estadoPago !== 'Aprobado') {
+          await descontarStockPedido(pedido);
+        } 
+        // Si estaba Aprobado y cambia a otro estado, reponemos stock
+        else if (pedido.estadoPago === 'Aprobado' && estadoPago !== 'Aprobado') {
+          await reponerStockPedido(pedido);
+        }
+        
+        pedido.estadoPago = estadoPago;
       }
-      
-      if (estadoPago) pedido.estadoPago = estadoPago;
 
       const updatedPedido = await pedido.save();
       res.json(updatedPedido);
@@ -251,25 +317,21 @@ export const updateEstadoPedido = async (req, res) => {
   }
 };
 
-// @desc    Subir comprobante de transferencia para un pedido (Cliente o Admin)
+// @desc    Subir comprobante de transferencia (Público: funciona para usuarios y para invitados)
 // @route   PUT /api/pedidos/:id/comprobante
-// @access  Privado
+// @access  Público
 export const subirComprobante = async (req, res) => {
   try {
     const { comprobanteUrl } = req.body;
     const pedido = await Pedido.findById(req.params.id);
 
-    if (pedido) {
-      if (pedido.user.toString() !== req.user._id.toString() && !req.user.isAdmin) {
-        return res.status(401).json({ message: 'No tienes permiso para actualizar este pedido' });
-      }
-
-      pedido.comprobanteTransferencia = comprobanteUrl;
-      const updatedPedido = await pedido.save();
-      res.json(updatedPedido);
-    } else {
-      res.status(404).json({ message: 'Pedido no encontrado' });
+    if (!pedido) {
+      return res.status(404).json({ message: 'Pedido no encontrado' });
     }
+
+    pedido.comprobanteTransferencia = comprobanteUrl;
+    const updatedPedido = await pedido.save();
+    res.json(updatedPedido);
   } catch (error) {
     console.error('Error uploading comprobante:', error);
     res.status(500).json({ message: 'Error del servidor al adjuntar comprobante' });
@@ -310,8 +372,10 @@ export const webhookMercadoPago = async (req, res) => {
             // 6. Descontar stock usando el helper (maneja duplicados con stockDescontado)
             await descontarStockPedido(pedido);
           } else if (paymentInfo.status === 'rejected' || paymentInfo.status === 'cancelled') {
+            if (pedido.estadoPago === 'Aprobado') await reponerStockPedido(pedido);
             pedido.estadoPago = 'Rechazado';
           } else if (paymentInfo.status === 'in_process' || paymentInfo.status === 'pending') {
+            if (pedido.estadoPago === 'Aprobado') await reponerStockPedido(pedido);
             pedido.estadoPago = 'Pendiente';
           }
           await pedido.save();
@@ -321,5 +385,33 @@ export const webhookMercadoPago = async (req, res) => {
     }
   } catch (error) {
     console.error('[MP] Error crítico procesando Webhook:', error);
+  }
+};
+
+// @desc    Consultar estado de un pedido por ID corto y email (para invitados)
+// @route   POST /api/pedidos/track
+// @access  Público
+export const trackPedido = async (req, res) => {
+  try {
+    const { orderIdShort, email } = req.body;
+
+    if (!orderIdShort || !email) {
+      return res.status(400).json({ message: 'Se requiere el número de pedido y el email' });
+    }
+
+    // Buscamos pedidos por email (que es más específico)
+    // Luego filtramos por el ID corto en JS para mayor simplicidad
+    const pedidos = await Pedido.find({ 'datosEntrega.email': email.toLowerCase() }).sort({ createdAt: -1 });
+
+    const pedido = pedidos.find(p => p._id.toString().slice(-6).toUpperCase() === orderIdShort.toUpperCase());
+
+    if (!pedido) {
+      return res.status(404).json({ message: 'Pedido no encontrado. Verifica los datos ingresados.' });
+    }
+
+    res.json(pedido);
+  } catch (error) {
+    console.error('Error tracking pedido:', error);
+    res.status(500).json({ message: 'Error del servidor al consultar el pedido' });
   }
 };

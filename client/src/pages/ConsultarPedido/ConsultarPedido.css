@@ -1,0 +1,367 @@
+.track-page {
+    background-color: #f8f9fa;
+    min-height: calc(100vh - 80px);
+    padding: 60px 16px;
+}
+
+.track-container {
+    max-width: 850px;
+    margin: 0 auto;
+}
+
+/* --- Search Card --- */
+.track-search-card {
+    background: #fff;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    text-align: center;
+    max-width: 500px;
+    margin: 40px auto;
+}
+
+.track-header {
+    margin-bottom: 30px;
+}
+
+.track-icon-main {
+    font-size: 3rem;
+    color: var(--color-primary);
+    margin-bottom: 20px;
+}
+
+.track-header h1 {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #222;
+    margin-bottom: 12px;
+}
+
+.track-header p {
+    color: #666;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.track-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    text-align: left;
+}
+
+.btn-track-submit {
+    background-color: var(--color-primary);
+    color: white;
+    padding: 16px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 10px;
+    box-shadow: 0 4px 14px rgba(232, 130, 12, 0.25);
+}
+
+.btn-track-submit:hover {
+    background-color: var(--color-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(232, 130, 12, 0.35);
+}
+
+.btn-track-submit:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* --- Result View --- */
+.track-result-view {
+    animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.btn-back-search {
+    background: transparent;
+    border: none;
+    color: var(--color-primary);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    margin-bottom: 20px;
+    padding: 0;
+}
+
+.track-order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 30px;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.order-main-info h2 {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #222;
+    margin: 0;
+}
+
+.order-date {
+    color: #777;
+    margin: 4px 0 0 0;
+}
+
+.order-status-group {
+    display: flex;
+    gap: 10px;
+}
+
+/* --- Receipt Section --- */
+.track-receipt-section {
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+    border: 1px solid #eee;
+}
+
+.receipt-success {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    color: #2e7d32;
+}
+
+.receipt-success strong {
+    font-size: 1.1rem;
+    display: block;
+}
+
+.receipt-success p {
+    margin: 4px 0 0 0;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.receipt-upload-prompt {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.prompt-icon {
+    font-size: 2.5rem;
+    color: var(--color-primary);
+    opacity: 0.8;
+}
+
+.prompt-text h4 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #222;
+}
+
+.prompt-text p {
+    margin: 4px 0 0 0;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.btn-select-file {
+    margin-left: auto;
+    background: var(--color-primary);
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.receipt-confirm h4 {
+    margin: 0 0 15px 0;
+}
+
+.preview-container {
+    margin-bottom: 15px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid #eee;
+    max-height: 300px;
+}
+
+.preview-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: #f0f0f0;
+}
+
+.file-info {
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 15px;
+}
+
+.confirm-btns {
+    display: flex;
+    gap: 12px;
+}
+
+.btn-confirm-upload {
+    background: #2e7d32;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.btn-cancel-upload {
+    background: transparent;
+    border: 1px solid #ccc;
+    color: #666;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* --- Details Grid --- */
+.track-details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+.track-card {
+    background: #fff;
+    padding: 24px;
+    border-radius: 16px;
+    border: 1px solid #eee;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+}
+
+.track-card h3 {
+    margin: 0 0 20px 0;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #222;
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 12px;
+}
+
+.track-item-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.95rem;
+    padding: 6px 0;
+    color: #555;
+}
+
+.track-divider {
+    height: 1px;
+    background: #eee;
+    margin: 12px 0;
+}
+
+.track-total-row {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 800;
+    font-size: 1.2rem;
+    color: #222;
+}
+
+.shipping-info p {
+    margin: 0 0 10px 0;
+    color: #555;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.shipping-notes {
+    color: #888;
+    font-style: italic;
+    background: #f9f9f9;
+    padding: 10px;
+    border-radius: 8px;
+    margin-top: 10px !important;
+}
+
+.track-footer-actions {
+    margin-top: 40px;
+    text-align: center;
+}
+
+.btn-continue-shopping {
+    background: #222;
+    color: white;
+    border: none;
+    padding: 14px 40px;
+    border-radius: 30px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-continue-shopping:hover {
+    background: #000;
+    transform: translateY(-2px);
+}
+
+/* --- Dark Mode --- */
+body.dark-theme .track-page { background-color: #0a0a0a; }
+body.dark-theme .track-search-card,
+body.dark-theme .track-receipt-section,
+body.dark-theme .track-card {
+    background: #1a1a1a;
+    border-color: #333;
+}
+body.dark-theme .track-header h1,
+body.dark-theme .track-header p,
+body.dark-theme .order-main-info h2,
+body.dark-theme .track-total-row,
+body.dark-theme .track-card h3 {
+    color: #eee;
+}
+body.dark-theme .track-header p,
+body.dark-theme .order-date,
+body.dark-theme .shipping-info p,
+body.dark-theme .track-item-row {
+    color: #aaa;
+}
+body.dark-theme .form-group label { color: #ccc; }
+body.dark-theme .form-group input { 
+    background: #252525; 
+    border-color: #444; 
+    color: #eee;
+}
+body.dark-theme .shipping-notes { background: #222; color: #888; }
+body.dark-theme .btn-continue-shopping { background: #eee; color: #000; }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .track-details-grid { grid-template-columns: 1fr; }
+    .receipt-upload-prompt { flex-direction: column; text-align: center; }
+    .btn-select-file { margin: 10px 0 0 0; width: 100%; justify-content: center; }
+    .order-status-group { width: 100%; justify-content: center; }
+    .track-order-header { text-align: center; }
+}

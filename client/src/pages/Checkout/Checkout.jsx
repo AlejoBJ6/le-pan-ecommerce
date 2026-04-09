@@ -5,7 +5,8 @@ import { AuthContext } from '../../context/AuthContext.jsx';
 import StepIndicator from '../../components/StepIndicator/StepIndicator.jsx';
 import pedidoService from '../../services/pedidoService.js';
 import uploadService from '../../services/uploadService.js';
-import { LuChevronRight, LuChevronLeft, LuShieldCheck, LuPhone, LuTruck, LuCreditCard, LuBuilding2, LuPackage, LuNotebook, LuUpload, LuCircleCheck } from 'react-icons/lu';
+import authService from '../../services/authService.js';
+import { LuChevronRight, LuChevronLeft, LuShieldCheck, LuPhone, LuTruck, LuCreditCard, LuBuilding2, LuPackage, LuNotebook, LuUpload, LuCircleCheck, LuSearch } from 'react-icons/lu';
 import './Checkout.css';
 
 const MP_GREEN = '#00a650';
@@ -187,7 +188,25 @@ const StepPago = ({ cart, getCartTotal, onNext, onBack, loading }) => {
             <span>Envío</span>
             <span style={{ color: MP_GREEN, fontWeight: 'bold' }}>Gratis</span>
           </div>
-          <span style={{ fontSize: '0.82rem', color: '#777' }}>Entrega estimada: 3 a 5 días hábiles</span>
+          {/* Banner: coordinar envío por WhatsApp */}
+          <div style={{
+            marginTop: '8px',
+            padding: '10px 12px',
+            backgroundColor: '#e8f5e9',
+            border: '1px solid #a5d6a7',
+            borderRadius: '8px',
+            display: 'flex',
+            gap: '8px',
+            alignItems: 'flex-start',
+            fontSize: '0.82rem',
+            color: '#2e7d32',
+            lineHeight: '1.4'
+          }}>
+            <span style={{ fontSize: '1rem', flexShrink: 0 }}>📦</span>
+            <span>
+              <strong>Envío gratis</strong> — Una vez confirmado tu pedido, nos comunicaremos con vos por <strong>WhatsApp</strong> para coordinar el día y horario de entrega.
+            </span>
+          </div>
         </div>
         <div className="checkout-order-row checkout-order-total" style={{ marginTop: '12px' }}>
           <span>Total</span><span>{formatPrice(total)}</span>
@@ -211,32 +230,85 @@ const StepPago = ({ cart, getCartTotal, onNext, onBack, loading }) => {
 };
 
 /* ─── STEP 3: Resumen / Confirmación ─────────────────────── */
-const StepResumen = ({ entrega, finalOrderData }) => {
+const StepResumen = ({ finalOrderData }) => {
   const navigate = useNavigate();
   const [uploading, setUploading] = useState(false);
   const [comprobante, setComprobante] = useState(null);
+  const [pendingFile, setPendingFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null); // URL local para mostrar preview
 
-  const total = finalOrderData ? finalOrderData.totales.total : 0;
-  const orderNum = finalOrderData ? finalOrderData._id.slice(-6).toUpperCase() : Math.floor(Math.random() * 900000) + 100000;
+  const total = finalOrderData?.totales?.total || 0;
+  const orderNum = finalOrderData?._id ? finalOrderData._id.slice(-6).toUpperCase() : '';
   const formatPrice = (p) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(p);
 
-  const handleUploadComprobante = async (file) => {
-    if (!file || !finalOrderData) return;
+  // Datos de entrega siempre desde el servidor (evita pérdida de estado por URL)
+  const entrega = finalOrderData?.datosEntrega || {};
+
+  const handleFileSelect = (file) => {
+    if (!file) return;
+    // Revocar URL anterior para no generar memory leaks
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPendingFile(file);
+    // Solo generamos preview para imágenes (no PDFs)
+    if (file.type.startsWith('image/')) {
+      setPreviewUrl(URL.createObjectURL(file));
+    } else {
+      setPreviewUrl(null);
+    }
+  };
+
+  const handleConfirmUpload = async () => {
+    if (!pendingFile || !finalOrderData) return;
     setUploading(true);
     try {
-      const uploadRes = await uploadService.uploadImage(file);
+      const userStr = localStorage.getItem('user');
+      let uploadRes;
+      if (userStr) {
+        uploadRes = await uploadService.uploadImage(pendingFile);
+      } else {
+        const formData = new FormData();
+        formData.append('image', pendingFile);
+        const response = await fetch('/api/upload/guest', { method: 'POST', body: formData });
+        uploadRes = await response.json();
+      }
       await pedidoService.subirComprobante(finalOrderData._id, uploadRes.imageUrl);
       setComprobante(uploadRes.imageUrl);
+      // Limpiar preview
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      setPendingFile(null);
+      setPreviewUrl(null);
     } catch (err) {
       console.error(err);
-      alert('Error al subir el comprobante. Tal vez tu imagen sea demasiado pesada.');
+      alert('Error al subir el comprobante. Intentá de nuevo.');
     } finally {
       setUploading(false);
     }
   };
 
-  const fMin = finalOrderData && finalOrderData.datosEntrega?.fechaEstimadaMin ? new Date(finalOrderData.datosEntrega.fechaEstimadaMin).toLocaleDateString() : '';
-  const fMax = finalOrderData && finalOrderData.datosEntrega?.fechaEstimadaMax ? new Date(finalOrderData.datosEntrega.fechaEstimadaMax).toLocaleDateString() : '';
+  // ── WhatsApp message builder ─────────────────────────────
+  const buildWhatsAppLink = () => {
+    const OWNER_WHATSAPP_NUMBER = '5491100000000';
+
+    const items = finalOrderData?.pedidosData
+      ?.map(i => `  • ${i.nombre} x${i.cantidad} — ${new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format((i.precio || i.precioFinal || 0) * i.cantidad)}`)
+      .join('%0A') || '';
+
+    const dir = `${entrega.direccion}${entrega.piso ? `, ${entrega.piso}` : ''}, ${entrega.ciudad}, ${entrega.provincia} (CP ${entrega.cp})`;
+
+    const msg = [
+      `¡Hola! 👋 Soy *${entrega.nombre} ${entrega.apellido}* y acabo de hacer un pedido en *Lé Pan*.`,
+      ``,
+      `📋 *Pedido #${orderNum}*`,
+      `${items}`,
+      ``,
+      `💰 *Total:* ${new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(total)}`,
+      `📍 *Dirección:* ${dir}`,
+      ``,
+      `Me gustaría coordinar la entrega. ¡Gracias!`,
+    ].join('%0A');
+
+    return `https://wa.me/${OWNER_WHATSAPP_NUMBER}?text=${msg}`;
+  };
 
   return (
     <div className="checkout-step resumen-step">
@@ -249,15 +321,23 @@ const StepResumen = ({ entrega, finalOrderData }) => {
         </div>
         <h2>¡Pedido recibido!</h2>
         <p className="order-number">Número de pedido: <strong>#{orderNum}</strong></p>
-        <p className="order-email">Te enviaremos la confirmación a <strong>{entrega.email}</strong></p>
-
-        {fMin && fMax && (
-          <div style={{ marginTop: '10px', padding: '10px', backgroundColor: '#e9f5ff', borderRadius: '8px', border: '1px solid #bce0fd', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-            <LuTruck size={18} color="#17a2b8" />
-            <strong>Entrega estimada:</strong> Entre el {fMin} y el {fMax}
+        {entrega.email && <p className="order-email">Te enviaremos la confirmación a <strong>{entrega.email}</strong></p>}
+        
+        {/* Aviso para invitados sobre cómo volver */}
+        {!localStorage.getItem('user') && (
+          <div style={{ 
+            marginBottom: '25px', padding: '12px 16px', backgroundColor: 'var(--color-bg, #fffbf2)', 
+            border: '1px solid #f5c89a', borderRadius: '10px', fontSize: '0.88rem', color: '#856404',
+            display: 'flex', alignItems: 'center', gap: '10px', textAlign: 'left'
+          }}>
+            <LuSearch size={22} style={{ flexShrink: 0, color: 'var(--color-primary)' }} />
+            <span>
+              <strong>¿Necesitas volver más tarde?</strong> Guardá tu número de pedido. Podés consultar el estado y subir tu comprobante desde la sección <strong>Consultar Pedido</strong> en el pie de página.
+            </span>
           </div>
         )}
 
+        {/* Bloque de comprobante para transferencia */}
         {finalOrderData?.metodoPago === 'transferencia' && (
           <div className="checkout-receipt-upload" style={{ marginTop: '20px', padding: '16px', backgroundColor: '#f8f9fa', borderRadius: '8px', border: '1px solid #e9ecef', textAlign: 'left' }}>
             {comprobante ? (
@@ -265,31 +345,79 @@ const StepResumen = ({ entrega, finalOrderData }) => {
                 <LuCircleCheck size={24} />
                 ¡Comprobante subido correctamente! Lo revisaremos a la brevedad.
               </div>
+            ) : pendingFile ? (
+              /* Pantalla de confirmación con preview */
+              <div>
+                <h4 style={{ margin: '0 0 10px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <LuUpload size={18} /> Confirmar comprobante
+                </h4>
+
+                {/* Preview de imagen */}
+                {previewUrl ? (
+                  <div style={{ marginBottom: '12px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #dee2e6', lineHeight: 0 }}>
+                    <img
+                      src={previewUrl}
+                      alt="Vista previa del comprobante"
+                      style={{ width: '100%', maxHeight: '260px', objectFit: 'contain', backgroundColor: '#f0f0f0' }}
+                    />
+                  </div>
+                ) : (
+                  /* PDF u otro archivo: icono de documento */
+                  <div style={{ marginBottom: '12px', padding: '20px', backgroundColor: '#f0f4ff', borderRadius: '8px', border: '1px solid #c7d7fd', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <span style={{ fontSize: '2.5rem' }}>📄</span>
+                    <div>
+                      <div style={{ fontWeight: '600', color: '#333', fontSize: '0.9rem' }}>{pendingFile.name}</div>
+                      <div style={{ color: '#777', fontSize: '0.82rem' }}>PDF • {(pendingFile.size / 1024).toFixed(1)} KB</div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Info del archivo */}
+                <div style={{ padding: '8px 12px', backgroundColor: '#fff', border: '1px solid #dee2e6', borderRadius: '6px', marginBottom: '12px', fontSize: '0.82rem', color: '#555' }}>
+                  <strong>{pendingFile.name}</strong> &nbsp;&bull;&nbsp; {(pendingFile.size / 1024).toFixed(1)} KB
+                </div>
+
+                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                  <button
+                    onClick={handleConfirmUpload}
+                    disabled={uploading}
+                    style={{ padding: '10px 20px', backgroundColor: '#2e7d32', color: 'white', borderRadius: '6px', border: 'none', cursor: uploading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold' }}
+                  >
+                    <LuCircleCheck size={18} />
+                    {uploading ? 'Subiendo...' : 'Confirmar y subir'}
+                  </button>
+                  <button
+                    onClick={() => { setPendingFile(null); if (previewUrl) { URL.revokeObjectURL(previewUrl); setPreviewUrl(null); } }}
+                    disabled={uploading}
+                    style={{ padding: '10px 20px', backgroundColor: 'transparent', color: '#666', borderRadius: '6px', border: '1px solid #ccc', cursor: 'pointer', fontWeight: '500' }}
+                  >
+                    Elegir otra imagen
+                  </button>
+                </div>
+              </div>
             ) : (
+              /* Pantalla inicial: seleccionar archivo */
               <div>
                 <h4 style={{ margin: '0 0 8px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <LuBuilding2 size={18} /> Pago por Transferencia
                 </h4>
                 <p style={{ margin: '0 0 12px 0', fontSize: '0.9rem', color: '#555' }}>
-                  Ya completaste tu pedido. Ahora realizá la transferencia y adjuntá acá el comprobante, o hacelo más tarde desde <strong>Mi Perfil</strong>.
+                  Ya completaste tu pedido. Realizá la transferencia y adjuntá acá el comprobante.
                 </p>
                 <div style={{ display: 'flex', gap: '10px' }}>
-                  <input 
-                    type="file" 
-                    accept="image/*,.pdf" 
+                  <input
+                    type="file"
+                    accept="image/*,.pdf"
                     id="checkout-receipt"
                     style={{ display: 'none' }}
-                    onChange={(e) => handleUploadComprobante(e.target.files[0])}
+                    onChange={(e) => handleFileSelect(e.target.files[0])}
                   />
-                  <button 
+                  <button
                     onClick={() => document.getElementById('checkout-receipt').click()}
-                    disabled={uploading}
-                    style={{
-                      padding: '10px 20px', backgroundColor: 'var(--color-primary)', color: 'white', borderRadius: '6px', border: 'none', cursor: uploading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold'
-                    }}
+                    style={{ padding: '10px 20px', backgroundColor: 'var(--color-primary)', color: 'white', borderRadius: '6px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold' }}
                   >
                     <LuUpload size={20} />
-                    {uploading ? 'Subiendo archivo...' : 'Adjuntar Comprobante'}
+                    Seleccionar comprobante
                   </button>
                 </div>
               </div>
@@ -318,16 +446,36 @@ const StepResumen = ({ entrega, finalOrderData }) => {
           <p><strong>{entrega.nombre} {entrega.apellido}</strong></p>
           <p>{entrega.direccion}{entrega.piso ? `, ${entrega.piso}` : ''}</p>
           <p>{entrega.ciudad}, {entrega.provincia} ({entrega.cp})</p>
-          <p style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><LuPhone size={15} /> Tel: {entrega.telefono}</p>
-          <p style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><LuPhone size={15} /> Alt: {entrega.telefonoAlternativo}</p>
+          {entrega.telefono && <p style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><LuPhone size={15} /> Tel: {entrega.telefono}</p>}
+          {entrega.telefonoAlternativo && <p style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><LuPhone size={15} /> Alt: {entrega.telefonoAlternativo}</p>}
           {entrega.notas && <p className="notas-entrega" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><LuNotebook size={15} /> {entrega.notas}</p>}
         </div>
       </div>
 
       <div className="resumen-actions">
-        <button className="btn-resumen-secondary" onClick={() => navigate('/perfil')}>
-          Ver mis pedidos
-        </button>
+        <a
+          href={buildWhatsAppLink()}
+          target="_blank"
+          rel="noreferrer"
+          style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+            backgroundColor: '#25D366', color: 'white', padding: '14px 24px',
+            borderRadius: '10px', fontWeight: '700', fontSize: '1rem',
+            textDecoration: 'none', width: '100%', boxSizing: 'border-box',
+            boxShadow: '0 4px 14px rgba(37,211,102,0.35)', transition: 'all 0.2s',
+          }}
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+            <path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.121 1.532 5.849L.057 23.571a.5.5 0 0 0 .615.612l5.832-1.53A11.943 11.943 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.766 9.766 0 0 1-4.983-1.362l-.357-.214-3.706.972.99-3.614-.234-.371A9.78 9.78 0 0 1 2.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/>
+          </svg>
+          Coordinar entrega por WhatsApp
+        </a>
+        {localStorage.getItem('user') && (
+          <button className="btn-resumen-secondary" onClick={() => navigate('/perfil')}>
+            Ver mis pedidos
+          </button>
+        )}
         <button className="btn-resumen-primary" onClick={() => navigate('/productos')}>
           Seguir comprando
         </button>
@@ -336,6 +484,8 @@ const StepResumen = ({ entrega, finalOrderData }) => {
   );
 };
 
+
+/* ─── MAIN CHECKOUT ──────────────────────────────────────── */
 /* ─── MAIN CHECKOUT ──────────────────────────────────────── */
 const STEP_KEYS = ['carrito', 'entrega', 'pago', 'resumen'];
 
@@ -356,7 +506,15 @@ const Checkout = () => {
   };
 
   const [loading, setLoading] = useState(false);
-  const [finalOrderData, setFinalOrderData] = useState(null);
+  // Restaurar desde sessionStorage si el componente se remontó (cambio de URL por paso)
+  const [finalOrderData, setFinalOrderDataState] = useState(() => {
+    try { return JSON.parse(sessionStorage.getItem('lepan_last_order')) || null; } catch { return null; }
+  });
+  const setFinalOrderData = (data) => {
+    setFinalOrderDataState(data);
+    if (data) sessionStorage.setItem('lepan_last_order', JSON.stringify(data));
+    else sessionStorage.removeItem('lepan_last_order');
+  };
   const stepKey = STEP_KEYS[subStep + 1]; // offset: carrito is step 0 in indicator
 
   const [entrega, setEntrega] = useState({
@@ -364,23 +522,43 @@ const Checkout = () => {
     provincia: '', ciudad: '', direccion: '', piso: '', cp: '', notas: ''
   });
 
+  // Fetch fresh profile from server to get apellido and telefono (not in localStorage cache)
   useEffect(() => {
-    if (user) {
-      setEntrega(prev => ({
-        ...prev,
-        nombre: prev.nombre || user.nombre || '',
-        email: prev.email || user.email || ''
-      }));
-    }
+    if (!user) return;
+    authService.getUserProfile()
+      .then(profile => {
+        setEntrega(prev => ({
+          ...prev,
+          nombre: prev.nombre || profile.nombre || '',
+          apellido: prev.apellido || profile.apellido || '',
+          email: prev.email || profile.email || '',
+          telefono: prev.telefono || profile.telefono || '',
+        }));
+      })
+      .catch(() => {
+        // Fallback al objeto en caché si la request falla
+        setEntrega(prev => ({
+          ...prev,
+          nombre: prev.nombre || user.nombre || '',
+          apellido: prev.apellido || user.apellido || '',
+          email: prev.email || user.email || '',
+          telefono: prev.telefono || user.telefono || '',
+        }));
+      });
   }, [user]);
 
   useEffect(() => {
     if (cart.length === 0 && subStep < 2) navigate('/carrito');
-    if (!user) {
-      alert("Debes iniciar sesión para finalizar tu compra");
-      navigate('/login?redirect=checkout');
+    // Ya no se requiere login: los invitados pueden comprar
+  }, [cart]);
+
+  // Limpiar el pedido guardado si volvemos al paso 0 o 1 (nueva compra)
+  useEffect(() => {
+    if (subStep < 2) {
+      sessionStorage.removeItem('lepan_last_order');
+      setFinalOrderDataState(null);
     }
-  }, [cart, user]);
+  }, [subStep]);
 
   const handleEntregaChange = (field, value) => setEntrega(e => ({ ...e, [field]: value }));
 
@@ -408,6 +586,13 @@ const Checkout = () => {
         };
         const createdOrder = await pedidoService.crearPedido(orderPayload);
         setFinalOrderData(createdOrder);
+        
+        // Persistencia para invitados (por si salen de la página sin anotar el ID)
+        if (createdOrder?._id) {
+          localStorage.setItem('lepan_guest_last_order_id', createdOrder._id.slice(-6).toUpperCase());
+          localStorage.setItem('lepan_guest_last_email', createdOrder.datosEntrega?.email || '');
+        }
+
         clearCart();
         
         if (createdOrder.init_point) {
@@ -439,6 +624,26 @@ const Checkout = () => {
       <StepIndicator currentStep={stepKey} />
 
       <div className="checkout-container container">
+        {/* Banner de invitado */}
+        {!user && subStep < 2 && (
+          <div style={{
+            maxWidth: '600px', margin: '0 auto 16px',
+            padding: '12px 16px',
+            backgroundColor: '#fff8e1',
+            border: '1px solid #ffe082',
+            borderRadius: '8px',
+            fontSize: '0.88rem',
+            color: '#5f4300',
+            display: 'flex', gap: '10px', alignItems: 'flex-start'
+          }}>
+            <span style={{ fontSize: '1.1rem' }}>👤</span>
+            <span>
+              Estás comprando como <strong>invitado</strong>. Sin cuenta no podrás ver tu historial de pedidos.
+              {' '}<Link to="/registro" style={{ color: 'var(--color-primary)', fontWeight: '700' }}>Crear cuenta</Link>
+              {' '}o{' '}<Link to="/login?redirect=checkout" style={{ color: 'var(--color-primary)', fontWeight: '700' }}>Iniciar sesión</Link>.
+            </span>
+          </div>
+        )}
         {subStep === 0 && (
           <StepEntrega data={entrega} onChange={handleEntregaChange} onNext={advanceStep} onBack={backStep} />
         )}
@@ -446,7 +651,7 @@ const Checkout = () => {
           <StepPago cart={cart} getCartTotal={getCartTotal} onNext={advanceStep} onBack={backStep} loading={loading} />
         )}
         {subStep === 2 && (
-          <StepResumen entrega={entrega} finalOrderData={finalOrderData} />
+          <StepResumen finalOrderData={finalOrderData} />
         )}
       </div>
     </div>

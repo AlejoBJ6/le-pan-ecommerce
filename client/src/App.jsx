@@ -30,6 +30,7 @@ import Perfil from './pages/Perfil/Perfil.jsx';
 import ResetPassword from './pages/ResetPassword/ResetPassword.jsx';
 import Checkout from './pages/Checkout/Checkout.jsx';
 import CheckoutResult from './pages/Checkout/CheckoutResult.jsx';
+import ConsultarPedido from './pages/ConsultarPedido/ConsultarPedido.jsx';
 
 
 // Componente Wrapper para Layout Público
@@ -65,6 +66,7 @@ function App() {
               <Route path="/checkout-success" element={<CheckoutResult />} />
               <Route path="/checkout-failure" element={<CheckoutResult />} />
               <Route path="/checkout-pending" element={<CheckoutResult />} />
+              <Route path="/consultar-pedido" element={<ConsultarPedido />} />
               
               {/* Ruta Privada de Cliente */}
               <Route path="/perfil" element={<PrivateRoute />}>

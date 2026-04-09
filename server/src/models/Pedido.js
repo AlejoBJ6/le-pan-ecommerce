@@ -4,7 +4,7 @@ const pedidoSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true
+    default: null   // null para pedidos de invitados
   },
   pedidosData: [ // Renamed from items to pedidosData or just items. Let's stick to items.
     {

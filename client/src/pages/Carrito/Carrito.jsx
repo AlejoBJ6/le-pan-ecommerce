@@ -1,5 +1,6 @@
 import React, { useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { LuClipboardList, LuSearch } from 'react-icons/lu';
 import { CartContext } from '../../context/CartContext.jsx';
 import StepIndicator from '../../components/StepIndicator/StepIndicator.jsx';
 import './Carrito.css';
@@ -138,6 +139,22 @@ const Carrito = () => {
 
           </div>
         )}
+
+        {/* Sección para consultar pedido anterior (útil para invitados) */}
+        <div className="cart-track-order card-box-shadow">
+          <div className="track-order-content">
+            <div className="track-order-icon">
+              <LuClipboardList size={32} />
+            </div>
+            <div className="track-order-text">
+              <h3>¿Ya hiciste un pedido?</h3>
+              <p>Si compraste como invitado, podés consultar el estado de tu pedido y subir el comprobante acá.</p>
+            </div>
+          </div>
+          <button className="btn-track-order" onClick={() => navigate('/consultar-pedido')}>
+            <LuSearch size={18} /> Consultar Pedido
+          </button>
+        </div>
       </div>
     </div>
   );
