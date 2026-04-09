@@ -57,13 +57,20 @@ const forceWebhookVerify = async (paymentId) => {
     return response.data;
 };
 
+// Consultar pedido (Invitados)
+const trackPedido = async (orderIdShort, email) => {
+    const response = await axios.post(`${API_URL}/track`, { orderIdShort, email });
+    return response.data;
+};
+
 const pedidoService = {
     crearPedido,
     getMisPedidos,
     getAllPedidos,
     updateEstadoPedido,
     subirComprobante,
-    forceWebhookVerify
+    forceWebhookVerify,
+    trackPedido
 };
 
 export default pedidoService;

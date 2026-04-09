@@ -387,3 +387,31 @@ export const webhookMercadoPago = async (req, res) => {
     console.error('[MP] Error crítico procesando Webhook:', error);
   }
 };
+
+// @desc    Consultar estado de un pedido por ID corto y email (para invitados)
+// @route   POST /api/pedidos/track
+// @access  Público
+export const trackPedido = async (req, res) => {
+  try {
+    const { orderIdShort, email } = req.body;
+
+    if (!orderIdShort || !email) {
+      return res.status(400).json({ message: 'Se requiere el número de pedido y el email' });
+    }
+
+    // Buscamos pedidos por email (que es más específico)
+    // Luego filtramos por el ID corto en JS para mayor simplicidad
+    const pedidos = await Pedido.find({ 'datosEntrega.email': email.toLowerCase() }).sort({ createdAt: -1 });
+
+    const pedido = pedidos.find(p => p._id.toString().slice(-6).toUpperCase() === orderIdShort.toUpperCase());
+
+    if (!pedido) {
+      return res.status(404).json({ message: 'Pedido no encontrado. Verifica los datos ingresados.' });
+    }
+
+    res.json(pedido);
+  } catch (error) {
+    console.error('Error tracking pedido:', error);
+    res.status(500).json({ message: 'Error del servidor al consultar el pedido' });
+  }
+};

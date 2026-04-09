@@ -5,7 +5,8 @@ import {
   getAllPedidos,
   updateEstadoPedido,
   webhookMercadoPago,
-  subirComprobante
+  subirComprobante,
+  trackPedido
 } from '../controllers/pedidoController.js';
 import { protect, admin, optionalProtect } from '../middleware/authMiddleware.js';
 
@@ -24,6 +25,9 @@ router.post('/webhook', webhookMercadoPago);
 // Redirect local para desarrollo con MP
 import { successRedirect } from '../controllers/pedidoController.js';
 router.get('/redirect/success', successRedirect);
+
+// Ruta para consulta de pedido (Track) - Público
+router.post('/track', trackPedido);
 
 router.route('/mis-pedidos').get(protect, getMisPedidos);
 

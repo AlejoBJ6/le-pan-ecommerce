@@ -6,7 +6,7 @@ import StepIndicator from '../../components/StepIndicator/StepIndicator.jsx';
 import pedidoService from '../../services/pedidoService.js';
 import uploadService from '../../services/uploadService.js';
 import authService from '../../services/authService.js';
-import { LuChevronRight, LuChevronLeft, LuShieldCheck, LuPhone, LuTruck, LuCreditCard, LuBuilding2, LuPackage, LuNotebook, LuUpload, LuCircleCheck } from 'react-icons/lu';
+import { LuChevronRight, LuChevronLeft, LuShieldCheck, LuPhone, LuTruck, LuCreditCard, LuBuilding2, LuPackage, LuNotebook, LuUpload, LuCircleCheck, LuSearch } from 'react-icons/lu';
 import './Checkout.css';
 
 const MP_GREEN = '#00a650';
@@ -237,8 +237,8 @@ const StepResumen = ({ finalOrderData }) => {
   const [pendingFile, setPendingFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null); // URL local para mostrar preview
 
-  const total = finalOrderData ? finalOrderData.totales.total : 0;
-  const orderNum = finalOrderData ? finalOrderData._id.slice(-6).toUpperCase() : '';
+  const total = finalOrderData?.totales?.total || 0;
+  const orderNum = finalOrderData?._id ? finalOrderData._id.slice(-6).toUpperCase() : '';
   const formatPrice = (p) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(p);
 
   // Datos de entrega siempre desde el servidor (evita pérdida de estado por URL)
@@ -322,6 +322,20 @@ const StepResumen = ({ finalOrderData }) => {
         <h2>¡Pedido recibido!</h2>
         <p className="order-number">Número de pedido: <strong>#{orderNum}</strong></p>
         {entrega.email && <p className="order-email">Te enviaremos la confirmación a <strong>{entrega.email}</strong></p>}
+        
+        {/* Aviso para invitados sobre cómo volver */}
+        {!localStorage.getItem('user') && (
+          <div style={{ 
+            marginBottom: '25px', padding: '12px 16px', backgroundColor: 'var(--color-bg, #fffbf2)', 
+            border: '1px solid #f5c89a', borderRadius: '10px', fontSize: '0.88rem', color: '#856404',
+            display: 'flex', alignItems: 'center', gap: '10px', textAlign: 'left'
+          }}>
+            <LuSearch size={22} style={{ flexShrink: 0, color: 'var(--color-primary)' }} />
+            <span>
+              <strong>¿Necesitas volver más tarde?</strong> Guardá tu número de pedido. Podés consultar el estado y subir tu comprobante desde la sección <strong>Consultar Pedido</strong> en el pie de página.
+            </span>
+          </div>
+        )}
 
         {/* Bloque de comprobante para transferencia */}
         {finalOrderData?.metodoPago === 'transferencia' && (
@@ -572,6 +586,13 @@ const Checkout = () => {
         };
         const createdOrder = await pedidoService.crearPedido(orderPayload);
         setFinalOrderData(createdOrder);
+        
+        // Persistencia para invitados (por si salen de la página sin anotar el ID)
+        if (createdOrder?._id) {
+          localStorage.setItem('lepan_guest_last_order_id', createdOrder._id.slice(-6).toUpperCase());
+          localStorage.setItem('lepan_guest_last_email', createdOrder.datosEntrega?.email || '');
+        }
+
         clearCart();
         
         if (createdOrder.init_point) {
