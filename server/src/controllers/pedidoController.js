@@ -190,7 +190,7 @@ export const crearPedido = async (req, res) => {
     }));
 
     const pedido = new Pedido({
-      user: req.user._id,
+      user: req.user ? req.user._id : null, // null para invitados
       pedidosData: itemsConComision,
       datosEntrega, totales, metodoPago,
       estadoPago: 'Pendiente', estadoEntrega: 'Pendiente'
@@ -317,25 +317,21 @@ export const updateEstadoPedido = async (req, res) => {
   }
 };
 
-// @desc    Subir comprobante de transferencia para un pedido (Cliente o Admin)
+// @desc    Subir comprobante de transferencia (Público: funciona para usuarios y para invitados)
 // @route   PUT /api/pedidos/:id/comprobante
-// @access  Privado
+// @access  Público
 export const subirComprobante = async (req, res) => {
   try {
     const { comprobanteUrl } = req.body;
     const pedido = await Pedido.findById(req.params.id);
 
-    if (pedido) {
-      if (pedido.user.toString() !== req.user._id.toString() && !req.user.isAdmin) {
-        return res.status(401).json({ message: 'No tienes permiso para actualizar este pedido' });
-      }
-
-      pedido.comprobanteTransferencia = comprobanteUrl;
-      const updatedPedido = await pedido.save();
-      res.json(updatedPedido);
-    } else {
-      res.status(404).json({ message: 'Pedido no encontrado' });
+    if (!pedido) {
+      return res.status(404).json({ message: 'Pedido no encontrado' });
     }
+
+    pedido.comprobanteTransferencia = comprobanteUrl;
+    const updatedPedido = await pedido.save();
+    res.json(updatedPedido);
   } catch (error) {
     console.error('Error uploading comprobante:', error);
     res.status(500).json({ message: 'Error del servidor al adjuntar comprobante' });

@@ -4,7 +4,7 @@ import { AuthContext } from '../../context/AuthContext';
 import authService from '../../services/authService';
 import pedidoService from '../../services/pedidoService';
 import uploadService from '../../services/uploadService';
-import { LuTruck, LuLink, LuUpload, LuCircleCheck } from 'react-icons/lu';
+import { LuTruck, LuLink, LuUpload, LuCircleCheck, LuBuilding2 } from 'react-icons/lu';
 import './Perfil.css';
 
 const EyeIcon = ({ show }) => (
@@ -43,6 +43,11 @@ const Perfil = () => {
   const [pedidos, setPedidos] = useState([]);
   const [loadingPedidos, setLoadingPedidos] = useState(true);
   const [uploadingOrder, setUploadingOrder] = useState(null);
+
+  // States for pending upload with preview
+  const [pendingFile, setPendingFile] = useState(null);
+  const [pendingPedidoId, setPendingPedidoId] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -104,20 +109,49 @@ const Perfil = () => {
     return 'status-default';
   };
 
-  const handleUploadComprobante = async (pedidoId, file) => {
+  const handleFileSelect = (pedidoId, file) => {
     if (!file) return;
-    setUploadingOrder(pedidoId);
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+
+    setPendingFile(file);
+    setPendingPedidoId(pedidoId);
+    
+    if (file.type.startsWith('image/')) {
+      setPreviewUrl(URL.createObjectURL(file));
+    } else {
+      setPreviewUrl(null);
+    }
+  };
+
+  const cancelUpload = () => {
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPendingFile(null);
+    setPendingPedidoId(null);
+    setPreviewUrl(null);
+  };
+
+  const handleConfirmUpload = async () => {
+    if (!pendingFile || !pendingPedidoId) return;
+    
+    setUploadingOrder(pendingPedidoId);
     setError(null);
     setMensaje(null);
+    
     try {
-      const uploadRes = await uploadService.uploadImage(file);
-      await pedidoService.subirComprobante(pedidoId, uploadRes.imageUrl);
+      const uploadRes = await uploadService.uploadImage(pendingFile);
+      await pedidoService.subirComprobante(pendingPedidoId, uploadRes.imageUrl);
       
       // Update local state to reflect the uploaded receipt
       setPedidos(pedidos.map(p => 
-        p._id === pedidoId ? { ...p, comprobanteTransferencia: uploadRes.imageUrl } : p
+        p._id === pendingPedidoId ? { ...p, comprobanteTransferencia: uploadRes.imageUrl } : p
       ));
       setMensaje('Comprobante subido y asociado correctamente al pedido.');
+      
+      // Clear pending state
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      setPendingFile(null);
+      setPendingPedidoId(null);
+      setPreviewUrl(null);
     } catch (err) {
       console.error(err);
       setError('Hubo un error al subir el comprobante. Intenta nuevamente.');
@@ -308,7 +342,55 @@ const Perfil = () => {
                             Comprobante enviado (en revisión)
                             <a href={pedido.comprobanteTransferencia} target="_blank" rel="noreferrer" style={{ marginLeft: 'auto', color: 'var(--color-primary)', textDecoration: 'underline' }}>Ver archivo</a>
                           </div>
+                        ) : pendingPedidoId === pedido._id ? (
+                          /* Confirmación con preview */
+                          <div>
+                            <h4 style={{ margin: '0 0 10px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <LuUpload size={18} /> Confirmar comprobante
+                            </h4>
+
+                            {previewUrl ? (
+                              <div style={{ marginBottom: '12px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #dee2e6', lineHeight: 0 }}>
+                                <img
+                                  src={previewUrl}
+                                  alt="Vista previa del comprobante"
+                                  style={{ width: '100%', maxHeight: '200px', objectFit: 'contain', backgroundColor: '#f0f0f0' }}
+                                />
+                              </div>
+                            ) : (
+                              <div style={{ marginBottom: '12px', padding: '15px', backgroundColor: '#f0f4ff', borderRadius: '8px', border: '1px solid #c7d7fd', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <span style={{ fontSize: '2rem' }}>📄</span>
+                                <div>
+                                  <div style={{ fontWeight: '600', color: '#333', fontSize: '0.85rem' }}>{pendingFile?.name}</div>
+                                  <div style={{ color: '#777', fontSize: '0.75rem' }}>PDF • {(pendingFile?.size / 1024).toFixed(1)} KB</div>
+                                </div>
+                              </div>
+                            )}
+
+                            <div style={{ padding: '6px 10px', backgroundColor: '#fff', border: '1px solid #dee2e6', borderRadius: '6px', marginBottom: '12px', fontSize: '0.78rem', color: '#555' }}>
+                              <strong>{pendingFile?.name}</strong> &nbsp;&bull;&nbsp; {(pendingFile?.size / 1024).toFixed(1)} KB
+                            </div>
+
+                            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                              <button
+                                onClick={handleConfirmUpload}
+                                disabled={uploadingOrder === pedido._id}
+                                style={{ padding: '8px 16px', backgroundColor: '#2e7d32', color: 'white', borderRadius: '6px', border: 'none', cursor: uploadingOrder === pedido._id ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 'bold', fontSize: '0.85rem' }}
+                              >
+                                <LuCircleCheck size={16} />
+                                {uploadingOrder === pedido._id ? 'Subiendo...' : 'Confirmar y subir'}
+                              </button>
+                              <button
+                                onClick={cancelUpload}
+                                disabled={uploadingOrder === pedido._id}
+                                style={{ padding: '8px 16px', backgroundColor: 'transparent', color: '#666', borderRadius: '6px', border: '1px solid #ccc', cursor: 'pointer', fontWeight: '500', fontSize: '0.85rem' }}
+                              >
+                                Cancelar
+                              </button>
+                            </div>
+                          </div>
                         ) : (
+                          /* Selección inicial */
                           <div>
                             <p style={{ margin: '0 0 10px 0', fontSize: '0.85rem', color: '#495057' }}>
                               <strong>Pago por transferencia:</strong> Adjuntá tu comprobante para que podamos aprobar tu pedido.
@@ -319,17 +401,16 @@ const Perfil = () => {
                                 accept="image/*,.pdf" 
                                 id={`file-${pedido._id}`}
                                 style={{ display: 'none' }}
-                                onChange={(e) => handleUploadComprobante(pedido._id, e.target.files[0])}
+                                onChange={(e) => handleFileSelect(pedido._id, e.target.files[0])}
                               />
                               <button 
                                 onClick={() => document.getElementById(`file-${pedido._id}`).click()}
-                                disabled={uploadingOrder === pedido._id}
                                 style={{
-                                  padding: '8px 16px', backgroundColor: 'var(--color-primary)', color: 'white', borderRadius: '6px', border: 'none', cursor: uploadingOrder === pedido._id ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 'bold'
+                                  padding: '8px 16px', backgroundColor: 'var(--color-primary)', color: 'white', borderRadius: '6px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 'bold'
                                 }}
                               >
                                 <LuUpload size={16} />
-                                {uploadingOrder === pedido._id ? 'Subiendo...' : 'Subir Comprobante'}
+                                Seleccionar Comprobante
                               </button>
                             </div>
                           </div>

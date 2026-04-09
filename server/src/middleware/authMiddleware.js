@@ -9,15 +9,9 @@ export const protect = async (req, res, next) => {
     req.headers.authorization.startsWith('Bearer')
   ) {
     try {
-      // Obtener token del header
       token = req.headers.authorization.split(' ')[1];
-
-      // Decodificar token
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-      // Obtener usuario del token y agregarlo al objeto req (excluyendo password)
       req.user = await User.findById(decoded.id).select('-password');
-
       next();
     } catch (error) {
       console.error(error);
@@ -37,4 +31,23 @@ export const admin = (req, res, next) => {
   } else {
     res.status(401).json({ message: 'No autorizado como administrador' });
   }
+};
+
+// Middleware opcional: si hay token válido setea req.user, si no hay token simplemente continúa.
+// Útil para endpoints que sirven tanto a usuarios logueados como a invitados.
+export const optionalProtect = async (req, res, next) => {
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer')
+  ) {
+    try {
+      const token = req.headers.authorization.split(' ')[1];
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      req.user = await User.findById(decoded.id).select('-password');
+    } catch (error) {
+      // Token inválido → continuamos como invitado
+      req.user = null;
+    }
+  }
+  next();
 };
