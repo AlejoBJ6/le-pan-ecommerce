@@ -80,6 +80,66 @@ const descontarStockPedido = async (pedido) => {
   pedido.stockDescontado = true;
 };
 
+/**
+ * Helper para reponer stock de forma atómica y segura.
+ * Se invoca cuando un pedido pasa de Aprobado a Pendiente/Rechazado/Cancelado.
+ */
+const reponerStockPedido = async (pedido) => {
+  if (!pedido.stockDescontado) return;
+
+  const aReponer = [];
+  for (const item of pedido.pedidosData) {
+    let prod = await Producto.findById(item.productoId).populate('productosIncluidos');
+    
+    if (prod) {
+      if (prod.categoria === 'Combos' && prod.productosIncluidos?.length > 0) {
+        for (const incProd of prod.productosIncluidos) {
+          aReponer.push({
+            id: incProd._id,
+            cantidad: Number(item.cantidad),
+            nombre: incProd.nombre
+          });
+        }
+      } else {
+        aReponer.push({
+          id: item.productoId,
+          cantidad: Number(item.cantidad),
+          nombre: item.nombre
+        });
+      }
+    } else {
+      const combo = await Combo.findById(item.productoId).populate('items.producto');
+      if (combo && combo.items?.length > 0) {
+        for (const comboItem of combo.items) {
+          if (comboItem.producto) {
+            aReponer.push({
+              id: comboItem.producto._id,
+              cantidad: Number(item.cantidad) * comboItem.cantidad,
+              nombre: comboItem.producto.nombre
+            });
+          }
+        }
+      }
+    }
+  }
+
+  for (const item of aReponer) {
+    await Producto.updateOne(
+      { _id: item.id },
+      { $inc: { stock: item.cantidad } }
+    );
+
+    const pActualizado = await Producto.findById(item.id);
+    if (pActualizado && pActualizado.stock > 0 && !pActualizado.disponible) {
+      pActualizado.disponible = true;
+      await pActualizado.save();
+    }
+  }
+
+  pedido.stockDescontado = false;
+};
+
+
 // @desc    Redirigir a frontend (utilizado para engañar regla de localhost de MP)
 export const successRedirect = (req, res) => {
   const frontendUrl = (process.env.FRONTEND_URL || 'http://localhost:3000').trim().replace(/\/$/, '');
@@ -229,12 +289,18 @@ export const updateEstadoPedido = async (req, res) => {
     if (pedido) {
       if (estadoEntrega) pedido.estadoEntrega = estadoEntrega;
       
-      // Si cambia a Aprobado y antes no lo estaba, descontamos stock
-      if (estadoPago === 'Aprobado' && pedido.estadoPago !== 'Aprobado') {
-        await descontarStockPedido(pedido);
+      if (estadoPago) {
+        // Si cambia a Aprobado y antes no lo estaba, descontamos stock
+        if (estadoPago === 'Aprobado' && pedido.estadoPago !== 'Aprobado') {
+          await descontarStockPedido(pedido);
+        } 
+        // Si estaba Aprobado y cambia a otro estado, reponemos stock
+        else if (pedido.estadoPago === 'Aprobado' && estadoPago !== 'Aprobado') {
+          await reponerStockPedido(pedido);
+        }
+        
+        pedido.estadoPago = estadoPago;
       }
-      
-      if (estadoPago) pedido.estadoPago = estadoPago;
 
       const updatedPedido = await pedido.save();
       res.json(updatedPedido);
@@ -310,8 +376,10 @@ export const webhookMercadoPago = async (req, res) => {
             // 6. Descontar stock usando el helper (maneja duplicados con stockDescontado)
             await descontarStockPedido(pedido);
           } else if (paymentInfo.status === 'rejected' || paymentInfo.status === 'cancelled') {
+            if (pedido.estadoPago === 'Aprobado') await reponerStockPedido(pedido);
             pedido.estadoPago = 'Rechazado';
           } else if (paymentInfo.status === 'in_process' || paymentInfo.status === 'pending') {
+            if (pedido.estadoPago === 'Aprobado') await reponerStockPedido(pedido);
             pedido.estadoPago = 'Pendiente';
           }
           await pedido.save();
