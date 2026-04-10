@@ -8,37 +8,52 @@ import { useCustomAlert } from '../../components/useCustomAlert';
 import { LuPackage, LuCirclePlus, LuShoppingCart, LuCheck } from 'react-icons/lu';
 import './ArmaCombo.css';
 
-const SelectableCard = ({ producto, isSelected, onSelect, onVerDetalle, selectionCount }) => (
-  <div className={`selectable-card ${isSelected ? 'selected' : ''}`}>
-    <div className="selectable-image" onClick={() => onSelect(producto)}>
-      <img src={producto.imagenes[0]} alt={producto.nombre} loading="lazy" />
-      {isSelected && <div className="selected-badge">✓</div>}
-      {selectionCount > 1 && isSelected && (
-        <div className="selection-count-badge">{selectionCount}</div>
-      )}
-    </div>
-    <div className="selectable-info">
-      <h3 className="selectable-name" onClick={() => onSelect(producto)}>{producto.nombre}</h3>
-      <p className="selectable-price" onClick={() => onSelect(producto)}>${producto.precio.toLocaleString('es-AR')}</p>
-      <div className="selectable-actions">
-        <button className="selectable-btn" onClick={() => onSelect(producto)}>
-          {isSelected ? 'Seleccionado' : 'Seleccionar'}
-        </button>
-        <button 
-          className="selectable-info-btn" 
-          title="Ver detalle"
-          onClick={(e) => { e.stopPropagation(); onVerDetalle(producto); }}
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="12" y1="8" x2="12" y2="12"></line>
-            <line x1="12" y1="16" x2="12.01" y2="16"></line>
-          </svg>
-        </button>
+const SelectableCard = ({ producto, isSelected, onSelect, onVerDetalle, selectionCount, cart }) => {
+  const itemEnCarrito = cart.find(item => (item._id || item.id) === producto._id);
+  const cantidadEnCarrito = itemEnCarrito ? itemEnCarrito.quantity : 0;
+  const stockDisponible = Math.max(0, producto.stock - cantidadEnCarrito);
+  const hasStock = stockDisponible > 0 && producto.disponible;
+
+  const isAtCartLimit = producto.stock > 0 && stockDisponible === 0;
+
+  return (
+    <div className={`selectable-card ${isSelected ? 'selected' : ''} ${!hasStock && !isSelected ? 'out-of-stock' : ''}`}>
+      <div className="selectable-image" onClick={() => hasStock || isSelected ? onSelect(producto) : null}>
+        <img src={producto.imagenes[0]} alt={producto.nombre} loading="lazy" style={{ filter: !hasStock && !isSelected ? 'grayscale(1)' : 'none', opacity: !hasStock && !isSelected ? 0.6 : 1 }} />
+        {isSelected && <div className="selected-badge">✓</div>}
+        {selectionCount > 1 && isSelected && (
+          <div className="selection-count-badge">{selectionCount}</div>
+        )}
+        {!hasStock && !isSelected && <div className="out-of-stock-badge">{isAtCartLimit ? 'Máximo' : 'Sin Stock'}</div>}
+      </div>
+      <div className="selectable-info">
+        <h3 className="selectable-name" onClick={() => hasStock || isSelected ? onSelect(producto) : null}>{producto.nombre}</h3>
+        <p className="selectable-price" onClick={() => hasStock || isSelected ? onSelect(producto) : null}>${producto.precio.toLocaleString('es-AR')}</p>
+        <div className="selectable-actions">
+          <button 
+            className="selectable-btn" 
+            onClick={() => onSelect(producto)}
+            disabled={!hasStock && !isSelected}
+            style={{ opacity: !hasStock && !isSelected ? 0.5 : 1, cursor: !hasStock && !isSelected ? 'not-allowed' : 'pointer' }}
+          >
+            {isSelected ? 'Seleccionado' : (hasStock ? 'Seleccionar' : (isAtCartLimit ? 'Máximo alcanzado' : 'Sin Stock'))}
+          </button>
+          <button 
+            className="selectable-info-btn" 
+            title="Ver detalle"
+            onClick={(e) => { e.stopPropagation(); onVerDetalle(producto); }}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 const ArmaCombo = () => {
   const [todosLosProductos, setTodosLosProductos] = useState([]);
@@ -58,7 +73,7 @@ const ArmaCombo = () => {
   const [isAdded, setIsAdded] = useState(false);
   const [productoDetalle, setProductoDetalle] = useState(null);
 
-  const { addToCart } = useContext(CartContext);
+  const { addToCart, cart } = useContext(CartContext);
   const location = useLocation();
   const { showAlert, AlertComponent } = useCustomAlert();
 
@@ -288,6 +303,7 @@ const ArmaCombo = () => {
                     // El scroll fue quitado o pospuesto para evitar saltos molestos de pantalla si reemplazan producto
                   }} 
                   onVerDetalle={setProductoDetalle}
+                  cart={cart}
                 />
               ))}
             </div>
@@ -309,6 +325,7 @@ const ArmaCombo = () => {
                   isSelected={!!items2.find(i => i._id === p._id)}
                   onSelect={(prod) => toggleItem(items2, setItems2, prod, comboConfig.maxComplemento)}
                   onVerDetalle={setProductoDetalle}
+                  cart={cart}
                 />
               ))}
             </div>

@@ -23,7 +23,7 @@ const ProductDetail = () => {
   const [isAdded, setIsAdded] = useState(false);
   const [isLoadingCombo, setIsLoadingCombo] = useState(false);
   const [loading, setLoading] = useState(true);
-  const { addToCart } = useContext(CartContext);
+  const { addToCart, cart } = useContext(CartContext);
   const { showAlert, AlertComponent } = useCustomAlert();
 
   const [showZoom, setShowZoom] = useState(false);
@@ -72,6 +72,22 @@ const ProductDetail = () => {
     };
     fetchProd();
   }, [id]);
+
+  // Calcular stock disponible real (stock total - lo que ya está en el carrito)
+  const itemEnCarrito = cart.find(item => (item._id || item.id) === (producto?._id || id));
+  const cantidadEnCarrito = itemEnCarrito ? itemEnCarrito.quantity : 0;
+  const stockDisponibleReal = producto ? Math.max(0, producto.stock - cantidadEnCarrito) : 0;
+
+  // Ajustar cantidad seleccionada si supera el stock disponible real
+  useEffect(() => {
+    if (stockDisponibleReal > 0 && cantidad > stockDisponibleReal) {
+      setCantidad(stockDisponibleReal);
+    } else if (stockDisponibleReal === 0 && cantidad !== 0) {
+      setCantidad(0);
+    } else if (stockDisponibleReal > 0 && cantidad === 0) {
+      setCantidad(1);
+    }
+  }, [stockDisponibleReal, cantidad]);
 
   const handleAddToCart = () => {
     if (isAdded) return;
@@ -317,25 +333,47 @@ const ProductDetail = () => {
                     id="qty"
                     value={cantidad}
                     onChange={(e) => setCantidad(Number(e.target.value))}
+                    disabled={stockDisponibleReal <= 0}
                   >
-                    {[...Array(producto.stock).keys()].map(n => (
-                      <option key={n + 1} value={n + 1}>{n + 1} unidad{n > 0 ? 'es' : ''}</option>
-                    ))}
+                    {stockDisponibleReal > 0 ? (
+                      [...Array(stockDisponibleReal).keys()].map(n => (
+                        <option key={n + 1} value={n + 1}>{n + 1} unidad{n > 0 ? 'es' : ''}</option>
+                      ))
+                    ) : (
+                      <option value="0">0 unidades</option>
+                    )}
                   </select>
-                  <span className="available-stock">({producto.stock} disponibles)</span>
+                  <span className="available-stock">
+                    {stockDisponibleReal <= 0 ? (
+                      <span style={{ color: 'var(--color-primary)', fontWeight: 'bold' }}>
+                        {cantidadEnCarrito >= producto.stock ? '(Stock máximo en carrito)' : '(Sin stock disponible)'}
+                      </span>
+                    ) : (
+                      `(${stockDisponibleReal} disponibles)`
+                    )}
+                  </span>
                 </div>
               </div>
 
               <div className="purchase-actions" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <button className="btn-buy-now" onClick={() => {
-                  addToCart(producto, cantidad);
-                  navigate('/carrito');
-                }}>Comprar ahora</button>
+                <button 
+                  className="btn-buy-now" 
+                  disabled={stockDisponibleReal <= 0 || isAdded}
+                  onClick={() => {
+                    addToCart(producto, cantidad);
+                    navigate('/carrito');
+                  }}
+                  style={{ opacity: stockDisponibleReal <= 0 ? 0.7 : 1, cursor: stockDisponibleReal <= 0 ? 'not-allowed' : 'pointer' }}
+                >
+                  {stockDisponibleReal <= 0 ? (cantidadEnCarrito > 0 ? 'Stock máximo alcanzado' : 'Agotado') : 'Comprar ahora'}
+                </button>
                 <button
                   className={`btn-add-cart ${isAdded ? 'btn-added' : ''}`}
                   onClick={handleAddToCart}
+                  disabled={stockDisponibleReal <= 0 || isAdded}
+                  style={{ opacity: stockDisponibleReal <= 0 ? 0.7 : 1, cursor: stockDisponibleReal <= 0 ? 'not-allowed' : 'pointer' }}
                 >
-                  {isAdded ? '¡Añadido al carrito! ✓' : 'Agregar al carrito'}
+                  {isAdded ? '¡Añadido al carrito! ✓' : (stockDisponibleReal <= 0 ? (cantidadEnCarrito > 0 ? 'Stock máximo alcanzado' : 'Agotado') : 'Agregar al carrito')}
                 </button>
                 
                 {producto.categoria !== 'Combos' && (
