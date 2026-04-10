@@ -158,7 +158,40 @@ export const crearPedido = async (req, res) => {
       return res.status(400).json({ message: 'No hay productos en el pedido' });
     }
 
-    // ... (resto sin cambios)
+    // --- VALIDACIÓN PREVENTIVA DE STOCK ---
+    // Verificamos stock antes de crear el pedido y generar la preferencia de MP
+    for (const item of items) {
+      if (item.productoId) {
+        // Buscar producto, combo antiguo o combo nuevo
+        const prod = await Producto.findById(item.productoId).populate('productosIncluidos');
+        if (prod) {
+          // Si es un combo de los viejos, verificar sus hijos
+          if (prod.categoria === 'Combos' && prod.productosIncluidos?.length > 0) {
+            for (const hijo of prod.productosIncluidos) {
+              if (hijo.stock < item.cantidad) {
+                return res.status(400).json({ message: `Stock insuficiente para "${hijo.nombre}" dentro del combo.` });
+              }
+            }
+          } else {
+            // Producto normal
+            if (prod.stock < item.cantidad) {
+              return res.status(400).json({ message: `Lo sentimos, el stock de "${prod.nombre}" cambió y ya no hay suficientes unidades.` });
+            }
+          }
+        } else {
+          // Buscar combo en la nueva colección
+          const combo = await Combo.findById(item.productoId).populate('items.producto');
+          if (combo && combo.items?.length > 0) {
+            for (const comboItem of combo.items) {
+              if (comboItem.producto && comboItem.producto.stock < (item.cantidad * comboItem.cantidad)) {
+                return res.status(400).json({ message: `Stock insuficiente para "${comboItem.producto.nombre}" incluido en el combo.` });
+              }
+            }
+          }
+        }
+      }
+    }
+    // ---------------------------------------
     const prov = datosEntrega.provincia.toLowerCase();
     const esAMBA = prov.includes('buenos aires') || prov.includes('capital federal') || prov.includes('caba');
     const minDays = esAMBA ? 2 : 5;
