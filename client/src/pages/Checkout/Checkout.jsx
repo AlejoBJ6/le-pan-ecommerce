@@ -548,9 +548,9 @@ const Checkout = () => {
   }, [user]);
 
   useEffect(() => {
-    if (cart.length === 0 && subStep < 2) navigate('/carrito');
-    // Ya no se requiere login: los invitados pueden comprar
-  }, [cart]);
+    // Solo redirigir al carrito si está vacío y NO estamos en el paso de éxito (2) ni acabamos de crear un pedido
+    if (cart.length === 0 && subStep < 2 && !finalOrderData) navigate('/carrito');
+  }, [cart, subStep, finalOrderData]);
 
   // Limpiar el pedido guardado si volvemos al paso 0 o 1 (nueva compra)
   useEffect(() => {
@@ -593,15 +593,16 @@ const Checkout = () => {
           localStorage.setItem('lepan_guest_last_email', createdOrder.datosEntrega?.email || '');
         }
 
-        clearCart();
-        
         if (createdOrder.init_point) {
-          // Redirigir a Mercado Pago
+          // Si es Mercado Pago, limpiamos carrito y redirigimos
+          clearCart();
           window.location.href = createdOrder.init_point;
-          return; // Detenemos la ejecución aquí
+          return;
         }
 
-        setSubStep(s => s + 1);
+        // Si es transferencia u otro método manual, vamos al paso de éxito y limpiamos carrito
+        setSubStep(2);
+        clearCart();
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } catch (error) {
         alert(error.response?.data?.message || 'Hubo un error al procesar tu pedido. Inténtalo de nuevo.');
