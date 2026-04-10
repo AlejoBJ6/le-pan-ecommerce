@@ -8,14 +8,19 @@ import './ProductCard.css';
 const ProductCard = ({ producto }) => {
   const [isAdded, setIsAdded] = useState(false);
   const [isLoadingCombo, setIsLoadingCombo] = useState(false);
-  const { addToCart } = useContext(CartContext);
+  const { addToCart, cart } = useContext(CartContext);
   const navigate = useNavigate();
   const { showAlert, AlertComponent } = useCustomAlert();
 
+  const itemEnCarrito = cart.find(item => (item._id || item.id) === (producto._id || producto.id));
+  const cantidadEnCarrito = itemEnCarrito ? itemEnCarrito.quantity : 0;
+  // Si no tiene la propiedad stock (ej. algunos combos), asumimos 99.
+  const stockLimite = producto.stock !== undefined ? producto.stock : 99;
+  const canAddMore = cantidadEnCarrito < stockLimite;
+
   const handleAddToCart = (e) => {
-    // Prevent Link click if it's placed inside one, though here it's independent
     if (e) e.preventDefault();
-    if (!producto.stock || producto.stock === 0 || !producto.disponible || isAdded) return;
+    if (!producto.disponible || !canAddMore || isAdded) return;
     
     addToCart(producto, 1);
     
@@ -60,7 +65,8 @@ const ProductCard = ({ producto }) => {
   };
 
   const esComboObj = producto.categoria === 'Combos' || producto.precioFinal !== undefined || (producto.items && producto.items.length > 0);
-  const hasStock = esComboObj ? producto.disponible : (producto.stock > 0 && producto.disponible);
+  const physicallyHasStock = esComboObj ? producto.disponible : (producto.stock > 0 && producto.disponible);
+  const canAddToCartUI = physicallyHasStock && canAddMore;
 
   return (
     <div className="product-card">
@@ -93,10 +99,11 @@ const ProductCard = ({ producto }) => {
         <div className="product-actions" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <button 
             className={`btn-add-cart ${isAdded ? 'btn-added' : ''}`} 
-            disabled={!hasStock || isAdded}
+            disabled={!physicallyHasStock || !canAddMore || isAdded}
             onClick={handleAddToCart}
+            style={{ opacity: (!physicallyHasStock || !canAddMore) ? 0.7 : 1 }}
           >
-            {isAdded ? '¡Añadido! ✓' : (hasStock ? 'Añadir al carrito' : 'Agotado')}
+            {isAdded ? '¡Añadido! ✓' : (physicallyHasStock ? (canAddMore ? 'Añadir al carrito' : 'Stock máximo alcanzado') : 'Agotado')}
           </button>
           
           {!esComboObj && (
@@ -110,20 +117,20 @@ const ProductCard = ({ producto }) => {
                 color: 'var(--color-primary)',
                 borderRadius: 'var(--radius-sm, 6px)',
                 fontWeight: 'bold',
-                cursor: (!hasStock || isLoadingCombo) ? 'not-allowed' : 'pointer',
-                opacity: (!hasStock) ? 0.5 : 1,
+                cursor: (!physicallyHasStock || isLoadingCombo) ? 'not-allowed' : 'pointer',
+                opacity: (!physicallyHasStock) ? 0.5 : 1,
                 transition: 'all 0.2s ease',
               }}
-              disabled={!hasStock || isLoadingCombo}
+              disabled={!physicallyHasStock || isLoadingCombo}
               onClick={handleAddToCombo}
               onMouseOver={(e) => {
-                if(hasStock && !isLoadingCombo) {
+                if(physicallyHasStock && !isLoadingCombo) {
                   e.target.style.background = 'var(--color-primary)';
                   e.target.style.color = '#fff';
                 }
               }}
               onMouseOut={(e) => {
-                if(hasStock && !isLoadingCombo) {
+                if(physicallyHasStock && !isLoadingCombo) {
                   e.target.style.background = 'transparent';
                   e.target.style.color = 'var(--color-primary)';
                 }

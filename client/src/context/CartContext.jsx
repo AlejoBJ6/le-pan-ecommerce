@@ -20,18 +20,24 @@ export const CartProvider = ({ children }) => {
       const productId = getId(product);
       const existingProductIndex = prevCart.findIndex(item => getId(item) === productId);
       
+      // Tomar stock del producto (si es combo dinámico puede que no tenga stock directo, asumimos 99 si no existe)
+      const stockLimit = product.stock !== undefined ? product.stock : 99;
+
       if (existingProductIndex >= 0) {
         const updatedCart = [...prevCart];
         const updatedItem = { ...updatedCart[existingProductIndex] };
-        updatedItem.quantity += quantity;
+        
+        const newTotalQuantity = updatedItem.quantity + quantity;
+        updatedItem.quantity = Math.min(newTotalQuantity, stockLimit);
+        
         updatedCart[existingProductIndex] = updatedItem;
         return updatedCart;
       } else {
-        return [...prevCart, { ...product, quantity }];
+        const finalQuantity = Math.min(quantity, stockLimit);
+        return [...prevCart, { ...product, quantity: finalQuantity }];
       }
     });
 
-    // Despachar el evento para la animación (ya existente en la UI)
     window.dispatchEvent(new CustomEvent('cart-added'));
   };
 
@@ -45,9 +51,13 @@ export const CartProvider = ({ children }) => {
       return;
     }
     setCart((prevCart) => 
-      prevCart.map(item => 
-        getId(item) === productId ? { ...item, quantity } : item
-      )
+      prevCart.map(item => {
+        if (getId(item) === productId) {
+          const stockLimit = item.stock !== undefined ? item.stock : 99;
+          return { ...item, quantity: Math.min(quantity, stockLimit) };
+        }
+        return item;
+      })
     );
   };
 
