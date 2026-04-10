@@ -237,12 +237,19 @@ const ArmaCombo = () => {
     if (isAdded) return;
     
     const allNames = [...items1, ...items2].map(p => p.nombre).join(' + ');
+    const seleccionados = [...items1, ...items2].map(p => ({
+      id: p._id,
+      cantidad: 1,
+      nombre: p.nombre
+    }));
+
     addToCart({
       _id: `combo-dinamico-${Date.now()}`,
       nombre: `Combo ${comboConfig.tipoDescuento === 'porcentaje' ? comboConfig.descuento + '% OFF' : '$' + comboConfig.descuento + ' OFF'}: ${allNames}`,
       precio: total,
       imagenes: [items1[0]?.imagenes[0]],
-      categoria: 'Combo Armado'
+      categoria: 'Combo Armado',
+      productosSeleccionados: seleccionados // Pasamos los componentes para que el backend descuente stock
     }, 1);
 
     setIsAdded(true);

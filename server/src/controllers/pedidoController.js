@@ -13,7 +13,19 @@ const descontarStockPedido = async (pedido) => {
   // 1. Recolectar todos los productos a descontar (desglosando combos si aplica)
   const aDescontar = [];
   for (const item of pedido.pedidosData) {
-    // Intentar buscar en Producto (catálogo normal o combo antiguo)
+    // A. Si es un combo dinámico (tiene productosSeleccionados), los usamos directamente
+    if (item.productosSeleccionados && item.productosSeleccionados.length > 0) {
+      for (const seleccionado of item.productosSeleccionados) {
+        aDescontar.push({
+          id: seleccionado.id,
+          cantidad: Number(item.cantidad) * (seleccionado.cantidad || 1),
+          nombre: seleccionado.nombre
+        });
+      }
+      continue; // Saltamos a la siguiente iteración porque ya procesamos este item
+    }
+
+    // B. Si no es dinámico, intentar buscar en Producto (catálogo normal o combo de admin antiguo)
     let prod = await Producto.findById(item.productoId).populate('productosIncluidos');
     
     if (prod) {
@@ -33,7 +45,7 @@ const descontarStockPedido = async (pedido) => {
         });
       }
     } else {
-      // Si no es un producto, buscar en la nueva colección de Combos
+      // C. Si no es un producto, buscar en la nueva colección de Combos de admin
       const combo = await Combo.findById(item.productoId).populate('items.producto');
       if (combo && combo.items?.length > 0) {
         for (const comboItem of combo.items) {
@@ -89,6 +101,18 @@ const reponerStockPedido = async (pedido) => {
 
   const aReponer = [];
   for (const item of pedido.pedidosData) {
+    // A. Si es un combo dinámico
+    if (item.productosSeleccionados && item.productosSeleccionados.length > 0) {
+      for (const seleccionado of item.productosSeleccionados) {
+        aReponer.push({
+          id: seleccionado.id,
+          cantidad: Number(item.cantidad) * (seleccionado.cantidad || 1),
+          nombre: seleccionado.nombre
+        });
+      }
+      continue;
+    }
+
     let prod = await Producto.findById(item.productoId).populate('productosIncluidos');
     
     if (prod) {
@@ -161,6 +185,18 @@ export const crearPedido = async (req, res) => {
     // --- VALIDACIÓN PREVENTIVA DE STOCK ---
     // Verificamos stock antes de crear el pedido y generar la preferencia de MP
     for (const item of items) {
+      // A. Validar productos seleccionados en combo dinámico
+      if (item.productosSeleccionados && item.productosSeleccionados.length > 0) {
+        for (const selec of item.productosSeleccionados) {
+          const p = await Producto.findById(selec.id);
+          if (p && p.stock < (item.cantidad * (selec.cantidad || 1))) {
+            return res.status(400).json({ message: `Stock insuficiente para "${p.nombre}" incluido en tu combo personalizado.` });
+          }
+        }
+        continue;
+      }
+
+      // B. Validar productos o combos tradicionales
       if (item.productoId) {
         // Buscar producto, combo antiguo o combo nuevo
         const prod = await Producto.findById(item.productoId).populate('productosIncluidos');

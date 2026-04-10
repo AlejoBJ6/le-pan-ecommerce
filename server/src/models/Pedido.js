@@ -14,7 +14,15 @@ const pedidoSchema = new mongoose.Schema({
       cantidad: { type: Number, required: true },
       comision: { type: Number, default: 0 },
       esCombo: { type: Boolean, default: false },
-      imagen: { type: String }
+      imagen: { type: String },
+      // Para combos dinámicos, guardamos los productos elegidos
+      productosSeleccionados: [
+        {
+          id: { type: mongoose.Schema.Types.ObjectId, ref: 'Producto' },
+          cantidad: { type: Number, default: 1 },
+          nombre: { type: String }
+        }
+      ]
     }
   ],
   datosEntrega: {
