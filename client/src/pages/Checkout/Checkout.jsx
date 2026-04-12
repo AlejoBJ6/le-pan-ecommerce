@@ -225,6 +225,35 @@ const StepPago = ({ cart, getCartTotal, onNext, onBack, loading }) => {
           <LuChevronLeft size={18} /> Volver
         </button>
       </div>
+
+      {/* ── Trust Badges ───────────────────────────────────── */}
+      <div style={{
+        marginTop: '20px',
+        paddingTop: '16px',
+        borderTop: '1px solid rgba(0,0,0,0.07)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '10px',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#2e7d32', fontSize: '0.82rem', fontWeight: 600 }}>
+          <LuShieldCheck size={16} />
+          <span>Tus datos están protegidos con cifrado SSL de extremo a extremo</span>
+        </div>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }}>
+          {/* Visa badge */}
+          <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#1a1f71', color: '#fff', fontWeight: 900, fontSize: '0.72rem', letterSpacing: '1px', padding: '4px 10px', borderRadius: '5px', fontStyle: 'italic' }}>VISA</span>
+          {/* Mastercard badge */}
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '2px' }}>
+            <span style={{ width: 18, height: 18, borderRadius: '50%', background: '#eb001b', display: 'inline-block' }}></span>
+            <span style={{ width: 18, height: 18, borderRadius: '50%', background: '#f79e1b', display: 'inline-block', marginLeft: -8 }}></span>
+          </span>
+          {/* MercadoPago badge */}
+          <span style={{ display: 'inline-flex', alignItems: 'center', background: '#009ee3', color: '#fff', fontWeight: 800, fontSize: '0.65rem', letterSpacing: '0.5px', padding: '4px 8px', borderRadius: '5px' }}>MERCADO PAGO</span>
+          {/* SSL badge */}
+          <span style={{ fontSize: '0.7rem', fontWeight: 800, padding: '4px 10px', background: '#1a5276', color: '#fff', borderRadius: '4px', letterSpacing: '1px' }}>SSL SECURE</span>
+        </div>
+      </div>
     </div>
   );
 };

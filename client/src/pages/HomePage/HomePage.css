@@ -135,3 +135,82 @@
     font-size: 0.85rem;
   }
 }
+
+/* ── Sección Botón de Arrepentimiento ──────────────── */
+.arrepentimiento-section {
+  margin-top: 80px;
+  padding: 32px 28px;
+  background: linear-gradient(135deg, #1a1a1a, #2c1f0e);
+  border-radius: 16px;
+  border: 1px solid rgba(232, 130, 12, 0.35);
+}
+
+body.light-theme .arrepentimiento-section,
+:root:not(.dark-theme) .arrepentimiento-section {
+  background: linear-gradient(135deg, #fff8f0, #fff3e0);
+  border-color: rgba(232, 130, 12, 0.4);
+}
+
+.arrepentimiento-inner {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+@media (min-width: 640px) {
+  .arrepentimiento-inner {
+    justify-content: flex-start;
+  }
+}
+
+.arrep-icon {
+  font-size: 2.5rem;
+  flex-shrink: 0;
+}
+
+.arrep-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 200px;
+}
+
+.arrep-text strong {
+  font-size: 1.1rem;
+  color: var(--color-primary, #E8820C);
+}
+
+.arrep-text span {
+  font-size: 0.9rem;
+  color: #aaa;
+  line-height: 1.5;
+}
+
+body.light-theme .arrep-text span,
+:root:not(.dark-theme) .arrep-text span {
+  color: #555;
+}
+
+.arrep-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 12px 24px;
+  background: var(--color-primary, #E8820C);
+  color: #fff;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-decoration: none;
+  transition: all 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.arrep-btn:hover {
+  background: #c97009;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(232, 130, 12, 0.4);
+}

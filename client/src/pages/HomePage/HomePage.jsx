@@ -131,6 +131,23 @@ const HomePage = () => {
             )
           ))}
 
+          {/* ── BOTÓN DE ARREPENTIMIENTO (Res. 424/2020) ─────────── */}
+          <section className="arrepentimiento-section">
+            <div className="arrepentimiento-inner">
+              <div className="arrep-icon">🔙</div>
+              <div className="arrep-text">
+                <strong>Botón de Arrepentimiento</strong>
+                <span>
+                  Tenés <strong>10 días</strong> para arrepentirte de tu compra sin dar explicaciones.
+                  Es tu derecho según la Ley 24.240.
+                </span>
+              </div>
+              <Link to="/arrepentimiento" className="arrep-btn">
+                Iniciar solicitud
+              </Link>
+            </div>
+          </section>
+
         </main>
       </div>
     </div>

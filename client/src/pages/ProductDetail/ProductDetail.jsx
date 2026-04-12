@@ -423,6 +423,20 @@ const ProductDetail = () => {
                   <LuShieldCheck size={20} className="guarantee-icon-sec" />
                   <span className="guarantee-text"><strong>Garantía de fábrica</strong>: 12 meses</span>
                 </div>
+
+                {/* Microcopy de devolución — elimina dudas antes de comprar */}
+                <div style={{
+                  marginTop: '8px',
+                  paddingTop: '10px',
+                  borderTop: '1px dashed rgba(0,0,0,0.1)',
+                  fontSize: '0.8rem',
+                  color: '#777',
+                  lineHeight: '1.5',
+                }}>
+                  🔙 <Link to="/devoluciones" style={{ color: 'var(--color-primary)', fontWeight: 600, textDecoration: 'underline' }}>
+                    10 días para arrepentirte sin cargo
+                  </Link>. Sin preguntas.
+                </div>
               </div>
             </div>
           </div>
