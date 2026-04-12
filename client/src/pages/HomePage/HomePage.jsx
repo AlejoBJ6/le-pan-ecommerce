@@ -7,6 +7,7 @@ import './HomePage.css';
 import productoService from '../../services/productoService.js';
 import comboService from '../../services/comboService.js';
 import ProductCard from '../../components/ProductCard.jsx';
+import { LuShieldCheck } from 'react-icons/lu';
 
 const HomePage = () => {
   const [productosDestacados, setProductosDestacados] = useState([]);
@@ -131,12 +132,14 @@ const HomePage = () => {
             )
           ))}
 
-          {/* ── BOTÓN DE ARREPENTIMIENTO (Res. 424/2020) ─────────── */}
+          {/* ── SOLICITUD DE ARREPENTIMIENTO (Res. 424/2020) ─────────── */}
           <section className="arrepentimiento-section">
             <div className="arrepentimiento-inner">
-              <div className="arrep-icon">🔙</div>
               <div className="arrep-text">
-                <strong>Botón de Arrepentimiento</strong>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                  <LuShieldCheck size={20} color="var(--color-primary, #E8820C)" />
+                  <strong>Solicitud de Arrepentimiento</strong>
+                </div>
                 <span>
                   Tenés <strong>10 días</strong> para arrepentirte de tu compra sin dar explicaciones.
                   Es tu derecho según la Ley 24.240.

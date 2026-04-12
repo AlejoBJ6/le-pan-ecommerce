@@ -21,9 +21,12 @@ const Footer = () => {
             title="Datos Fiscales (AFIP)"
           >
             <img
-              src="https://www.afip.gob.ar/fe/foot/datos_fiscales.jpg"
+              src="https://www.afip.gob.ar/images/f960/DATAWEB.jpg"
               alt="Formulario 960/D - Data Fiscal AFIP"
               className="footer-afip-img"
+              onError={(e) => {
+                e.target.src = "https://static.afip.gob.ar/fe/foot/datos_fiscales.jpg";
+              }}
             />
           </a>
         </div>
@@ -54,11 +57,6 @@ const Footer = () => {
               Defensa del Consumidor ↗
             </a>
           </nav>
-
-          {/* Botón de Arrepentimiento — destacado */}
-          <Link to="/arrepentimiento" className="footer-btn-arrepentimiento">
-            🔙 Botón de Arrepentimiento
-          </Link>
         </div>
 
         {/* ── REDES ─────────────────────────────── */}

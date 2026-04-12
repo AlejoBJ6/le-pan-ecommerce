@@ -44,8 +44,8 @@ const StepEntrega = ({ data, onChange, onNext, onBack }) => {
             <input type="tel" placeholder="11 1234-5678" value={data.telefono} onChange={e => onChange('telefono', e.target.value.replace(/[^0-9+\-\s()]/g, ''))} required />
           </div>
           <div className="form-group">
-            <label>Teléfono Alternativo *</label>
-            <input type="tel" placeholder="11 8765-4321" value={data.telefonoAlternativo} onChange={e => onChange('telefonoAlternativo', e.target.value.replace(/[^0-9+\-\s()]/g, ''))} required />
+            <label>Teléfono Alternativo</label>
+            <input type="tel" placeholder="11 8765-4321" value={data.telefonoAlternativo} onChange={e => onChange('telefonoAlternativo', e.target.value.replace(/[^0-9+\-\s()]/g, ''))} />
           </div>
         </div>
         <div className="form-row">
@@ -344,13 +344,26 @@ const StepResumen = ({ finalOrderData }) => {
       <div className="success-animation">
         <div className="success-circle">
           <svg viewBox="0 0 52 52" className="checkmark-svg">
-            <circle cx="26" cy="26" r="25" fill="none" stroke="#00a650" strokeWidth="2" className="checkmark-circle" />
-            <path fill="none" stroke="#00a650" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" d="M14 26 l8 8 l16-16" className="checkmark-check" />
+            <circle cx="26" cy="26" r="25" fill="none" stroke="#25D366" strokeWidth="2" className="checkmark-circle" />
+            <path fill="none" stroke="#25D366" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" d="M14 26 l8 8 l16-16" className="checkmark-check" />
           </svg>
         </div>
-        <h2>¡Pedido recibido!</h2>
-        <p className="order-number">Número de pedido: <strong>#{orderNum}</strong></p>
-        {entrega.email && <p className="order-email">Te enviaremos la confirmación a <strong>{entrega.email}</strong></p>}
+        <h2 style={{ fontSize: '2rem', marginBottom: '8px', color: 'var(--color-dark)' }}>¡Gracias por tu compra, {entrega.nombre}! 🎉</h2>
+        <p style={{ fontSize: '1.1rem', color: '#555', marginBottom: '24px' }}>Estamos muy felices de que nos hayas elegido. Tu pedido ha sido recibido con éxito.</p>
+        
+        <div className="order-summary-badge" style={{ 
+          backgroundColor: 'white', border: '1px dashed var(--color-gold)', borderRadius: '12px', 
+          padding: '16px', marginBottom: '24px', display: 'inline-block', minWidth: '200px'
+        }}>
+          <p className="order-number" style={{ margin: 0, fontSize: '0.9rem', color: '#888', textTransform: 'uppercase', letterSpacing: '1px' }}>Número de operación</p>
+          <strong style={{ fontSize: '1.8rem', color: 'var(--color-primary)', display: 'block', marginTop: '4px' }}>#{orderNum}</strong>
+        </div>
+
+        {entrega.email && (
+          <p className="order-email" style={{ marginBottom: '24px' }}>
+            Recibirás el detalle de tu compra en <strong>{entrega.email}</strong>
+          </p>
+        )}
         
         {/* Aviso para invitados sobre cómo volver */}
         {!localStorage.getItem('user') && (

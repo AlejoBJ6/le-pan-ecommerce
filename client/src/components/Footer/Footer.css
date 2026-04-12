@@ -1,7 +1,7 @@
 .footer-curve {
   background-color: var(--color-dark);
   color: var(--color-white);
-  padding: 56px 0 32px;
+  padding: 56px 0 110px; /* Reducido un poco para que no sobre tanto espacio */
   margin-top: 40px;
   position: relative;
   transition: background-color 0.3s ease;
@@ -47,6 +47,7 @@ body.dark-theme .footer-curve {
   flex-direction: column;
   align-items: center;
   gap: 8px;
+  order: 1; /* Primero en móvil */
 }
 
 @media (min-width: 1024px) {
@@ -99,6 +100,7 @@ body.dark-theme .footer-curve {
   flex-direction: column;
   align-items: center;
   gap: 12px;
+  order: 3; /* Después de las redes */
 }
 
 @media (min-width: 640px) {
@@ -150,6 +152,7 @@ body.dark-theme .footer-curve {
   text-decoration: none;
   transition: all 0.2s;
   letter-spacing: 0.2px;
+  margin-left: -14px; /* Alineado para que el texto/icono inicie donde inician los links de arriba */
 }
 
 .footer-btn-arrepentimiento:hover {
@@ -164,9 +167,17 @@ body.dark-theme .footer-curve {
   flex-direction: column;
   align-items: center;
   gap: 16px;
+  order: 2; /* Segundo en móvil, así queda lejos del botón flotante */
+  margin-bottom: 10px; /* Reducido espacio con la siguiente sección (Ayuda) */
 }
 
 @media (min-width: 640px) {
+  .footer-brand, .footer-social-col, .footer-col {
+    order: unset;
+  }
+  .footer-social-col {
+    margin-bottom: 0;
+  }
   .footer-social-col {
     align-items: flex-start;
   }

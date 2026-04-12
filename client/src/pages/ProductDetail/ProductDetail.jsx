@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { CartContext } from '../../context/CartContext.jsx';
 import productoService from '../../services/productoService';
 import comboConfigService from '../../services/comboConfigService';
 import comboService from '../../services/comboService';
 import { useCustomAlert } from '../../components/useCustomAlert';
-import { LuWrench, LuShieldCheck, LuTruck, LuCreditCard, LuBadgeCheck } from 'react-icons/lu';
+import { LuWrench, LuShieldCheck, LuTruck, LuCreditCard, LuBadgeCheck, LuZap } from 'react-icons/lu';
 import './ProductDetail.css';
 
 const fallbackData = {
@@ -30,6 +30,8 @@ const ProductDetail = () => {
   const [zoomStyle, setZoomStyle] = useState({});
   const [lensStyle, setLensStyle] = useState({});
   const [isMobileModalOpen, setIsMobileModalOpen] = useState(false);
+  const [relacionados, setRelacionados] = useState([]);
+  const actionsRef = useRef(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -73,6 +75,23 @@ const ProductDetail = () => {
     fetchProd();
   }, [id]);
 
+  // Cargar productos relacionados por categoría
+  useEffect(() => {
+    if (!producto) return;
+    const fetchRelacionados = async () => {
+      try {
+        const todos = await productoService.obtenerProductos();
+        const filtrados = todos
+          .filter(p => p.categoria === producto.categoria && p._id !== producto._id && p.stock > 0)
+          .slice(0, 4);
+        setRelacionados(filtrados);
+      } catch (e) {
+        console.error('Error cargando relacionados', e);
+      }
+    };
+    fetchRelacionados();
+  }, [producto]);
+
   // Calcular stock disponible real (stock total - lo que ya está en el carrito)
   const itemEnCarrito = cart.find(item => (item._id || item.id) === (producto?._id || id));
   const cantidadEnCarrito = itemEnCarrito ? itemEnCarrito.quantity : 0;
@@ -91,11 +110,15 @@ const ProductDetail = () => {
 
   const handleAddToCart = () => {
     if (isAdded) return;
-
     addToCart(producto, cantidad);
-
     setIsAdded(true);
     setTimeout(() => setIsAdded(false), 2000);
+  };
+
+  // Comprar ahora: agrega al carrito y va DIRECTO al checkout (sin pasar por carrito)
+  const handleBuyNow = () => {
+    addToCart(producto, cantidad);
+    navigate('/checkout');
   };
 
   const handleAddToCombo = async () => {
@@ -251,6 +274,9 @@ const ProductDetail = () => {
                     <LuCreditCard size={20} className="mp-icon" />
                     <span>Pagá en cuotas con <strong className="mp-text">Mercado Pago</strong></span>
                   </div>
+                  <div className="price-transparency" style={{ fontSize: '0.85rem', color: '#888', marginTop: '4px' }}>
+                    Precio final • IVA incluido
+                  </div>
                 </div>
 
                 <div className="product-features">
@@ -355,16 +381,14 @@ const ProductDetail = () => {
                 </div>
               </div>
 
-              <div className="purchase-actions" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div className="purchase-actions" ref={actionsRef} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <button 
-                  className="btn-buy-now" 
-                  disabled={stockDisponibleReal <= 0 || isAdded}
-                  onClick={() => {
-                    addToCart(producto, cantidad);
-                    navigate('/carrito');
-                  }}
-                  style={{ opacity: stockDisponibleReal <= 0 ? 0.7 : 1, cursor: stockDisponibleReal <= 0 ? 'not-allowed' : 'pointer' }}
+                  className="btn-buy-now btn-buy-now--pulse" 
+                  disabled={stockDisponibleReal <= 0}
+                  onClick={handleBuyNow}
+                  style={{ opacity: stockDisponibleReal <= 0 ? 0.7 : 1, cursor: stockDisponibleReal <= 0 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
                 >
+                  <LuZap size={18} />
                   {stockDisponibleReal <= 0 ? (cantidadEnCarrito > 0 ? 'Stock máximo alcanzado' : 'Agotado') : 'Comprar ahora'}
                 </button>
                 <button
@@ -413,6 +437,12 @@ const ProductDetail = () => {
               </div>
 
               <div className="purchase-guarantees">
+                {/* Urgencia de stock */}
+                {stockDisponibleReal > 0 && stockDisponibleReal <= 5 && (
+                  <div className="stock-urgency">
+                    🔥 <strong>¡Solo quedan {stockDisponibleReal} unidades!</strong>
+                  </div>
+                )}
                 <div className="guarantee-item shipping">
                   <LuTruck size={24} className="guarantee-icon" />
                   <div>
@@ -424,7 +454,7 @@ const ProductDetail = () => {
                   <span className="guarantee-text"><strong>Garantía de fábrica</strong>: 12 meses</span>
                 </div>
 
-                {/* Microcopy de devolución — elimina dudas antes de comprar */}
+                {/* Microcopy de devolución */}
                 <div style={{
                   marginTop: '8px',
                   paddingTop: '10px',
@@ -451,7 +481,29 @@ const ProductDetail = () => {
           <img src={imagenActiva} alt={producto.nombre} onClick={(e) => e.stopPropagation()} />
         </div>
       )}
-      
+
+      {/* ── Productos Relacionados ─────────────────────── */}
+      {relacionados.length > 0 && (
+        <section className="related-products-section">
+          <div className="container">
+            <h2 className="related-title">También te puede interesar</h2>
+            <div className="related-grid">
+              {relacionados.map(rel => (
+                <Link to={`/producto/${rel._id}`} key={rel._id} className="related-card">
+                  <div className="related-img-wrap">
+                    <img src={rel.imagenes?.[0] || 'https://via.placeholder.com/300x300?text=Sin+imagen'} alt={rel.nombre} />
+                  </div>
+                  <div className="related-info">
+                    <span className="related-name">{rel.nombre.toLowerCase()}</span>
+                    <span className="related-price">{precioFormat(rel.precio)}</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {AlertComponent}
     </div>
   );

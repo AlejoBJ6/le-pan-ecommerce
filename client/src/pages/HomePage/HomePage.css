@@ -138,36 +138,27 @@
 
 /* ── Sección Botón de Arrepentimiento ──────────────── */
 .arrepentimiento-section {
-  margin-top: 80px;
-  padding: 32px 28px;
-  background: linear-gradient(135deg, #1a1a1a, #2c1f0e);
-  border-radius: 16px;
-  border: 1px solid rgba(232, 130, 12, 0.35);
+  margin-top: 60px;
+  padding: 30px 40px;
+  padding: 30px 0; /* Sin padding horizontal para que el fondo llegue a los bordes del container */
+  background: #251b0e; /* Color oscuro para modo dark */
+  border-radius: 12px;
+  border: 1px solid rgba(232, 130, 12, 0.2);
 }
 
 body.light-theme .arrepentimiento-section,
 :root:not(.dark-theme) .arrepentimiento-section {
-  background: linear-gradient(135deg, #fff8f0, #fff3e0);
-  border-color: rgba(232, 130, 12, 0.4);
+  background: #FEF7E6; /* Beige cálido solicitado */
+  border-color: #f3e5c2;
 }
 
 .arrepentimiento-inner {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 32px;
   flex-wrap: wrap;
-  justify-content: center;
-}
-
-@media (min-width: 640px) {
-  .arrepentimiento-inner {
-    justify-content: flex-start;
-  }
-}
-
-.arrep-icon {
-  font-size: 2.5rem;
-  flex-shrink: 0;
+  justify-content: space-between;
+  padding: 0 32px; /* Este padding interno alineará el texto con los headers de arriba */
 }
 
 .arrep-text {
