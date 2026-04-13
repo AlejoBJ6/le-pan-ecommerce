@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api/contacto';
+const API_URL = '/api/contacto';
 
 // Helper de autenticación
 const getAuthHeaders = () => {

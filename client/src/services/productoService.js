@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Cambia esta URL si tu backend corre en otro puerto
-const API_URL = 'http://localhost:5000/api/productos';
+const API_URL = '/api/productos';
 
 const obtenerProductos = async (filtros = {}) => {
   const params = new URLSearchParams();
@@ -66,7 +66,7 @@ const uploadImage = async (file) => {
   config.headers['Content-Type'] = 'multipart/form-data';
 
   // Subir la imagen al endpoint principal de nuestro servidor
-  const response = await axios.post('http://localhost:5000/api/upload', formData, config);
+  const response = await axios.post('/api/upload', formData, config);
   return response.data;
 };
 

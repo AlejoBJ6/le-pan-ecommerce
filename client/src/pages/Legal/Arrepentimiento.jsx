@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { FaShieldAlt, FaSpinner } from 'react-icons/fa';
 import './LegalPage.css';
 
 const Arrepentimiento = () => {
@@ -8,16 +9,24 @@ const Arrepentimiento = () => {
   const [pedido, setPedido] = useState('');
   const [motivo, setMotivo] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setLoading(true);
+
     // Arma el link con los datos y abre WhatsApp como canal de contacto
     const msg = encodeURIComponent(
       `*Solicitud de Arrepentimiento — Lé Pan*\n\nNombre: ${nombre}\nEmail: ${email}\nNúmero de pedido: ${pedido}\nMotivo: ${motivo}`
     );
     const whatsapp = `https://wa.me/5491100000000?text=${msg}`;
-    window.open(whatsapp, '_blank');
-    setSubmitted(true);
+    
+    // Simulamos un breve retraso para mejorar el feedback visual de UX
+    setTimeout(() => {
+      window.open(whatsapp, '_blank');
+      setSubmitted(true);
+      setLoading(false);
+    }, 800);
   };
 
   return (
@@ -31,8 +40,16 @@ const Arrepentimiento = () => {
         </div>
 
         <div className="legal-highlight-box" style={{ marginBottom: '36px' }}>
-          <p style={{ fontWeight: 700, fontSize: '1.05rem', marginBottom: '6px' }}>
-            🔙 Tu derecho está garantizado
+          <p style={{ 
+            fontWeight: 700, 
+            fontSize: '1.05rem', 
+            marginBottom: '6px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            color: 'var(--color-primary, #E8820C)'
+          }}>
+            <FaShieldAlt /> Tu derecho está garantizado
           </p>
           <p>
             Tenés <strong>10 días corridos</strong> desde que recibiste el producto para arrepentirte de
@@ -74,6 +91,7 @@ const Arrepentimiento = () => {
                 onChange={e => setNombre(e.target.value)}
                 placeholder="Juan Pérez"
                 style={inputStyle}
+                disabled={loading}
               />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -85,6 +103,7 @@ const Arrepentimiento = () => {
                 onChange={e => setEmail(e.target.value)}
                 placeholder="juan@correo.com"
                 style={inputStyle}
+                disabled={loading}
               />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -96,6 +115,7 @@ const Arrepentimiento = () => {
                 onChange={e => setPedido(e.target.value)}
                 placeholder="Ej: A1B2C3"
                 style={inputStyle}
+                disabled={loading}
               />
               <small style={{ color: '#888' }}>
                 Lo encontrás en el correo de confirmación o en{' '}
@@ -112,25 +132,37 @@ const Arrepentimiento = () => {
                 onChange={e => setMotivo(e.target.value)}
                 placeholder="Podés dejarlo en blanco — no es obligatorio expresar un motivo."
                 style={{ ...inputStyle, resize: 'vertical' }}
+                disabled={loading}
               />
             </div>
 
             <button
               type="submit"
+              disabled={loading}
               style={{
                 padding: '16px',
-                background: 'var(--color-primary, #E8820C)',
+                background: loading ? '#ccc' : 'var(--color-primary, #E8820C)',
                 color: '#fff',
                 border: 'none',
                 borderRadius: '10px',
                 fontWeight: '700',
                 fontSize: '1rem',
-                cursor: 'pointer',
+                cursor: loading ? 'not-allowed' : 'pointer',
                 transition: 'all 0.2s',
                 letterSpacing: '0.3px',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                gap: '10px'
               }}
             >
-              Enviar solicitud de arrepentimiento
+              {loading ? (
+                <>
+                  <FaSpinner className="spinner" /> Procesando...
+                </>
+              ) : (
+                'Enviar solicitud de arrepentimiento'
+              )}
             </button>
 
             <p style={{ fontSize: '0.82rem', color: '#888', textAlign: 'center', lineHeight: '1.6' }}>
