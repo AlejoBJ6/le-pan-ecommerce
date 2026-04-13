@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <title>Rapipago|Pagá tus facturas, recargá y encontrá tu sucursal más cercana</title>
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+        new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+        j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+        'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+        })(window,document,'script','dataLayer','GTM-NH2ZDXW');
+    </script>
+    <!-- End Google Tag Manager -->
+<link rel="shortcut icon" type="image/png" href="favicon.ico"/>
+    <meta name="description" content="Pagá todas tus facturas y hacé recargas en efectivo o con débito, en nuestras sucursales o por los canales digitales">
+    <meta name="author" content="Lubee">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;700&display=swap" rel="stylesheet">
+
+
+    <style>
+    .loading {
+        display: inline-block;
+        width: 30px;
+        height: 30px;
+        border: 2px solid rgba(0,0,0,.2 );
+        border-radius: 50%;
+        border-top-color: rgba(0,0,0,.4 );
+        animation: spin 1s ease-in-out infinite;
+        -webkit-animation: spin 1s ease-in-out infinite;
+        left: calc(50%);
+        top: calc(50%);
+        position: fixed;
+        z-index: 1;
+        }
+
+        @keyframes spin {
+        to { -webkit-transform: rotate(360deg); }
+        }
+        @-webkit-keyframes spin {
+        to { -webkit-transform: rotate(360deg); }
+        }
+    </style>
+<link href="/rapipagoWeb/assets/js/0.js" rel="prefetch"><link href="/rapipagoWeb/assets/js/1.js" rel="prefetch"><link href="/rapipagoWeb/assets/js/10.js" rel="prefetch"><link href="/rapipagoWeb/assets/js/11.js" rel="prefetch"><link href="/rapipagoWeb/assets/js/12.js" rel="prefetch"><link href="/rapipagoWeb/assets/js/13.js" rel="prefetch"><link href="/rapipagoWeb/assets/js/14.js" rel="prefetch"><link href="/rapipagoWeb/assets/js/15.js" rel="prefetch"><link href="/rapipagoWeb/assets/js/16.js" rel="prefetch"><link href="/rapipagoWeb/assets/js/17.js" rel="prefetch"><link href="/rapipagoWeb/assets/js/18.js" rel="prefetch"><link href="/rapipagoWeb/assets/js/19.js" rel="prefetch"><link href="/rapipagoWeb/assets/js/2.js" rel="prefetch"><link href="/rapipagoWeb/assets/js/20.js" rel="prefetch"><link href="/rapipagoWeb/assets/js/21.js" rel="prefetch"><link href="/rapipagoWeb/assets/js/3.js" rel="prefetch"><link href="/rapipagoWeb/assets/js/6.js" rel="prefetch"><link href="/rapipagoWeb/assets/js/7.js" rel="prefetch"><link href="/rapipagoWeb/assets/js/8.js" rel="prefetch"><link href="/rapipagoWeb/assets/js/9.js" rel="prefetch"><link href="/rapipagoWeb/assets/js/chunk-vendors.js" rel="preload" as="script"><link href="/rapipagoWeb/assets/js/index.js" rel="preload" as="script"></head>
+
+<body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript>
+        <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NH2ZDXW"
+        height="0" width="0" style="display:none;visibility:hidden"></iframe>
+    </noscript>
+        <!-- End Google Tag Manager (noscript) -->
+    <!-- <noscript>
+        You need to enable JavaScript to run this app.
+    </noscript> -->
+    <div id="app">
+        <div class="loading"></div>
+    </div>
+    <!--
+      This HTML file is a template.
+      If you open it directly in the browser, you will see an empty page.
+
+      You can add webfonts, meta tags, or analytics to this file.
+      The build step will place the bundled scripts into the <body> tag.
+
+      To begin the development, run `npm run dev` or `yarn dev`.
+      To create a production bundle, use `npm run prod` or `yarn prod`.
+    -->
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.min.js" integrity="sha384-Atwg2Pkwv9vp0ygtn1JAojH0nYbwNJLPhwyoVbhoPwBhjQPR5VtM2+xf0Uwh9KtT" crossorigin="anonymous"></script>
+
+<script type="text/javascript" src="/rapipagoWeb/assets/js/chunk-vendors.js"></script><script type="text/javascript" src="/rapipagoWeb/assets/js/index.js"></script></body>
+</html>
+<script id="f5_cspm">(function(){var f5_cspm={f5_p:'DGPBIIOMIELKPNEDBOILCKMCFPCGJLFOIKCHHDJHCFPOIHDLLIHEKPILNCICEGLGJCABKNBDAALPJACPBEFAOOIDAAJONPNINCPADEJLICJBJMBBHHHGGCLIIPLNFGAO',setCharAt:function(str,index,chr){if(index>str.length-1)return str;return str.substr(0,index)+chr+str.substr(index+1);},get_byte:function(str,i){var s=(i/16)|0;i=(i&15);s=s*32;return((str.charCodeAt(i+16+s)-65)<<4)|(str.charCodeAt(i+s)-65);},set_byte:function(str,i,b){var s=(i/16)|0;i=(i&15);s=s*32;str=f5_cspm.setCharAt(str,(i+16+s),String.fromCharCode((b>>4)+65));str=f5_cspm.setCharAt(str,(i+s),String.fromCharCode((b&15)+65));return str;},set_latency:function(str,latency){latency=latency&0xffff;str=f5_cspm.set_byte(str,40,(latency>>8));str=f5_cspm.set_byte(str,41,(latency&0xff));str=f5_cspm.set_byte(str,35,2);return str;},wait_perf_data:function(){try{var wp=window.performance.timing;if(wp.loadEventEnd>0){var res=wp.loadEventEnd-wp.navigationStart;if(res<60001){var cookie_val=f5_cspm.set_latency(f5_cspm.f5_p,res);window.document.cookie='f5avr0379501550aaaaaaaaaaaaaaaa_cspm_='+encodeURIComponent(cookie_val)+';path=/;'+'';}
+return;}}
+catch(err){return;}
+setTimeout(f5_cspm.wait_perf_data,100);return;},go:function(){var chunk=window.document.cookie.split(/\s*;\s*/);for(var i=0;i<chunk.length;++i){var pair=chunk[i].split(/\s*=\s*/);if(pair[0]=='f5_cspm'&&pair[1]=='1234')
+{var d=new Date();d.setTime(d.getTime()-1000);window.document.cookie='f5_cspm=;expires='+d.toUTCString()+';path=/;'+';';setTimeout(f5_cspm.wait_perf_data,100);}}}}
+f5_cspm.go();}());</script>

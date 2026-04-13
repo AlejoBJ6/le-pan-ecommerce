@@ -31,6 +31,11 @@ import ResetPassword from './pages/ResetPassword/ResetPassword.jsx';
 import Checkout from './pages/Checkout/Checkout.jsx';
 import CheckoutResult from './pages/Checkout/CheckoutResult.jsx';
 import ConsultarPedido from './pages/ConsultarPedido/ConsultarPedido.jsx';
+import Terms from './pages/Legal/Terms.jsx';
+import Privacy from './pages/Legal/Privacy.jsx';
+import RefundPolicy from './pages/Legal/RefundPolicy.jsx';
+import FAQ from './pages/Legal/FAQ.jsx';
+import Arrepentimiento from './pages/Legal/Arrepentimiento.jsx';
 
 
 // Componente Wrapper para Layout Público
@@ -67,6 +72,11 @@ function App() {
               <Route path="/checkout-failure" element={<CheckoutResult />} />
               <Route path="/checkout-pending" element={<CheckoutResult />} />
               <Route path="/consultar-pedido" element={<ConsultarPedido />} />
+              <Route path="/terminos-y-condiciones" element={<Terms />} />
+              <Route path="/politica-de-privacidad" element={<Privacy />} />
+              <Route path="/devoluciones" element={<RefundPolicy />} />
+              <Route path="/preguntas-frecuentes" element={<FAQ />} />
+              <Route path="/arrepentimiento" element={<Arrepentimiento />} />
               
               {/* Ruta Privada de Cliente */}
               <Route path="/perfil" element={<PrivateRoute />}>

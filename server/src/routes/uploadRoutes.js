@@ -15,7 +15,11 @@ cloudinary.config({
 // Storage para imágenes de productos (admin)
 const storage = new CloudinaryStorage({
   cloudinary,
-  params: { folder: 'le-pan-ecommerce', allowedFormats: ['jpeg', 'png', 'jpg', 'webp'] },
+  params: { 
+    folder: 'le-pan-ecommerce', 
+    allowedFormats: ['jpeg', 'png', 'jpg', 'webp', 'mp4', 'webm', 'mov'],
+    resource_type: 'auto'
+  },
 });
 
 // Storage para comprobantes de pago (invitados y usuarios)
@@ -28,10 +32,19 @@ const upload = multer({ storage });
 const uploadComprobante = multer({ storage: storageComprobantes });
 const router = express.Router();
 
-// Ruta protegida: solo admins suben imágenes de productos
-router.post('/', protect, upload.single('image'), (req, res) => {
-  if (!req.file) return res.status(400).send({ message: 'No se procesó ninguna imagen' });
-  res.status(200).send({ message: 'Imagen subida exitosamente', imageUrl: req.file.path });
+// Ruta protegida: solo admins suben imágenes o videos de productos
+router.post('/', protect, (req, res) => {
+  upload.single('image')(req, res, (err) => {
+    if (err) {
+      console.error("Error al procesar subida:", err);
+      if (err.message && err.message.toLowerCase().includes('size')) {
+        return res.status(400).send({ message: 'El archivo es demasiado pesado. Intenta comprimirlo o elegir uno más corto.' });
+      }
+      return res.status(400).send({ message: `No se pudo subir: formato no soportado o archivo dañado (${err.message}).` });
+    }
+    if (!req.file) return res.status(400).send({ message: 'No se procesó ningún archivo multimedia.' });
+    res.status(200).send({ message: 'Archivo multimedia subido exitosamente', imageUrl: req.file.path });
+  });
 });
 
 // Ruta pública: cualquiera (incluidos invitados) puede subir un comprobante de pago

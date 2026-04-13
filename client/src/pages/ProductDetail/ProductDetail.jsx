@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { CartContext } from '../../context/CartContext.jsx';
 import productoService from '../../services/productoService';
 import comboConfigService from '../../services/comboConfigService';
 import comboService from '../../services/comboService';
 import { useCustomAlert } from '../../components/useCustomAlert';
-import { LuWrench, LuShieldCheck, LuTruck, LuCreditCard, LuBadgeCheck } from 'react-icons/lu';
+import { LuWrench, LuShieldCheck, LuTruck, LuCreditCard, LuBadgeCheck, LuZap, LuUndo2, LuHeadphones } from 'react-icons/lu';
 import './ProductDetail.css';
 
 const fallbackData = {
@@ -13,6 +13,8 @@ const fallbackData = {
   estrellas: 4.8,
   opiniones: 31,
 };
+
+const isVideo = (url) => typeof url === 'string' && url.match(/\.(mp4|webm|mov)$/i);
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -30,6 +32,8 @@ const ProductDetail = () => {
   const [zoomStyle, setZoomStyle] = useState({});
   const [lensStyle, setLensStyle] = useState({});
   const [isMobileModalOpen, setIsMobileModalOpen] = useState(false);
+  const [relacionados, setRelacionados] = useState([]);
+  const actionsRef = useRef(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -73,6 +77,23 @@ const ProductDetail = () => {
     fetchProd();
   }, [id]);
 
+  // Cargar productos relacionados por categoría
+  useEffect(() => {
+    if (!producto) return;
+    const fetchRelacionados = async () => {
+      try {
+        const todos = await productoService.obtenerProductos();
+        const filtrados = todos
+          .filter(p => p.categoria === producto.categoria && p._id !== producto._id && p.stock > 0)
+          .slice(0, 4);
+        setRelacionados(filtrados);
+      } catch (e) {
+        console.error('Error cargando relacionados', e);
+      }
+    };
+    fetchRelacionados();
+  }, [producto]);
+
   // Calcular stock disponible real (stock total - lo que ya está en el carrito)
   const itemEnCarrito = cart.find(item => (item._id || item.id) === (producto?._id || id));
   const cantidadEnCarrito = itemEnCarrito ? itemEnCarrito.quantity : 0;
@@ -91,11 +112,15 @@ const ProductDetail = () => {
 
   const handleAddToCart = () => {
     if (isAdded) return;
-
     addToCart(producto, cantidad);
-
     setIsAdded(true);
     setTimeout(() => setIsAdded(false), 2000);
+  };
+
+  // Comprar ahora: agrega al carrito y va DIRECTO al checkout (sin pasar por carrito)
+  const handleBuyNow = () => {
+    addToCart(producto, cantidad);
+    navigate('/checkout');
   };
 
   const handleAddToCombo = async () => {
@@ -134,7 +159,7 @@ const ProductDetail = () => {
   const precioFormat = (precio) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(precio);
 
   const handleMouseMove = (e) => {
-    if (window.innerWidth <= 768) return;
+    if (window.innerWidth <= 768 || isVideo(imagenActiva)) return;
 
     const container = e.currentTarget;
     const { left, top, width, height } = container.getBoundingClientRect();
@@ -171,14 +196,17 @@ const ProductDetail = () => {
   };
 
   const handleMouseEnter = () => {
-    if (window.innerWidth > 768) setShowZoom(true);
+    if (window.innerWidth > 768 && !isVideo(imagenActiva)) setShowZoom(true);
   };
 
   const handleMouseLeave = () => {
     if (window.innerWidth > 768) setShowZoom(false);
   };
 
-  const handleImageClick = () => {
+  const handleImageClick = (e) => {
+    if (isVideo(imagenActiva)) {
+      return; // Do nothing on custom click, let native video controls handle it.
+    }
     setIsMobileModalOpen(true);
   };
 
@@ -212,7 +240,11 @@ const ProductDetail = () => {
                       className={`thumbnail ${imagenActiva === img ? 'active' : ''}`}
                       onClick={() => setImagenActiva(img)}
                     >
-                      <img src={img} alt={`Miniatura ${idx + 1}`} />
+                      {isVideo(img) ? (
+                         <video src={img} muted loop playsInline style={{ width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none' }} />
+                      ) : (
+                         <img src={img} alt={`Miniatura ${idx + 1}`} />
+                      )}
                     </div>
                   ))}
                 </div>
@@ -223,8 +255,12 @@ const ProductDetail = () => {
                   onMouseLeave={handleMouseLeave}
                   onClick={handleImageClick}
                 >
-                  <img src={imagenActiva} alt={producto.nombre} />
-                  {showZoom && <div className="zoom-lens" style={lensStyle}></div>}
+                  {isVideo(imagenActiva) ? (
+                     <video src={imagenActiva} autoPlay muted loop controls playsInline style={{ width: '100%', maxHeight: '450px', borderRadius: '8px', objectFit: 'contain', cursor: 'default' }} />
+                  ) : (
+                     <img src={imagenActiva} alt={producto.nombre} />
+                  )}
+                  {showZoom && !isVideo(imagenActiva) && <div className="zoom-lens" style={lensStyle}></div>}
                 </div>
                 {showZoom && <div className="zoom-window card-box-shadow" style={zoomStyle}></div>}
               </div>
@@ -250,6 +286,9 @@ const ProductDetail = () => {
                   <div className="payment-installments">
                     <LuCreditCard size={20} className="mp-icon" />
                     <span>Pagá en cuotas con <strong className="mp-text">Mercado Pago</strong></span>
+                  </div>
+                  <div className="price-transparency" style={{ fontSize: '0.85rem', color: '#888', marginTop: '4px' }}>
+                    Precio final • IVA incluido
                   </div>
                 </div>
 
@@ -355,16 +394,14 @@ const ProductDetail = () => {
                 </div>
               </div>
 
-              <div className="purchase-actions" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div className="purchase-actions" ref={actionsRef} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <button 
-                  className="btn-buy-now" 
-                  disabled={stockDisponibleReal <= 0 || isAdded}
-                  onClick={() => {
-                    addToCart(producto, cantidad);
-                    navigate('/carrito');
-                  }}
-                  style={{ opacity: stockDisponibleReal <= 0 ? 0.7 : 1, cursor: stockDisponibleReal <= 0 ? 'not-allowed' : 'pointer' }}
+                  className="btn-buy-now btn-buy-now--pulse" 
+                  disabled={stockDisponibleReal <= 0}
+                  onClick={handleBuyNow}
+                  style={{ opacity: stockDisponibleReal <= 0 ? 0.7 : 1, cursor: stockDisponibleReal <= 0 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
                 >
+                  <LuZap size={18} />
                   {stockDisponibleReal <= 0 ? (cantidadEnCarrito > 0 ? 'Stock máximo alcanzado' : 'Agotado') : 'Comprar ahora'}
                 </button>
                 <button
@@ -412,7 +449,47 @@ const ProductDetail = () => {
                 )}
               </div>
 
+              {/* Políticas de Confianza a simple vista */}
+              <div className="trust-policies" style={{ marginTop: '24px', paddingTop: '20px', borderTop: '1px solid #eee', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--color-dark)' }}>
+                  <div style={{ background: 'rgba(226, 88, 34, 0.1)', padding: '6px', borderRadius: '50%', color: 'var(--color-primary)', display: 'flex' }}>
+                    <LuUndo2 size={18} />
+                  </div>
+                  <div>
+                    <span style={{ display: 'block', fontSize: '0.9rem', fontWeight: 'bold' }}>Devolución gratuita</span>
+                    <span style={{ display: 'block', fontSize: '0.8rem', color: '#666' }}>Tenés 10 días desde que lo recibís.</span>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--color-dark)' }}>
+                  <div style={{ background: 'rgba(226, 88, 34, 0.1)', padding: '6px', borderRadius: '50%', color: 'var(--color-primary)', display: 'flex' }}>
+                    <LuShieldCheck size={18} />
+                  </div>
+                  <div>
+                    <span style={{ display: 'block', fontSize: '0.9rem', fontWeight: 'bold' }}>Garantía de Fábrica</span>
+                    <span style={{ display: 'block', fontSize: '0.8rem', color: '#666' }}>12 meses de cobertura oficial Lé Pan.</span>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--color-dark)' }}>
+                  <div style={{ background: 'rgba(226, 88, 34, 0.1)', padding: '6px', borderRadius: '50%', color: 'var(--color-primary)', display: 'flex' }}>
+                    <LuHeadphones size={18} />
+                  </div>
+                  <div>
+                    <span style={{ display: 'block', fontSize: '0.9rem', fontWeight: 'bold' }}>Soporte Dedicado</span>
+                    <span style={{ display: 'block', fontSize: '0.8rem', color: '#666' }}>Te asesoramos por WhatsApp ante dudas.</span>
+                  </div>
+                </div>
+              </div>
+
+
               <div className="purchase-guarantees">
+                {/* Urgencia de stock */}
+                {stockDisponibleReal > 0 && stockDisponibleReal <= 5 && (
+                  <div className="stock-urgency">
+                    🔥 <strong>¡Solo quedan {stockDisponibleReal} unidades!</strong>
+                  </div>
+                )}
                 <div className="guarantee-item shipping">
                   <LuTruck size={24} className="guarantee-icon" />
                   <div>
@@ -422,6 +499,20 @@ const ProductDetail = () => {
                 <div className="guarantee-item">
                   <LuShieldCheck size={20} className="guarantee-icon-sec" />
                   <span className="guarantee-text"><strong>Garantía de fábrica</strong>: 12 meses</span>
+                </div>
+
+                {/* Microcopy de devolución */}
+                <div style={{
+                  marginTop: '8px',
+                  paddingTop: '10px',
+                  borderTop: '1px dashed rgba(0,0,0,0.1)',
+                  fontSize: '0.8rem',
+                  color: '#777',
+                  lineHeight: '1.5',
+                }}>
+                  🔙 <Link to="/devoluciones" style={{ color: 'var(--color-primary)', fontWeight: 600, textDecoration: 'underline' }}>
+                    10 días para arrepentirte sin cargo
+                  </Link>. Sin preguntas.
                 </div>
               </div>
             </div>
@@ -437,7 +528,29 @@ const ProductDetail = () => {
           <img src={imagenActiva} alt={producto.nombre} onClick={(e) => e.stopPropagation()} />
         </div>
       )}
-      
+
+      {/* ── Productos Relacionados ─────────────────────── */}
+      {relacionados.length > 0 && (
+        <section className="related-products-section">
+          <div className="container">
+            <h2 className="related-title">También te puede interesar</h2>
+            <div className="related-grid">
+              {relacionados.map(rel => (
+                <Link to={`/producto/${rel._id}`} key={rel._id} className="related-card">
+                  <div className="related-img-wrap">
+                    <img src={rel.imagenes?.[0] || 'https://via.placeholder.com/300x300?text=Sin+imagen'} alt={rel.nombre} />
+                  </div>
+                  <div className="related-info">
+                    <span className="related-name">{rel.nombre.toLowerCase()}</span>
+                    <span className="related-price">{precioFormat(rel.precio)}</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {AlertComponent}
     </div>
   );

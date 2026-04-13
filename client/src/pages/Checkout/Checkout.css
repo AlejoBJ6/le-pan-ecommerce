@@ -691,6 +691,11 @@ body.dark-theme .mp-method-badge.text-only {
   color: #eee;
 }
 
+body.dark-theme .mp-visa-text,
+body.dark-theme .mp-efectivo-text {
+  color: #eee !important;
+}
+
 body.dark-theme .method-tab {
   background: #252525;
   border-color: #333;
