@@ -5,7 +5,7 @@ import productoService from '../../services/productoService';
 import comboConfigService from '../../services/comboConfigService';
 import comboService from '../../services/comboService';
 import { useCustomAlert } from '../../components/useCustomAlert';
-import { LuWrench, LuShieldCheck, LuTruck, LuCreditCard, LuBadgeCheck, LuZap } from 'react-icons/lu';
+import { LuWrench, LuShieldCheck, LuTruck, LuCreditCard, LuBadgeCheck, LuZap, LuUndo2, LuHeadphones } from 'react-icons/lu';
 import './ProductDetail.css';
 
 const fallbackData = {
@@ -13,6 +13,8 @@ const fallbackData = {
   estrellas: 4.8,
   opiniones: 31,
 };
+
+const isVideo = (url) => typeof url === 'string' && url.match(/\.(mp4|webm|mov)$/i);
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -157,7 +159,7 @@ const ProductDetail = () => {
   const precioFormat = (precio) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(precio);
 
   const handleMouseMove = (e) => {
-    if (window.innerWidth <= 768) return;
+    if (window.innerWidth <= 768 || isVideo(imagenActiva)) return;
 
     const container = e.currentTarget;
     const { left, top, width, height } = container.getBoundingClientRect();
@@ -194,14 +196,17 @@ const ProductDetail = () => {
   };
 
   const handleMouseEnter = () => {
-    if (window.innerWidth > 768) setShowZoom(true);
+    if (window.innerWidth > 768 && !isVideo(imagenActiva)) setShowZoom(true);
   };
 
   const handleMouseLeave = () => {
     if (window.innerWidth > 768) setShowZoom(false);
   };
 
-  const handleImageClick = () => {
+  const handleImageClick = (e) => {
+    if (isVideo(imagenActiva)) {
+      return; // Do nothing on custom click, let native video controls handle it.
+    }
     setIsMobileModalOpen(true);
   };
 
@@ -235,7 +240,11 @@ const ProductDetail = () => {
                       className={`thumbnail ${imagenActiva === img ? 'active' : ''}`}
                       onClick={() => setImagenActiva(img)}
                     >
-                      <img src={img} alt={`Miniatura ${idx + 1}`} />
+                      {isVideo(img) ? (
+                         <video src={img} muted loop playsInline style={{ width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none' }} />
+                      ) : (
+                         <img src={img} alt={`Miniatura ${idx + 1}`} />
+                      )}
                     </div>
                   ))}
                 </div>
@@ -246,8 +255,12 @@ const ProductDetail = () => {
                   onMouseLeave={handleMouseLeave}
                   onClick={handleImageClick}
                 >
-                  <img src={imagenActiva} alt={producto.nombre} />
-                  {showZoom && <div className="zoom-lens" style={lensStyle}></div>}
+                  {isVideo(imagenActiva) ? (
+                     <video src={imagenActiva} autoPlay muted loop controls playsInline style={{ width: '100%', maxHeight: '450px', borderRadius: '8px', objectFit: 'contain', cursor: 'default' }} />
+                  ) : (
+                     <img src={imagenActiva} alt={producto.nombre} />
+                  )}
+                  {showZoom && !isVideo(imagenActiva) && <div className="zoom-lens" style={lensStyle}></div>}
                 </div>
                 {showZoom && <div className="zoom-window card-box-shadow" style={zoomStyle}></div>}
               </div>
@@ -435,6 +448,40 @@ const ProductDetail = () => {
                   </button>
                 )}
               </div>
+
+              {/* Políticas de Confianza a simple vista */}
+              <div className="trust-policies" style={{ marginTop: '24px', paddingTop: '20px', borderTop: '1px solid #eee', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--color-dark)' }}>
+                  <div style={{ background: 'rgba(226, 88, 34, 0.1)', padding: '6px', borderRadius: '50%', color: 'var(--color-primary)', display: 'flex' }}>
+                    <LuUndo2 size={18} />
+                  </div>
+                  <div>
+                    <span style={{ display: 'block', fontSize: '0.9rem', fontWeight: 'bold' }}>Devolución gratuita</span>
+                    <span style={{ display: 'block', fontSize: '0.8rem', color: '#666' }}>Tenés 10 días desde que lo recibís.</span>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--color-dark)' }}>
+                  <div style={{ background: 'rgba(226, 88, 34, 0.1)', padding: '6px', borderRadius: '50%', color: 'var(--color-primary)', display: 'flex' }}>
+                    <LuShieldCheck size={18} />
+                  </div>
+                  <div>
+                    <span style={{ display: 'block', fontSize: '0.9rem', fontWeight: 'bold' }}>Garantía de Fábrica</span>
+                    <span style={{ display: 'block', fontSize: '0.8rem', color: '#666' }}>12 meses de cobertura oficial Lé Pan.</span>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--color-dark)' }}>
+                  <div style={{ background: 'rgba(226, 88, 34, 0.1)', padding: '6px', borderRadius: '50%', color: 'var(--color-primary)', display: 'flex' }}>
+                    <LuHeadphones size={18} />
+                  </div>
+                  <div>
+                    <span style={{ display: 'block', fontSize: '0.9rem', fontWeight: 'bold' }}>Soporte Dedicado</span>
+                    <span style={{ display: 'block', fontSize: '0.8rem', color: '#666' }}>Te asesoramos por WhatsApp ante dudas.</span>
+                  </div>
+                </div>
+              </div>
+
 
               <div className="purchase-guarantees">
                 {/* Urgencia de stock */}

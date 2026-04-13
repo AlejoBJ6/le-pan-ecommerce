@@ -3,6 +3,8 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import productoService from '../../services/productoService';
 import categoriaService from '../../services/categoriaService';
 
+const isVideo = (url) => typeof url === 'string' && url.match(/\.(mp4|webm|mov)$/i);
+
 const AdminProductoForm = ({ isCombo = false }) => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -452,7 +454,7 @@ const AdminProductoForm = ({ isCombo = false }) => {
              <div style={{ display: 'flex', gap: '15px', alignItems: 'center', marginBottom: '15px', flexWrap: 'wrap' }}>
                <label style={{ margin: 0, padding: '10px 16px', backgroundColor: 'var(--color-dark)', color: '#fff', borderRadius: '6px', cursor: 'pointer', fontWeight: 600, display: 'inline-block' }}>
                  Subir Archivo
-                 <input type="file" onChange={uploadFileHandler} accept="image/*" style={{ display: 'none' }} />
+                 <input type="file" onChange={uploadFileHandler} accept="image/*,video/mp4,video/webm,video/quicktime" style={{ display: 'none' }} />
                </label>
                {subiendoImagen && <span style={{ color: 'var(--color-primary)', fontWeight: 'bold' }}>Subiendo a Cloudinary... ⬆️</span>}
                <span style={{ color: 'var(--color-gray)', fontSize: '0.9rem' }}>o podés pegar una URL existente abajo</span>
@@ -473,12 +475,20 @@ const AdminProductoForm = ({ isCombo = false }) => {
                  <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                    {formData.imagenes.split(',').filter(url => url.trim() !== '').map((url, i) => (
                      <div key={i} style={{ position: 'relative', width: '100px', height: '100px', borderRadius: '6px', overflow: 'hidden', border: '1px solid #ccc', backgroundColor: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <img 
-                          src={url.trim()} 
-                          alt="preview" 
-                          style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} 
-                          onError={(e) => { e.target.src = 'https://via.placeholder.com/100?text=Error'; }}
-                        />
+                        {isVideo(url.trim()) ? (
+                          <video 
+                            src={url.trim()} 
+                            muted autoPlay loop playsInline
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                          />
+                        ) : (
+                          <img 
+                            src={url.trim()} 
+                            alt="preview" 
+                            style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} 
+                            onError={(e) => { e.target.src = 'https://via.placeholder.com/100?text=Error'; }}
+                          />
+                        )}
                         {/* Botón para eliminar imagen */}
                         <button 
                           type="button"

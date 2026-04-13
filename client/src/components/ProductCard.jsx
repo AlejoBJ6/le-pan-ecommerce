@@ -5,6 +5,8 @@ import comboConfigService from '../services/comboConfigService';
 import { useCustomAlert } from './useCustomAlert';
 import './ProductCard.css';
 
+const isVideo = (url) => typeof url === 'string' && url.match(/\.(mp4|webm|mov)$/i);
+
 const ProductCard = ({ producto }) => {
   const [isAdded, setIsAdded] = useState(false);
   const [isLoadingCombo, setIsLoadingCombo] = useState(false);
@@ -73,11 +75,20 @@ const ProductCard = ({ producto }) => {
       <Link to={`/producto/${producto._id || 1}`} style={{ display: 'block' }}>
         <div className="product-image-container">
           {/* Usamos un fallback si el producto no tiene imagen */}
-          <img 
-            src={producto.imagenes && producto.imagenes.length > 0 ? producto.imagenes[0] : 'https://via.placeholder.com/300x300?text=No+Image'} 
-            alt={producto.nombre} 
-            className="product-image"
-          />
+          {(producto.imagenes && producto.imagenes.length > 0 && isVideo(producto.imagenes[0])) ? (
+            <video 
+              src={producto.imagenes[0]} 
+              muted autoPlay loop playsInline
+              className="product-image"
+              style={{ objectFit: 'cover' }}
+            />
+          ) : (
+            <img 
+              src={producto.imagenes && producto.imagenes.length > 0 ? producto.imagenes[0] : 'https://via.placeholder.com/300x300?text=No+Image'} 
+              alt={producto.nombre} 
+              className="product-image"
+            />
+          )}
           {producto.destacado && <span className="product-badge">Destacado</span>}
         </div>
       </Link>
@@ -86,15 +97,20 @@ const ProductCard = ({ producto }) => {
           <h3 className="product-name" style={{ transition: 'color 0.2s', cursor: 'pointer' }} onMouseOver={(e) => e.target.style.color = 'var(--color-primary)'} onMouseOut={(e) => e.target.style.color = 'inherit'}>{producto.nombre}</h3>
         </Link>
         <p className="product-category">{producto.categoria}</p>
-        <div className="product-price-container" style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', marginBottom: '10px', marginTop: 'auto' }}>
-          <p className="product-price" style={{ margin: 0, fontWeight: 'bold', fontSize: '1.2rem', color: 'var(--color-dark)' }}>
-            ${(producto.precio || producto.precioFinal || 0).toLocaleString('es-AR')}
-          </p>
-          {(producto.precioAnterior || producto.precioSinDescuento) > (producto.precio || producto.precioFinal) && (
-            <p style={{ margin: 0, textDecoration: 'line-through', color: 'var(--color-gray)', fontSize: '0.9rem' }}>
-              ${(producto.precioAnterior || producto.precioSinDescuento).toLocaleString('es-AR')}
+        <div className="product-price-container" style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginBottom: '10px', marginTop: 'auto' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+            <p className="product-price" style={{ margin: 0, fontWeight: 'bold', fontSize: '1.2rem', color: 'var(--color-dark)' }}>
+              ${(producto.precio || producto.precioFinal || 0).toLocaleString('es-AR')}
             </p>
-          )}
+            {(producto.precioAnterior || producto.precioSinDescuento) > (producto.precio || producto.precioFinal) && (
+              <p style={{ margin: 0, textDecoration: 'line-through', color: 'var(--color-gray)', fontSize: '0.9rem' }}>
+                ${(producto.precioAnterior || producto.precioSinDescuento).toLocaleString('es-AR')}
+              </p>
+            )}
+          </div>
+          <div style={{ fontSize: '0.75rem', color: '#888', letterSpacing: '0.3px' }}>
+            Precio final • IVA incluido
+          </div>
         </div>
         <div className="product-actions" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <button 

@@ -30,7 +30,7 @@ const pedidoSchema = new mongoose.Schema({
     apellido: { type: String, required: true },
     email: { type: String, required: true },
     telefono: { type: String, required: true },
-    telefonoAlternativo: { type: String, required: true },
+    telefonoAlternativo: { type: String, default: '' },
     provincia: { type: String, required: true },
     ciudad: { type: String, required: true },
     direccion: { type: String, required: true },

@@ -1,3 +1,4 @@
+
 import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { CartContext } from '../../context/CartContext.jsx';
@@ -7,6 +8,8 @@ import pedidoService from '../../services/pedidoService.js';
 import uploadService from '../../services/uploadService.js';
 import authService from '../../services/authService.js';
 import { LuChevronRight, LuChevronLeft, LuShieldCheck, LuPhone, LuTruck, LuCreditCard, LuBuilding2, LuPackage, LuNotebook, LuUpload, LuCircleCheck, LuSearch } from 'react-icons/lu';
+import { FaCcVisa, FaCcMastercard } from 'react-icons/fa';
+import { SiMercadopago } from 'react-icons/si';
 import './Checkout.css';
 
 const MP_GREEN = '#00a650';
@@ -44,8 +47,9 @@ const StepEntrega = ({ data, onChange, onNext, onBack }) => {
             <input type="tel" placeholder="11 1234-5678" value={data.telefono} onChange={e => onChange('telefono', e.target.value.replace(/[^0-9+\-\s()]/g, ''))} required />
           </div>
           <div className="form-group">
-            <label>Teléfono Alternativo</label>
+            <label>Teléfono Alternativo <span style={{fontWeight: 'normal', color: '#888', fontSize: '0.85em', textTransform: 'none'}}>(Opcional)</span></label>
             <input type="tel" placeholder="11 8765-4321" value={data.telefonoAlternativo} onChange={e => onChange('telefonoAlternativo', e.target.value.replace(/[^0-9+\-\s()]/g, ''))} />
+
           </div>
         </div>
         <div className="form-row">
@@ -134,23 +138,30 @@ const StepPago = ({ cart, getCartTotal, onNext, onBack, loading }) => {
           </p>
           <ul className="mp-methods-list">
             <li>
-              <div className="mp-method-badge">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Visa.svg" alt="Visa" height="14"/>
-                <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" height="14"/>
+              <div className="mp-method-badge" style={{ gap: '12px', display: 'flex', alignItems: 'center' }}>
+                <span style={{ color: '#1a1f71', fontWeight: 900, fontSize: '1.2rem', fontStyle: 'italic', letterSpacing: '-0.5px' }} className="mp-visa-text">VISA</span>
+                <span style={{ display: 'flex', alignItems: 'center' }}>
+                  <span style={{ width: 14, height: 14, borderRadius: '50%', background: '#eb001b', display: 'inline-block' }}></span>
+                  <span style={{ width: 14, height: 14, borderRadius: '50%', background: '#f79e1b', display: 'inline-block', marginLeft: -5, opacity: 0.9 }}></span>
+                </span>
               </div>
               Tarjetas de crédito y débito
             </li>
             <li>
-              <div className="mp-method-badge">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/MercadoPago_logo.png/1200px-MercadoPago_logo.png" alt="MercadoPago" height="14"/>
+              <div className="mp-method-badge" style={{ display: 'flex', alignItems: 'center' }}>
+                <span className="mp-logo-text" style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#009ee3', fontWeight: 800, fontSize: '0.85rem' }}>
+                  <SiMercadopago size={22} />
+                  mercado pago
+                </span>
               </div>
               Dinero en tu cuenta
             </li>
             <li>
-              <div className="mp-method-badge text-only">
-                EFECTIVO
+              <div className="mp-method-badge" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <img src="/images/logos/pagofacil.png" alt="Pago Fácil" height="15" style={{ objectFit: 'contain' }} />
+                <img src="/images/logos/rapipago.png" alt="Rapipago" height="13" style={{ objectFit: 'contain' }} />
               </div>
-              Pago Fácil / Rapipago
+              Efectivo en Puntos de Pago
             </li>
           </ul>
         </div>
@@ -349,7 +360,12 @@ const StepResumen = ({ finalOrderData }) => {
           </svg>
         </div>
         <h2 style={{ fontSize: '2rem', marginBottom: '8px', color: 'var(--color-dark)' }}>¡Gracias por tu compra, {entrega.nombre}! 🎉</h2>
-        <p style={{ fontSize: '1.1rem', color: '#555', marginBottom: '24px' }}>Estamos muy felices de que nos hayas elegido. Tu pedido ha sido recibido con éxito.</p>
+        <p style={{ fontSize: '1.1rem', color: '#555', marginBottom: '8px' }}>
+          Estamos muy felices de que nos hayas elegido. Tu pedido ha sido procesado con éxito.
+        </p>
+        <p style={{ fontSize: '1.05rem', color: 'var(--color-primary)', fontWeight: '600', marginBottom: '24px' }}>
+          📲 Te contactaremos por WhatsApp para coordinar la entrega.
+        </p>
         
         <div className="order-summary-badge" style={{ 
           backgroundColor: 'white', border: '1px dashed var(--color-gold)', borderRadius: '12px', 
@@ -611,7 +627,7 @@ const Checkout = () => {
         setLoading(true);
         const orderPayload = {
           items: cart.map(item => ({
-            productoId: item._id, // Usamos el ID de combo o producto normal
+            productoId: item._id || item.id, // Soportar ambos formatos
             nombre: item.nombre,
             precio: item.precio || item.precioFinal,
             cantidad: item.quantity,
