@@ -29,6 +29,18 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const googleLogin = async (tokenData) => {
+    try {
+      const data = await authService.googleLogin(tokenData);
+      setUser(data);
+      setError(null);
+      return data;
+    } catch (err) {
+      setError(err.response?.data?.message || 'Error al iniciar sesión con Google');
+      throw err;
+    }
+  };
+
   const register = async (userData) => {
     try {
       const data = await authService.register(userData);
@@ -47,7 +59,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, error, login, register, logout, setError }}>
+    <AuthContext.Provider value={{ user, loading, error, login, googleLogin, register, logout, setError }}>
       {children}
     </AuthContext.Provider>
   );

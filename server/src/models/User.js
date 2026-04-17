@@ -15,7 +15,7 @@ const userSchema = new mongoose.Schema({
   },
   telefono: {
     type: String,
-    required: [true, 'El teléfono es obligatorio'],
+    required: function() { return !this.googleAuth; },
     trim: true
   },
   email: {
@@ -28,7 +28,7 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: [true, 'La contraseña es obligatoria'],
+    required: function() { return !this.googleAuth; },
     minlength: [6, 'La contraseña debe tener al menos 6 caracteres'],
     select: false // No devolver el password por defecto en las consultas
   },
@@ -39,14 +39,23 @@ const userSchema = new mongoose.Schema({
   },
   resetPasswordToken: String,
   resetPasswordExpire: Date,
+  googleId: {
+    type: String,
+    unique: true,
+    sparse: true
+  },
+  googleAuth: {
+    type: Boolean,
+    default: false
+  },
 }, {
   timestamps: true
 });
 
 // Encriptar contraseña antes de guardar
 userSchema.pre('save', async function() {
-  // Solo encriptar si la contraseña ha sido modificada (o es nueva)
-  if (!this.isModified('password')) {
+  // Solo encriptar si la contraseña ha sido modificada (o es nueva) y EXISTE
+  if (!this.isModified('password') || !this.password) {
     return;
   }
 
@@ -57,6 +66,7 @@ userSchema.pre('save', async function() {
 
 // Método para verificar si la contraseña ingresada coincide con la hasheada
 userSchema.methods.matchPassword = async function(enteredPassword) {
+  if (!this.password) return false;
   return await bcrypt.compare(enteredPassword, this.password);
 };
 

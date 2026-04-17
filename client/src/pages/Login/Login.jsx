@@ -1,5 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useGoogleLogin } from '@react-oauth/google';
+import { FcGoogle } from 'react-icons/fc';
 import { AuthContext } from '../../context/AuthContext';
 import authService from '../../services/authService';
 import './Login.css';
@@ -24,7 +26,19 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const navigate = useNavigate();
-  const { login, error } = useContext(AuthContext);
+  const { login, googleLogin, error } = useContext(AuthContext);
+
+  const handleGoogleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        await googleLogin({ accessToken: tokenResponse.access_token });
+        navigate('/');
+      } catch (err) {
+        console.error('Google login error:', err);
+      }
+    },
+    onError: (error) => console.log('Google Login Failed', error)
+  });
 
   const [forgotMessage, setForgotMessage] = useState('');
   const [forgotError, setForgotError] = useState('');
@@ -154,8 +168,8 @@ const Login = () => {
                 </div>
                 
                 <button type="submit" className="auth-btn">Ingresar</button>
-                <button type="button" className="auth-btn btn-google">
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google" className="google-icon" />
+                <button type="button" className="auth-btn btn-google" onClick={() => handleGoogleLogin()}>
+                  <FcGoogle className="google-icon" />
                   Ingresar con Google
                 </button>
               </form>
