@@ -2,6 +2,9 @@ import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import crypto from 'crypto';
 import sendEmail from '../utils/sendEmail.js';
+import { OAuth2Client } from 'google-auth-library';
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // Helper para generar el Token JWT
 const generateToken = (id) => {
@@ -87,6 +90,74 @@ export const loginUser = async (req, res) => {
   } catch (error) {
     console.error('Error en el login:', error);
     res.status(500).json({ message: 'Error del servidor al iniciar sesión' });
+  }
+};
+
+// @desc    Autenticar con Google
+// @route   POST /api/auth/google
+// @access  Public
+export const googleLogin = async (req, res) => {
+  const { accessToken, credential } = req.body;
+
+  try {
+    let payload;
+    
+    // Si viene credential (JWT de GoogleLogin button)
+    if (credential) {
+      const ticket = await client.verifyIdToken({
+        idToken: credential,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
+      payload = ticket.getPayload();
+    } 
+    // Si viene accessToken (de useGoogleLogin)
+    else if (accessToken) {
+      const response = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${accessToken}`);
+      payload = await response.json();
+      if (payload.error) throw new Error(payload.error_description || 'Token inválido');
+    } else {
+      return res.status(400).json({ message: 'Se requiere accessToken o credential' });
+    }
+
+    const { sub: googleId, email, given_name: nombre, family_name: apellido } = payload;
+
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      // Crear usuario
+      const generatedPassword = crypto.randomBytes(16).toString('hex');
+      user = await User.create({
+        nombre: nombre || 'Usuario',
+        apellido: apellido || '',
+        email,
+        telefono: '',
+        password: generatedPassword,
+        googleId,
+        googleAuth: true,
+      });
+    } else {
+      // Si el email ya existía pero no estaba linkeado a Google
+      if (!user.googleId) {
+        user.googleId = googleId;
+        user.googleAuth = true;
+        // Solo actualizar perfil con estos campos y bypass validación de pass si falta
+        await user.save();
+      }
+    }
+
+    res.json({
+      _id: user._id,
+      nombre: user.nombre,
+      apellido: user.apellido,
+      email: user.email,
+      telefono: user.telefono,
+      rol: user.rol,
+      token: generateToken(user._id),
+    });
+
+  } catch (error) {
+    console.error('Error en Google Login:', error);
+    res.status(500).json({ message: 'Error de autenticación con Google' });
   }
 };
 

@@ -1,5 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useGoogleLogin } from '@react-oauth/google';
+import { FcGoogle } from 'react-icons/fc';
 import { AuthContext } from '../../context/AuthContext';
 import '../Login/Login.css'; // Reusing the same auth styles
 
@@ -30,7 +32,19 @@ const Registro = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
   const navigate = useNavigate();
-  const { register, error, setError } = useContext(AuthContext);
+  const { register, googleLogin, error, setError } = useContext(AuthContext);
+
+  const handleGoogleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        await googleLogin({ accessToken: tokenResponse.access_token });
+        navigate('/');
+      } catch (err) {
+        console.error('Google login error:', err);
+      }
+    },
+    onError: (error) => console.log('Google Login Failed', error)
+  });
 
   const handleChange = (e) => {
     setFormData({
@@ -175,8 +189,8 @@ const Registro = () => {
             </div>
             
             <button type="submit" className="auth-btn">Registrarse</button>
-            <button type="button" className="auth-btn btn-google">
-              <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google" className="google-icon" />
+            <button type="button" className="auth-btn btn-google" onClick={() => handleGoogleLogin()}>
+              <FcGoogle className="google-icon" />
               Registrarse con Google
             </button>
           </form>
