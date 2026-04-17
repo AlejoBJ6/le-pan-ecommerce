@@ -37,7 +37,7 @@ const AdminLayout = () => {
             </li>
             <li>
               <Link to="/admin/combo-config" className={location.pathname.includes('/admin/combo-config') ? 'active' : ''}>
-                ⚙️ Config. Combo
+                Config. Combo ⚙️
               </Link>
             </li>
             <li>
