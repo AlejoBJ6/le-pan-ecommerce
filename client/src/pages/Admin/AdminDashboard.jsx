@@ -257,20 +257,7 @@ const AdminDashboard = () => {
   const formatPrice = (val) =>
     new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(val);
 
-  // ── Sparkline data: pedidos por día (últimos 7 días) ──────
-  const last7Days = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() - (6 - i));
-    return d.toDateString();
-  });
-  const pedidosPorDia = last7Days.map(day =>
-    pedidos.filter(p => new Date(p.createdAt).toDateString() === day).length
-  );
-  const gananciasPorDia = last7Days.map(day =>
-    pedidos
-      .filter(p => p.estadoPago === 'Aprobado' && new Date(p.createdAt).toDateString() === day)
-      .reduce((acc, p) => acc + (p.totales?.total || 0), 0)
-  );
+
 
   // ── Stock badge for products card ──────────────────────────
   const productoBadge = agotados.length > 0
@@ -309,8 +296,6 @@ const AdminDashboard = () => {
           iconColor={pedidosPendientes.length > 0 ? 'var(--color-primary)' : '#999'}
           iconBg={pedidosPendientes.length > 0 ? '#fff0eb' : '#f5f5f5'}
           badge={pedidosPendientes.length > 0 ? { text: 'Requiere atención', bg: '#fff0eb', color: 'var(--color-primary)' } : null}
-          sparkData={pedidosPorDia}
-          sparkColor="var(--color-primary)"
           onClick={() => navigate('/admin/pedidos')}
         />
         <StatCard
@@ -380,12 +365,6 @@ const AdminDashboard = () => {
             {formatPrice(gananciasTotal)}
           </p>
           <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.82rem' }}>Ver detalle completo →</span>
-        </div>
-        <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-          <Sparkline data={gananciasPorDia} color="rgba(255,255,255,0.9)" height={60} width={160} dark={true} />
-          <p style={{ margin: 0, color: 'rgba(255,255,255,0.45)', fontSize: '0.72rem', textAlign: 'center' }}>
-            Últimos 7 días
-          </p>
         </div>
       </div>
     </div>
