@@ -150,9 +150,7 @@ body.dark-theme .faq-question {
   transition: transform 0.2s;
 }
 
-.faq-question.open span {
-  transform: rotate(45deg);
-}
+
 
 
 .faq-answer {
