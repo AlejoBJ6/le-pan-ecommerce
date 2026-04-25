@@ -390,7 +390,7 @@ const StepResumen = ({ finalOrderData }) => {
           }}>
             <LuSearch size={22} style={{ flexShrink: 0, color: 'var(--color-primary)' }} />
             <span>
-              <strong>¿Necesitas volver más tarde?</strong> Guardá tu número de pedido. Podés consultar el estado y subir tu comprobante desde la sección <strong>Consultar Pedido</strong> en el pie de página.
+              <strong>¿Necesitas volver más tarde?</strong> Guardá tu número de pedido. Podés consultar el estado y subir tu comprobante desde la sección <strong>Consultar Pedido</strong> en el pie de la página o directamente desde el carrito.
             </span>
           </div>
         )}
@@ -460,8 +460,14 @@ const StepResumen = ({ finalOrderData }) => {
                   <LuBuilding2 size={18} /> Pago por Transferencia
                 </h4>
                 <p style={{ margin: '0 0 12px 0', fontSize: '0.9rem', color: '#555' }}>
-                  Ya completaste tu pedido. Realizá la transferencia y adjuntá acá el comprobante.
+                  Ya completaste tu pedido. Realizá la transferencia a esta cuenta y adjuntá acá el comprobante.
                 </p>
+                <div className="bank-data" style={{ marginBottom: '16px', border: '1px solid #dee2e6', borderRadius: '8px', padding: '12px', backgroundColor: '#fff' }}>
+                  <div className="bank-row" style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px solid #f1f3f5' }}><span style={{color: '#666'}}>Banco</span><strong style={{color: '#333'}}>Banco Galicia</strong></div>
+                  <div className="bank-row" style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px solid #f1f3f5' }}><span style={{color: '#666'}}>Titular</span><strong style={{color: '#333'}}>Le Pan S.R.L.</strong></div>
+                  <div className="bank-row" style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px solid #f1f3f5' }}><span style={{color: '#666'}}>CBU</span><strong style={{color: '#333'}}>0070999830004177123456</strong></div>
+                  <div className="bank-row" style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0' }}><span style={{color: '#666'}}>Alias</span><strong style={{color: '#333'}}>LEPAN.PAGO</strong></div>
+                </div>
                 <div style={{ display: 'flex', gap: '10px' }}>
                   <input
                     type="file"

@@ -426,8 +426,14 @@ const Perfil = () => {
                           /* Selección inicial */
                           <div>
                             <p style={{ margin: '0 0 10px 0', fontSize: '0.85rem', color: '#495057' }}>
-                              <strong>Pago por transferencia:</strong> Adjuntá tu comprobante para que podamos aprobar tu pedido.
+                              <strong>Pago por transferencia:</strong> Adjuntá tu comprobante para que podamos aprobar tu pedido. Podés transferir a:
                             </p>
+                            <div className="bank-data" style={{ marginBottom: '12px', border: '1px solid #dee2e6', borderRadius: '6px', padding: '10px', backgroundColor: '#fff', fontSize: '0.8rem' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0', borderBottom: '1px solid #f1f3f5' }}><span style={{color: '#666'}}>Banco</span><strong style={{color: '#333'}}>Banco Galicia</strong></div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0', borderBottom: '1px solid #f1f3f5' }}><span style={{color: '#666'}}>Titular</span><strong style={{color: '#333'}}>Le Pan S.R.L.</strong></div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0', borderBottom: '1px solid #f1f3f5' }}><span style={{color: '#666'}}>CBU</span><strong style={{color: '#333'}}>0070999830004177123456</strong></div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0' }}><span style={{color: '#666'}}>Alias</span><strong style={{color: '#333'}}>LEPAN.PAGO</strong></div>
+                            </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                               <input 
                                 type="file" 
