@@ -146,3 +146,40 @@ export const getPagoAprobadoEmailHtml = (pedido) => {
 
   return baseHtmlTemplate(`Pago Confirmado #${orderNum} - Lé Pan`, content);
 };
+
+export const getEnCaminoEmailHtml = (pedido) => {
+  const entrega = pedido.datosEntrega || {};
+  const orderNum = pedido._id ? pedido._id.toString().slice(-6).toUpperCase() : '';
+  
+  const content = `
+    <div style="text-align: center; margin-bottom: 30px;">
+      <div style="background-color: ${BRAND_COLOR_PRIMARY}; display: inline-block; padding: 15px; border-radius: 50%; margin-bottom: 20px;">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 18H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3.09a2 2 0 0 1 1.51.69l4.9 5.9A2 2 0 0 0 14 13h5a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-2"></path>
+          <circle cx="8.5" cy="18.5" r="2.5"></circle>
+          <circle cx="18.5" cy="18.5" r="2.5"></circle>
+        </svg>
+      </div>
+      <h2 style="color: ${BRAND_COLOR_PRIMARY}; font-size: 26px; margin: 0;">¡Tu pedido está en camino!</h2>
+    </div>
+
+    <p style="color: #cccccc; font-size: 16px; line-height: 1.6; text-align: center;">
+      ¡Hola ${entrega.nombre}! Te avisamos que tu pedido #${orderNum} ya salió de nuestro local y está en viaje hacia tu dirección.
+    </p>
+    
+    <div style="background-color: ${BRAND_COLOR_CARD}; border-radius: 8px; padding: 25px; margin: 30px 0; text-align: center; border: 1px dashed ${BRAND_COLOR_PRIMARY};">
+      <p style="color: ${BRAND_TEXT}; font-size: 16px; margin: 0;">
+        📍 <strong>Dirección de entrega:</strong><br>
+        <span style="color: #aaa; margin-top: 8px; display: inline-block;">
+          ${entrega.direccion}${entrega.piso ? `, ${entrega.piso}` : ''}, ${entrega.ciudad}
+        </span>
+      </p>
+    </div>
+
+    <p style="color: #cccccc; font-size: 15px; line-height: 1.6; text-align: center; margin-top: 30px;">
+      Si tienes alguna duda o necesitas contactarnos, puedes responder a este correo o escribirnos por WhatsApp. ¡Esperamos que lo disfrutes!
+    </p>
+  `;
+
+  return baseHtmlTemplate(`Tu pedido #${orderNum} está en camino - Lé Pan`, content);
+};

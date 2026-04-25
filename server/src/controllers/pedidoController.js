@@ -3,7 +3,7 @@ import Producto from '../models/Producto.js';
 import Combo from '../models/Combo.js';
 import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
 import sendEmail from '../utils/sendEmail.js';
-import { getTransferenciaEmailHtml, getPagoAprobadoEmailHtml } from '../utils/emailTemplates.js';
+import { getTransferenciaEmailHtml, getPagoAprobadoEmailHtml, getEnCaminoEmailHtml } from '../utils/emailTemplates.js';
 
 /**
  * Helper para descontar stock de forma atómica y segura.
@@ -384,7 +384,14 @@ export const updateEstadoPedido = async (req, res) => {
     const pedido = await Pedido.findById(req.params.id);
 
     if (pedido) {
-      if (estadoEntrega) pedido.estadoEntrega = estadoEntrega;
+      let sendEnviadoEmail = false;
+      if (estadoEntrega) {
+        if (estadoEntrega === 'Enviado' && !pedido.correoEnvioNotificado) {
+          sendEnviadoEmail = true;
+          pedido.correoEnvioNotificado = true;
+        }
+        pedido.estadoEntrega = estadoEntrega;
+      }
       
       let sendApprovalEmail = false;
       if (estadoPago) {
@@ -411,6 +418,16 @@ export const updateEstadoPedido = async (req, res) => {
           message: 'Tu pago ha sido aprobado.',
           htmlMessage: getPagoAprobadoEmailHtml(updatedPedido.toObject())
         }).catch(err => console.error('Error al enviar correo de pago aprobado (admin):', err));
+      }
+
+      // Enviar correo si el pedido está en camino
+      if (sendEnviadoEmail && updatedPedido.datosEntrega?.email) {
+        sendEmail({
+          email: updatedPedido.datosEntrega.email,
+          subject: `Tu pedido #${updatedPedido._id.toString().slice(-6).toUpperCase()} está en camino - Lé Pan`,
+          message: 'Tu pedido ya salió de nuestro local y está en viaje.',
+          htmlMessage: getEnCaminoEmailHtml(updatedPedido.toObject())
+        }).catch(err => console.error('Error al enviar correo de pedido en camino:', err));
       }
 
       res.json(updatedPedido);

@@ -67,6 +67,10 @@ const pedidoSchema = new mongoose.Schema({
   comprobanteTransferencia: {
     type: String,
     default: null
+  },
+  correoEnvioNotificado: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true
