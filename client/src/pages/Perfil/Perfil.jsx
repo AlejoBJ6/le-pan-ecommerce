@@ -42,6 +42,8 @@ const Perfil = () => {
   const [loading, setLoading] = useState(false);
   const [pedidos, setPedidos] = useState([]);
   const [loadingPedidos, setLoadingPedidos] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [uploadingOrder, setUploadingOrder] = useState(null);
 
   // States for pending upload with preview
@@ -57,22 +59,33 @@ const Perfil = () => {
         setApellido(data.apellido || '');
         setTelefono(data.telefono || '');
         setEmail(data.email);
-        
-        try {
-          const pedData = await pedidoService.getMisPedidos();
-          setPedidos(pedData);
-        } catch (pedidoErr) {
-          console.error("Error al cargar pedidos", pedidoErr);
-        } finally {
-          setLoadingPedidos(false);
-        }
       } catch (err) {
         setError('Error al cargar datos del perfil');
-        setLoadingPedidos(false);
       }
     };
     fetchProfile();
   }, []);
+
+  useEffect(() => {
+    const fetchPedidos = async () => {
+      setLoadingPedidos(true);
+      try {
+        const pedData = await pedidoService.getMisPedidos(currentPage, 5);
+        if (pedData.pedidos) {
+          setPedidos(pedData.pedidos);
+          setTotalPages(pedData.pages);
+        } else {
+          // Fallback por si el backend no ha reiniciado y devuelve el formato viejo
+          setPedidos(pedData); 
+        }
+      } catch (pedidoErr) {
+        console.error("Error al cargar pedidos", pedidoErr);
+      } finally {
+        setLoadingPedidos(false);
+      }
+    };
+    fetchPedidos();
+  }, [currentPage]);
 
   const submitHandler = async (e) => {
     e.preventDefault();
@@ -157,6 +170,16 @@ const Perfil = () => {
       setError('Hubo un error al subir el comprobante. Intenta nuevamente.');
     } finally {
       setUploadingOrder(null);
+    }
+  };
+
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+    const ordersSection = document.querySelector('.orders-section');
+    if (ordersSection) {
+      // Ajuste para que el scroll no quede pegado al borde superior exacto
+      const y = ordersSection.getBoundingClientRect().top + window.scrollY - 80;
+      window.scrollTo({ top: y, behavior: 'smooth' });
     }
   };
 
@@ -278,7 +301,7 @@ const Perfil = () => {
         <div className="orders-section">
            <h3 className="orders-title">Mis Órdenes</h3>
            
-           {loadingPedidos ? (
+           {loadingPedidos && pedidos.length === 0 ? (
              <p className="loading-text">Cargando tus órdenes...</p>
            ) : pedidos.length === 0 ? (
              <div className="empty-orders">
@@ -293,7 +316,7 @@ const Perfil = () => {
                </button>
              </div>
            ) : (
-             <div className="orders-list">
+             <div className="orders-list" style={{ opacity: loadingPedidos ? 0.5 : 1, transition: 'opacity 0.2s ease-in-out' }}>
                {pedidos.map(pedido => {
                  const fMin = pedido.datosEntrega.fechaEstimadaMin ? new Date(pedido.datosEntrega.fechaEstimadaMin).toLocaleDateString() : '';
                  const fMax = pedido.datosEntrega.fechaEstimadaMax ? new Date(pedido.datosEntrega.fechaEstimadaMax).toLocaleDateString() : '';
@@ -431,6 +454,28 @@ const Perfil = () => {
                   </div>
                  );
                })}
+              </div>
+           )}
+
+           {!loadingPedidos && totalPages > 1 && (
+             <div className="pagination-controls" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '15px', marginTop: '20px', paddingBottom: '20px' }}>
+               <button 
+                 onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
+                 disabled={currentPage === 1}
+                 style={{ padding: '8px 16px', borderRadius: '6px', border: '1px solid #dee2e6', backgroundColor: currentPage === 1 ? '#f8f9fa' : '#fff', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', color: currentPage === 1 ? '#aaa' : 'var(--color-primary)', fontWeight: '500', transition: 'all 0.2s' }}
+               >
+                 Anterior
+               </button>
+               <span style={{ fontSize: '0.9rem', color: '#666', fontWeight: '500' }}>
+                 Página {currentPage} de {totalPages}
+               </span>
+               <button 
+                 onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
+                 disabled={currentPage === totalPages}
+                 style={{ padding: '8px 16px', borderRadius: '6px', border: '1px solid #dee2e6', backgroundColor: currentPage === totalPages ? '#f8f9fa' : '#fff', cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', color: currentPage === totalPages ? '#aaa' : 'var(--color-primary)', fontWeight: '500', transition: 'all 0.2s' }}
+               >
+                 Siguiente
+               </button>
              </div>
            )}
         </div>

@@ -326,8 +326,24 @@ export const crearPedido = async (req, res) => {
 // @access  Privado (Cliente)
 export const getMisPedidos = async (req, res) => {
   try {
-    const pedidos = await Pedido.find({ user: req.user._id }).sort({ createdAt: -1 });
-    res.json(pedidos);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5;
+    const skip = (page - 1) * limit;
+
+    const total = await Pedido.countDocuments({ user: req.user._id });
+    const pages = Math.ceil(total / limit);
+
+    const pedidos = await Pedido.find({ user: req.user._id })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    res.json({
+      pedidos,
+      page,
+      pages,
+      total
+    });
   } catch (error) {
     console.error('Error fetching mis pedidos:', error);
     res.status(500).json({ message: 'Error obteniendo tus pedidos' });
