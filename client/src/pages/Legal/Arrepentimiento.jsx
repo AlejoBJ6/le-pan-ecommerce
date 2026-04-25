@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FaShieldAlt, FaSpinner } from 'react-icons/fa';
+import { FaShieldAlt, FaSpinner, FaExclamationCircle } from 'react-icons/fa';
+import axios from 'axios';
 import './LegalPage.css';
 
 const Arrepentimiento = () => {
@@ -10,23 +11,41 @@ const Arrepentimiento = () => {
   const [motivo, setMotivo] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setErrorMsg('');
 
-    // Arma el link con los datos y abre WhatsApp como canal de contacto
-    const msg = encodeURIComponent(
-      `*Solicitud de Arrepentimiento — Lé Pan*\n\nNombre: ${nombre}\nEmail: ${email}\nNúmero de pedido: ${pedido}\nMotivo: ${motivo}`
-    );
-    const whatsapp = `https://wa.me/5491100000000?text=${msg}`;
-    
-    // Simulamos un breve retraso para mejorar el feedback visual de UX
-    setTimeout(() => {
-      window.open(whatsapp, '_blank');
-      setSubmitted(true);
+    try {
+      // 1. Validar el pedido en el backend
+      await axios.post('/api/pedidos/validar-arrepentimiento', {
+        orderIdShort: pedido,
+        email: email
+      });
+
+      // 2. Si es válido, Arma el link con los datos y abre WhatsApp
+      const msg = encodeURIComponent(
+        `*Solicitud de Arrepentimiento — Lé Pan*\n\nNombre: ${nombre}\nEmail: ${email}\nNúmero de pedido: ${pedido}\nMotivo: ${motivo}`
+      );
+      const whatsapp = `https://wa.me/5491100000000?text=${msg}`;
+      
+      // Simulamos un breve retraso para mejorar el feedback visual de UX
+      setTimeout(() => {
+        window.open(whatsapp, '_blank');
+        setSubmitted(true);
+        setLoading(false);
+      }, 500);
+
+    } catch (error) {
       setLoading(false);
-    }, 800);
+      if (error.response && error.response.data && error.response.data.message) {
+        setErrorMsg(error.response.data.message);
+      } else {
+        setErrorMsg('Ocurrió un error al validar el pedido. Por favor, intenta más tarde.');
+      }
+    }
   };
 
   return (
@@ -82,6 +101,24 @@ const Arrepentimiento = () => {
           </div>
         ) : (
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            
+            {errorMsg && (
+              <div style={{
+                padding: '12px 16px',
+                background: '#ffebee',
+                border: '1px solid #ffcdd2',
+                borderRadius: '8px',
+                color: '#c62828',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                fontSize: '0.95rem'
+              }}>
+                <FaExclamationCircle size={18} />
+                <span>{errorMsg}</span>
+              </div>
+            )}
+
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <label style={{ fontWeight: 600, color: 'var(--color-dark)' }}>Nombre completo *</label>
               <input

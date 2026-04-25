@@ -6,7 +6,8 @@ import {
   updateEstadoPedido,
   webhookMercadoPago,
   subirComprobante,
-  trackPedido
+  trackPedido,
+  validarArrepentimiento
 } from '../controllers/pedidoController.js';
 import { protect, admin, optionalProtect } from '../middleware/authMiddleware.js';
 
@@ -28,6 +29,9 @@ router.get('/redirect/success', successRedirect);
 
 // Ruta para consulta de pedido (Track) - Público
 router.post('/track', trackPedido);
+
+// Ruta para validación de arrepentimiento (Público)
+router.post('/validar-arrepentimiento', validarArrepentimiento);
 
 router.route('/mis-pedidos').get(protect, getMisPedidos);
 
