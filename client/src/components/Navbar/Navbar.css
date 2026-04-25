@@ -523,7 +523,7 @@ body:not(.dark-theme) .navbar-wrapper {
   .navbar-top-container.mobile-search-active .navbar-search input {
     display: block;
     width: 100%;
-    color: var(--color-dark);
+    color: #1a1a1a;
     padding: 0 8px;
   }
 
@@ -531,7 +531,7 @@ body:not(.dark-theme) .navbar-wrapper {
   .search-close-btn {
     background: transparent;
     border: none;
-    color: var(--color-dark);
+    color: #1a1a1a;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -548,12 +548,12 @@ body:not(.dark-theme) .navbar-wrapper {
     position: static;
     width: 32px;
     height: 32px;
-    color: var(--color-white);
+    color: #ffffff;
     /* White when on dark nav background */
   }
 
   .navbar-top-container.mobile-search-active .navbar-search .search-btn {
-    color: var(--color-dark);
+    color: #1a1a1a;
     /* Dark when inside the expanded white search bar */
   }
 }

@@ -41,9 +41,7 @@
   border-left: 4px solid var(--color-primary, #E8820C);
 }
 
-body.dark-theme .legal-section h2 {
-  color: var(--color-white, #fff);
-}
+
 
 .legal-section p,
 .legal-section li {
@@ -54,7 +52,7 @@ body.dark-theme .legal-section h2 {
 
 body.dark-theme .legal-section p,
 body.dark-theme .legal-section li {
-  color: var(--color-gray-light, #ccc);
+  color: var(--color-gray, #ccc);
 }
 
 .legal-section ul {
@@ -106,7 +104,7 @@ body.dark-theme .legal-contact-box {
 }
 
 body.dark-theme .legal-contact-box p {
-  color: var(--color-gray-light, #ccc);
+  color: var(--color-gray, #ccc);
 }
 
 .legal-contact-box a {
@@ -138,7 +136,6 @@ body.dark-theme .legal-contact-box p {
 }
 
 body.dark-theme .faq-question {
-  color: var(--color-white, #fff);
   background: rgba(255,255,255,0.02);
 }
 
@@ -166,7 +163,7 @@ body.dark-theme .faq-question {
 }
 
 body.dark-theme .faq-answer {
-  color: var(--color-gray-light, #bbb);
+  color: var(--color-gray, #bbb);
 }
 
 /* Spinner Animation */

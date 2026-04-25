@@ -87,12 +87,12 @@ const Arrepentimiento = () => {
           }}>
             <div style={{ fontSize: '3rem', marginBottom: '16px' }}>✅</div>
             <h2 style={{ color: '#2e7d32', marginBottom: '12px' }}>¡Solicitud enviada!</h2>
-            <p style={{ color: '#444', lineHeight: '1.7' }}>
+            <p style={{ color: 'var(--color-dark-2, #444)', lineHeight: '1.7' }}>
               Tu solicitud de arrepentimiento fue registrada. Procesaremos tu pedido en un plazo máximo de{' '}
               <strong>10 días hábiles</strong>. Recibirás el reembolso en el mismo medio de pago que
               utilizaste para tu compra.
             </p>
-            <p style={{ marginTop: '16px', color: '#555', fontSize: '0.9rem' }}>
+            <p style={{ marginTop: '16px', color: 'var(--color-gray, #555)', fontSize: '0.9rem' }}>
               ¿Preguntas? Escribinos a{' '}
               <a href="mailto:contacto@le-pan.com.ar" style={{ color: 'var(--color-primary)' }}>
                 contacto@le-pan.com.ar
@@ -154,7 +154,7 @@ const Arrepentimiento = () => {
                 style={inputStyle}
                 disabled={loading}
               />
-              <small style={{ color: '#888' }}>
+              <small style={{ color: 'var(--color-gray, #888)' }}>
                 Lo encontrás en el correo de confirmación o en{' '}
                 <Link to="/consultar-pedido" style={{ color: 'var(--color-primary)' }}>Consultar Pedido</Link>.
               </small>
@@ -202,7 +202,7 @@ const Arrepentimiento = () => {
               )}
             </button>
 
-            <p style={{ fontSize: '0.82rem', color: '#888', textAlign: 'center', lineHeight: '1.6' }}>
+            <p style={{ fontSize: '0.82rem', color: 'var(--color-gray, #888)', textAlign: 'center', lineHeight: '1.6' }}>
               Al enviar, serás redirigido a WhatsApp para confirmar tu solicitud con nuestro equipo.
               También podés escribirnos directamente a{' '}
               <a href="mailto:contacto@le-pan.com.ar" style={{ color: 'var(--color-primary)' }}>
