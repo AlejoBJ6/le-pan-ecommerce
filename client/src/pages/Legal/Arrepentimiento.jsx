@@ -1,32 +1,52 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { FaShieldAlt, FaSpinner } from 'react-icons/fa';
+import { Link, useSearchParams } from 'react-router-dom';
+import { FaShieldAlt, FaSpinner, FaExclamationCircle } from 'react-icons/fa';
+import axios from 'axios';
 import './LegalPage.css';
 
 const Arrepentimiento = () => {
+  const [searchParams] = useSearchParams();
   const [nombre, setNombre] = useState('');
   const [email, setEmail] = useState('');
-  const [pedido, setPedido] = useState('');
+  const [pedido, setPedido] = useState(searchParams.get('pedido') || '');
   const [motivo, setMotivo] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setErrorMsg('');
 
-    // Arma el link con los datos y abre WhatsApp como canal de contacto
-    const msg = encodeURIComponent(
-      `*Solicitud de Arrepentimiento — Lé Pan*\n\nNombre: ${nombre}\nEmail: ${email}\nNúmero de pedido: ${pedido}\nMotivo: ${motivo}`
-    );
-    const whatsapp = `https://wa.me/5491100000000?text=${msg}`;
-    
-    // Simulamos un breve retraso para mejorar el feedback visual de UX
-    setTimeout(() => {
-      window.open(whatsapp, '_blank');
-      setSubmitted(true);
+    try {
+      // 1. Validar el pedido en el backend
+      await axios.post('/api/pedidos/validar-arrepentimiento', {
+        orderIdShort: pedido,
+        email: email
+      });
+
+      // 2. Si es válido, Arma el link con los datos y abre WhatsApp
+      const msg = encodeURIComponent(
+        `*Solicitud de Arrepentimiento — Lé Pan*\n\nNombre: ${nombre}\nEmail: ${email}\nNúmero de pedido: ${pedido}\nMotivo: ${motivo}`
+      );
+      const whatsapp = `https://wa.me/5491100000000?text=${msg}`;
+      
+      // Simulamos un breve retraso para mejorar el feedback visual de UX
+      setTimeout(() => {
+        window.open(whatsapp, '_blank');
+        setSubmitted(true);
+        setLoading(false);
+      }, 500);
+
+    } catch (error) {
       setLoading(false);
-    }, 800);
+      if (error.response && error.response.data && error.response.data.message) {
+        setErrorMsg(error.response.data.message);
+      } else {
+        setErrorMsg('Ocurrió un error al validar el pedido. Por favor, intenta más tarde.');
+      }
+    }
   };
 
   return (
@@ -68,12 +88,12 @@ const Arrepentimiento = () => {
           }}>
             <div style={{ fontSize: '3rem', marginBottom: '16px' }}>✅</div>
             <h2 style={{ color: '#2e7d32', marginBottom: '12px' }}>¡Solicitud enviada!</h2>
-            <p style={{ color: '#444', lineHeight: '1.7' }}>
+            <p style={{ color: 'var(--color-dark-2, #444)', lineHeight: '1.7' }}>
               Tu solicitud de arrepentimiento fue registrada. Procesaremos tu pedido en un plazo máximo de{' '}
               <strong>10 días hábiles</strong>. Recibirás el reembolso en el mismo medio de pago que
               utilizaste para tu compra.
             </p>
-            <p style={{ marginTop: '16px', color: '#555', fontSize: '0.9rem' }}>
+            <p style={{ marginTop: '16px', color: 'var(--color-gray, #555)', fontSize: '0.9rem' }}>
               ¿Preguntas? Escribinos a{' '}
               <a href="mailto:contacto@le-pan.com.ar" style={{ color: 'var(--color-primary)' }}>
                 contacto@le-pan.com.ar
@@ -82,6 +102,24 @@ const Arrepentimiento = () => {
           </div>
         ) : (
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            
+            {errorMsg && (
+              <div style={{
+                padding: '12px 16px',
+                background: '#ffebee',
+                border: '1px solid #ffcdd2',
+                borderRadius: '8px',
+                color: '#c62828',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                fontSize: '0.95rem'
+              }}>
+                <FaExclamationCircle size={18} />
+                <span>{errorMsg}</span>
+              </div>
+            )}
+
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <label style={{ fontWeight: 600, color: 'var(--color-dark)' }}>Nombre completo *</label>
               <input
@@ -117,7 +155,7 @@ const Arrepentimiento = () => {
                 style={inputStyle}
                 disabled={loading}
               />
-              <small style={{ color: '#888' }}>
+              <small style={{ color: 'var(--color-gray, #888)' }}>
                 Lo encontrás en el correo de confirmación o en{' '}
                 <Link to="/consultar-pedido" style={{ color: 'var(--color-primary)' }}>Consultar Pedido</Link>.
               </small>
@@ -165,7 +203,7 @@ const Arrepentimiento = () => {
               )}
             </button>
 
-            <p style={{ fontSize: '0.82rem', color: '#888', textAlign: 'center', lineHeight: '1.6' }}>
+            <p style={{ fontSize: '0.82rem', color: 'var(--color-gray, #888)', textAlign: 'center', lineHeight: '1.6' }}>
               Al enviar, serás redirigido a WhatsApp para confirmar tu solicitud con nuestro equipo.
               También podés escribirnos directamente a{' '}
               <a href="mailto:contacto@le-pan.com.ar" style={{ color: 'var(--color-primary)' }}>

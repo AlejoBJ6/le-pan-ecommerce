@@ -484,3 +484,46 @@ export const trackPedido = async (req, res) => {
     res.status(500).json({ message: 'Error del servidor al consultar el pedido' });
   }
 };
+
+// @desc    Validar si un pedido cumple con el plazo de 10 días para arrepentimiento
+// @route   POST /api/pedidos/validar-arrepentimiento
+// @access  Público
+export const validarArrepentimiento = async (req, res) => {
+  try {
+    const { orderIdShort, email } = req.body;
+
+    if (!orderIdShort || !email) {
+      return res.status(400).json({ message: 'Se requiere el número de pedido y el email' });
+    }
+
+    // Buscar pedidos por email y filtrar por ID corto
+    const pedidos = await Pedido.find({ 'datosEntrega.email': email.toLowerCase() }).sort({ createdAt: -1 });
+    const pedido = pedidos.find(p => p._id.toString().slice(-6).toUpperCase() === orderIdShort.toUpperCase());
+
+    if (!pedido) {
+      return res.status(404).json({ message: 'Pedido no encontrado. Verifica los datos ingresados.' });
+    }
+
+    // Calcular la fecha límite de arrepentimiento
+    // Usamos fechaEstimadaMax + 10 días corridos
+    let fechaReferencia = pedido.datosEntrega?.fechaEstimadaMax || pedido.createdAt;
+    
+    const fechaLimite = new Date(fechaReferencia);
+    fechaLimite.setDate(fechaLimite.getDate() + 10);
+    
+    const ahora = new Date();
+
+    if (ahora > fechaLimite) {
+      return res.status(400).json({ 
+        message: 'El plazo legal de 10 días corridos para devoluciones ha vencido para este pedido.',
+        fechaLimite: fechaLimite
+      });
+    }
+
+    res.status(200).json({ message: 'Validación exitosa, pedido dentro del plazo legal.' });
+  } catch (error) {
+    console.error('Error validando arrepentimiento:', error);
+    res.status(500).json({ message: 'Error del servidor al validar el pedido' });
+  }
+};
+

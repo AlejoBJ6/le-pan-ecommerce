@@ -334,6 +334,16 @@ const Perfil = () => {
                       </div>
                     )}
                     
+                    <div style={{ marginTop: '12px', borderTop: '1px solid var(--color-gray-light)', paddingTop: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Link to={`/arrepentimiento?pedido=${pedido._id.slice(-6).toUpperCase()}`} style={{ fontSize: '0.85rem', color: 'var(--color-primary)', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{width: '16px', height: '16px'}}>
+                          <polyline points="9 14 4 9 9 4"></polyline>
+                          <path d="M20 20v-7a4 4 0 0 0-4-4H4"></path>
+                        </svg>
+                        ¿Tuviste un problema? Solicitar Devolución
+                      </Link>
+                    </div>
+                    
                     {pedido.metodoPago === 'transferencia' && (
                       <div className="order-receipt-section" style={{ marginTop: '16px', padding: '12px', backgroundColor: '#f8f9fa', borderRadius: '8px', border: '1px solid #e9ecef' }}>
                         {pedido.comprobanteTransferencia ? (
