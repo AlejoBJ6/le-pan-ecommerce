@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import contactoService from '../../services/contactoService';
+import { AuthContext } from '../../context/AuthContext.jsx';
 import './Contacto.css';
 
 const Contacto = () => {
+  const { user } = useContext(AuthContext);
   const [formData, setFormData] = useState({
     nombre: '',
     email: '',
@@ -10,6 +12,19 @@ const Contacto = () => {
     asunto: '',
     mensaje: ''
   });
+
+  // Autocompletar datos si el usuario está logueado
+  useEffect(() => {
+    if (user) {
+      setFormData(prev => ({
+        ...prev,
+        nombre: `${user.nombre || ''} ${user.apellido || ''}`.trim(),
+        email: user.email || '',
+        telefono: user.telefono || ''
+      }));
+    }
+  }, [user]);
+
   const [estado, setEstado] = useState({ loading: false, success: false, error: null });
 
   const handleChange = (e) => {
@@ -27,7 +42,13 @@ const Contacto = () => {
     try {
       await contactoService.enviarMensaje(formData);
       setEstado({ loading: false, success: true, error: null });
-      setFormData({ nombre: '', email: '', telefono: '', asunto: '', mensaje: '' });
+      setFormData({
+        nombre: `${user?.nombre || ''} ${user?.apellido || ''}`.trim(),
+        email: user?.email || '',
+        telefono: user?.telefono || '',
+        asunto: '',
+        mensaje: ''
+      });
 
       // Ocultar el mensaje de éxito después de unos segundos
       setTimeout(() => {
