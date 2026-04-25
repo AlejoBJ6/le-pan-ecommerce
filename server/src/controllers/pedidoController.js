@@ -2,6 +2,8 @@ import Pedido from '../models/Pedido.js';
 import Producto from '../models/Producto.js';
 import Combo from '../models/Combo.js';
 import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
+import sendEmail from '../utils/sendEmail.js';
+import { getTransferenciaEmailHtml, getPagoAprobadoEmailHtml } from '../utils/emailTemplates.js';
 
 /**
  * Helper para descontar stock de forma atómica y segura.
@@ -314,6 +316,16 @@ export const crearPedido = async (req, res) => {
       pedidoResponse.init_point = initPoint;
     }
 
+    // --- ENVÍO DE CORREO (Transferencia) ---
+    if (metodoPago === 'transferencia' && datosEntrega.email) {
+      sendEmail({
+        email: datosEntrega.email,
+        subject: `Confirmación de Pedido #${createdPedido._id.toString().slice(-6).toUpperCase()} - Lé Pan`,
+        message: 'Hemos recibido tu pedido. Por favor realiza la transferencia.',
+        htmlMessage: getTransferenciaEmailHtml(pedidoResponse)
+      }).catch(err => console.error('Error al enviar correo de transferencia:', err));
+    }
+
     res.status(201).json(pedidoResponse);
   } catch (error) {
     console.error('Error al crear el pedido:', error);
@@ -374,10 +386,12 @@ export const updateEstadoPedido = async (req, res) => {
     if (pedido) {
       if (estadoEntrega) pedido.estadoEntrega = estadoEntrega;
       
+      let sendApprovalEmail = false;
       if (estadoPago) {
         // Si cambia a Aprobado y antes no lo estaba, descontamos stock
         if (estadoPago === 'Aprobado' && pedido.estadoPago !== 'Aprobado') {
           await descontarStockPedido(pedido);
+          sendApprovalEmail = true;
         } 
         // Si estaba Aprobado y cambia a otro estado, reponemos stock
         else if (pedido.estadoPago === 'Aprobado' && estadoPago !== 'Aprobado') {
@@ -388,6 +402,17 @@ export const updateEstadoPedido = async (req, res) => {
       }
 
       const updatedPedido = await pedido.save();
+
+      // Enviar correo si se aprobó manualmente
+      if (sendApprovalEmail && updatedPedido.datosEntrega?.email) {
+        sendEmail({
+          email: updatedPedido.datosEntrega.email,
+          subject: `Pago Confirmado #${updatedPedido._id.toString().slice(-6).toUpperCase()} - Lé Pan`,
+          message: 'Tu pago ha sido aprobado.',
+          htmlMessage: getPagoAprobadoEmailHtml(updatedPedido.toObject())
+        }).catch(err => console.error('Error al enviar correo de pago aprobado (admin):', err));
+      }
+
       res.json(updatedPedido);
     } else {
       res.status(404).json({ message: 'Pedido no encontrado' });
@@ -450,8 +475,10 @@ export const webhookMercadoPago = async (req, res) => {
         
         if (pedido) {
           // 5. Actualizar el estado de pago del Pedido
+          let sendApprovalEmail = false;
           if (paymentInfo.status === 'approved') {
             const eraAprobado = pedido.estadoPago === 'Aprobado';
+            if (!eraAprobado) sendApprovalEmail = true;
             pedido.estadoPago = 'Aprobado';
             
             // 6. Descontar stock usando el helper (maneja duplicados con stockDescontado)
@@ -464,6 +491,16 @@ export const webhookMercadoPago = async (req, res) => {
             pedido.estadoPago = 'Pendiente';
           }
           await pedido.save();
+          
+          if (sendApprovalEmail && pedido.datosEntrega?.email) {
+            sendEmail({
+              email: pedido.datosEntrega.email,
+              subject: `Pago Confirmado #${pedido._id.toString().slice(-6).toUpperCase()} - Lé Pan`,
+              message: 'Tu pago por Mercado Pago ha sido aprobado.',
+              htmlMessage: getPagoAprobadoEmailHtml(pedido.toObject())
+            }).catch(err => console.error('Error al enviar correo de pago aprobado (webhook):', err));
+          }
+
           console.log(`[MP] Pedido ${pedido._id} actualizado automáticamente a estado: ${pedido.estadoPago}`);
         }
       }
