@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { FaShieldAlt, FaSpinner, FaExclamationCircle } from 'react-icons/fa';
 import axios from 'axios';
 import './LegalPage.css';
 
 const Arrepentimiento = () => {
+  const [searchParams] = useSearchParams();
   const [nombre, setNombre] = useState('');
   const [email, setEmail] = useState('');
-  const [pedido, setPedido] = useState('');
+  const [pedido, setPedido] = useState(searchParams.get('pedido') || '');
   const [motivo, setMotivo] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);

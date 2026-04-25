@@ -306,6 +306,15 @@ const Navbar = () => {
             <li><Link to="/combos" onClick={() => setIsMenuOpen(false)}>Combos armados</Link></li>
             <li><Link to="/arma-combo" onClick={() => setIsMenuOpen(false)}>Armá tu combo</Link></li>
             <li><Link to="/contacto" onClick={() => setIsMenuOpen(false)}>Contacto</Link></li>
+            <li>
+              <Link to="/arrepentimiento" onClick={() => setIsMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-primary)' }}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{width: '18px', height: '18px'}}>
+                  <polyline points="9 14 4 9 9 4"></polyline>
+                  <path d="M20 20v-7a4 4 0 0 0-4-4H4"></path>
+                </svg>
+                Botón de Arrepentimiento
+              </Link>
+            </li>
             <li className="mobile-only-theme">
               <button
                 onClick={toggleTheme}
