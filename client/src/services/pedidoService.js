@@ -19,8 +19,8 @@ const crearPedido = async (pedidoData) => {
 };
 
 // Obtener mis pedidos (Cliente)
-const getMisPedidos = async () => {
-    const response = await axios.get(`${API_URL}/mis-pedidos`, {
+const getMisPedidos = async (page = 1, limit = 5) => {
+    const response = await axios.get(`${API_URL}/mis-pedidos?page=${page}&limit=${limit}`, {
         headers: getAuthHeaders()
     });
     return response.data;

@@ -2,6 +2,8 @@ import Pedido from '../models/Pedido.js';
 import Producto from '../models/Producto.js';
 import Combo from '../models/Combo.js';
 import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
+import sendEmail from '../utils/sendEmail.js';
+import { getTransferenciaEmailHtml, getPagoAprobadoEmailHtml, getEnCaminoEmailHtml } from '../utils/emailTemplates.js';
 
 /**
  * Helper para descontar stock de forma atómica y segura.
@@ -314,6 +316,16 @@ export const crearPedido = async (req, res) => {
       pedidoResponse.init_point = initPoint;
     }
 
+    // --- ENVÍO DE CORREO (Transferencia) ---
+    if (metodoPago === 'transferencia' && datosEntrega.email) {
+      sendEmail({
+        email: datosEntrega.email,
+        subject: `Confirmación de Pedido #${createdPedido._id.toString().slice(-6).toUpperCase()} - Lé Pan`,
+        message: 'Hemos recibido tu pedido. Por favor realiza la transferencia.',
+        htmlMessage: getTransferenciaEmailHtml(pedidoResponse)
+      }).catch(err => console.error('Error al enviar correo de transferencia:', err));
+    }
+
     res.status(201).json(pedidoResponse);
   } catch (error) {
     console.error('Error al crear el pedido:', error);
@@ -326,8 +338,24 @@ export const crearPedido = async (req, res) => {
 // @access  Privado (Cliente)
 export const getMisPedidos = async (req, res) => {
   try {
-    const pedidos = await Pedido.find({ user: req.user._id }).sort({ createdAt: -1 });
-    res.json(pedidos);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5;
+    const skip = (page - 1) * limit;
+
+    const total = await Pedido.countDocuments({ user: req.user._id });
+    const pages = Math.ceil(total / limit);
+
+    const pedidos = await Pedido.find({ user: req.user._id })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    res.json({
+      pedidos,
+      page,
+      pages,
+      total
+    });
   } catch (error) {
     console.error('Error fetching mis pedidos:', error);
     res.status(500).json({ message: 'Error obteniendo tus pedidos' });
@@ -356,12 +384,21 @@ export const updateEstadoPedido = async (req, res) => {
     const pedido = await Pedido.findById(req.params.id);
 
     if (pedido) {
-      if (estadoEntrega) pedido.estadoEntrega = estadoEntrega;
+      let sendEnviadoEmail = false;
+      if (estadoEntrega) {
+        if (estadoEntrega === 'Enviado' && !pedido.correoEnvioNotificado) {
+          sendEnviadoEmail = true;
+          pedido.correoEnvioNotificado = true;
+        }
+        pedido.estadoEntrega = estadoEntrega;
+      }
       
+      let sendApprovalEmail = false;
       if (estadoPago) {
         // Si cambia a Aprobado y antes no lo estaba, descontamos stock
         if (estadoPago === 'Aprobado' && pedido.estadoPago !== 'Aprobado') {
           await descontarStockPedido(pedido);
+          sendApprovalEmail = true;
         } 
         // Si estaba Aprobado y cambia a otro estado, reponemos stock
         else if (pedido.estadoPago === 'Aprobado' && estadoPago !== 'Aprobado') {
@@ -372,6 +409,27 @@ export const updateEstadoPedido = async (req, res) => {
       }
 
       const updatedPedido = await pedido.save();
+
+      // Enviar correo si se aprobó manualmente
+      if (sendApprovalEmail && updatedPedido.datosEntrega?.email) {
+        sendEmail({
+          email: updatedPedido.datosEntrega.email,
+          subject: `Pago Confirmado #${updatedPedido._id.toString().slice(-6).toUpperCase()} - Lé Pan`,
+          message: 'Tu pago ha sido aprobado.',
+          htmlMessage: getPagoAprobadoEmailHtml(updatedPedido.toObject())
+        }).catch(err => console.error('Error al enviar correo de pago aprobado (admin):', err));
+      }
+
+      // Enviar correo si el pedido está en camino
+      if (sendEnviadoEmail && updatedPedido.datosEntrega?.email) {
+        sendEmail({
+          email: updatedPedido.datosEntrega.email,
+          subject: `Tu pedido #${updatedPedido._id.toString().slice(-6).toUpperCase()} está en camino - Lé Pan`,
+          message: 'Tu pedido ya salió de nuestro local y está en viaje.',
+          htmlMessage: getEnCaminoEmailHtml(updatedPedido.toObject())
+        }).catch(err => console.error('Error al enviar correo de pedido en camino:', err));
+      }
+
       res.json(updatedPedido);
     } else {
       res.status(404).json({ message: 'Pedido no encontrado' });
@@ -434,8 +492,10 @@ export const webhookMercadoPago = async (req, res) => {
         
         if (pedido) {
           // 5. Actualizar el estado de pago del Pedido
+          let sendApprovalEmail = false;
           if (paymentInfo.status === 'approved') {
             const eraAprobado = pedido.estadoPago === 'Aprobado';
+            if (!eraAprobado) sendApprovalEmail = true;
             pedido.estadoPago = 'Aprobado';
             
             // 6. Descontar stock usando el helper (maneja duplicados con stockDescontado)
@@ -448,6 +508,16 @@ export const webhookMercadoPago = async (req, res) => {
             pedido.estadoPago = 'Pendiente';
           }
           await pedido.save();
+          
+          if (sendApprovalEmail && pedido.datosEntrega?.email) {
+            sendEmail({
+              email: pedido.datosEntrega.email,
+              subject: `Pago Confirmado #${pedido._id.toString().slice(-6).toUpperCase()} - Lé Pan`,
+              message: 'Tu pago por Mercado Pago ha sido aprobado.',
+              htmlMessage: getPagoAprobadoEmailHtml(pedido.toObject())
+            }).catch(err => console.error('Error al enviar correo de pago aprobado (webhook):', err));
+          }
+
           console.log(`[MP] Pedido ${pedido._id} actualizado automáticamente a estado: ${pedido.estadoPago}`);
         }
       }
