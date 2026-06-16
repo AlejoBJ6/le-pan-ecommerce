@@ -71,10 +71,6 @@ const RefundPolicy = () => {
           <h2>4. Proceso de Reembolso</h2>
           <ul>
             <li>
-              <strong>Mercado Pago:</strong> El reembolso se procesa directamente a través de la plataforma
-              en un plazo de <strong>5 a 10 días hábiles</strong>.
-            </li>
-            <li>
               <strong>Transferencia Bancaria:</strong> La devolución se realiza por transferencia a la
               cuenta que nos indiques en un plazo de <strong>3 a 5 días hábiles</strong> desde la
               recepción del producto devuelto.

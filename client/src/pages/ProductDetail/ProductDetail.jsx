@@ -283,10 +283,6 @@ const ProductDetail = () => {
                       </span>
                     )}
                   </div>
-                  <div className="payment-installments">
-                    <LuCreditCard size={20} className="mp-icon" />
-                    <span>Pagá en cuotas con <strong className="mp-text">Mercado Pago</strong></span>
-                  </div>
                   <div className="price-transparency" style={{ fontSize: '0.85rem', color: '#888', marginTop: '4px' }}>
                     Precio final • IVA incluido
                   </div>

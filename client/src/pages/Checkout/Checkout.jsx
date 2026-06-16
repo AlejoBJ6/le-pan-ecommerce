@@ -7,12 +7,8 @@ import StepIndicator from '../../components/StepIndicator/StepIndicator.jsx';
 import pedidoService from '../../services/pedidoService.js';
 import uploadService from '../../services/uploadService.js';
 import authService from '../../services/authService.js';
-import { LuChevronRight, LuChevronLeft, LuShieldCheck, LuPhone, LuTruck, LuCreditCard, LuBuilding2, LuPackage, LuNotebook, LuUpload, LuCircleCheck, LuSearch } from 'react-icons/lu';
-import { FaCcVisa, FaCcMastercard } from 'react-icons/fa';
-import { SiMercadopago } from 'react-icons/si';
+import { LuChevronRight, LuChevronLeft, LuShieldCheck, LuPhone, LuTruck, LuBuilding2, LuPackage, LuNotebook, LuUpload, LuCircleCheck, LuSearch } from 'react-icons/lu';
 import './Checkout.css';
-
-const MP_GREEN = '#00a650';
 
 /* ─── STEP 1: Entrega ───────────────────────────────────── */
 const StepEntrega = ({ data, onChange, onNext, onBack }) => {
@@ -100,7 +96,7 @@ const StepEntrega = ({ data, onChange, onNext, onBack }) => {
 
 /* ─── STEP 2: Pago ──────────────────────────────────────── */
 const StepPago = ({ cart, getCartTotal, onNext, onBack, loading }) => {
-  const [metodo, setMetodo] = useState('mercado_pago');
+  const [metodo, setMetodo] = useState('transferencia');
 
   const subtotal = getCartTotal();
   const envio = 0; // Envío siempre gratis según requerimiento del cliente
@@ -117,7 +113,6 @@ const StepPago = ({ cart, getCartTotal, onNext, onBack, loading }) => {
       {/* Method Tabs */}
       <div className="payment-method-tabs">
         {[
-          { key: 'mercado_pago', label: 'Mercado Pago', icon: <LuCreditCard size={20} /> },
           { key: 'transferencia', label: 'Transferencia Bancaria', icon: <LuBuilding2 size={20} /> },
         ].map(m => (
           <button
@@ -130,42 +125,6 @@ const StepPago = ({ cart, getCartTotal, onNext, onBack, loading }) => {
           </button>
         ))}
       </div>
-
-      {metodo === 'mercado_pago' && (
-        <div className="mp-info-box">
-          <p className="mp-info-text">
-            Serás redirigido de forma segura a Mercado Pago para completar tu compra. Podrás abonar con:
-          </p>
-          <ul className="mp-methods-list">
-            <li>
-              <div className="mp-method-badge" style={{ gap: '12px', display: 'flex', alignItems: 'center' }}>
-                <span style={{ color: '#1a1f71', fontWeight: 900, fontSize: '1.2rem', fontStyle: 'italic', letterSpacing: '-0.5px' }} className="mp-visa-text">VISA</span>
-                <span style={{ display: 'flex', alignItems: 'center' }}>
-                  <span style={{ width: 14, height: 14, borderRadius: '50%', background: '#eb001b', display: 'inline-block' }}></span>
-                  <span style={{ width: 14, height: 14, borderRadius: '50%', background: '#f79e1b', display: 'inline-block', marginLeft: -5, opacity: 0.9 }}></span>
-                </span>
-              </div>
-              Tarjetas de crédito y débito
-            </li>
-            <li>
-              <div className="mp-method-badge" style={{ display: 'flex', alignItems: 'center' }}>
-                <span className="mp-logo-text" style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#009ee3', fontWeight: 800, fontSize: '0.85rem' }}>
-                  <SiMercadopago size={22} />
-                  mercado pago
-                </span>
-              </div>
-              Dinero en tu cuenta
-            </li>
-            <li>
-              <div className="mp-method-badge" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <img src="/images/logos/pagofacil.png" alt="Pago Fácil" height="15" style={{ objectFit: 'contain' }} />
-                <img src="/images/logos/rapipago.png" alt="Rapipago" height="13" style={{ objectFit: 'contain' }} />
-              </div>
-              Efectivo en Puntos de Pago
-            </li>
-          </ul>
-        </div>
-      )}
 
       {metodo === 'transferencia' && (
         <div className="transfer-info">
@@ -197,7 +156,7 @@ const StepPago = ({ cart, getCartTotal, onNext, onBack, loading }) => {
         <div className="checkout-order-row" style={{ flexDirection: 'column', gap: '4px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
             <span>Envío</span>
-            <span style={{ color: MP_GREEN, fontWeight: 'bold' }}>Gratis</span>
+          <span style={{ color: '#2e7d32', fontWeight: 'bold' }}>Gratis</span>
           </div>
           {/* Banner: coordinar envío por WhatsApp */}
           <div style={{
@@ -259,8 +218,6 @@ const StepPago = ({ cart, getCartTotal, onNext, onBack, loading }) => {
             <span style={{ width: 18, height: 18, borderRadius: '50%', background: '#eb001b', display: 'inline-block' }}></span>
             <span style={{ width: 18, height: 18, borderRadius: '50%', background: '#f79e1b', display: 'inline-block', marginLeft: -8 }}></span>
           </span>
-          {/* MercadoPago badge */}
-          <span style={{ display: 'inline-flex', alignItems: 'center', background: '#009ee3', color: '#fff', fontWeight: 800, fontSize: '0.65rem', letterSpacing: '0.5px', padding: '4px 8px', borderRadius: '5px' }}>MERCADO PAGO</span>
           {/* SSL badge */}
           <span style={{ fontSize: '0.7rem', fontWeight: 800, padding: '4px 10px', background: '#1a5276', color: '#fff', borderRadius: '4px', letterSpacing: '1px' }}>SSL SECURE</span>
         </div>
@@ -655,13 +612,6 @@ const Checkout = () => {
         if (createdOrder?._id) {
           localStorage.setItem('lepan_guest_last_order_id', createdOrder._id.slice(-6).toUpperCase());
           localStorage.setItem('lepan_guest_last_email', createdOrder.datosEntrega?.email || '');
-        }
-
-        if (createdOrder.init_point) {
-          // Si es Mercado Pago, limpiamos carrito y redirigimos
-          clearCart();
-          window.location.href = createdOrder.init_point;
-          return;
         }
 
         // Si es transferencia u otro método manual, vamos al paso de éxito y limpiamos carrito

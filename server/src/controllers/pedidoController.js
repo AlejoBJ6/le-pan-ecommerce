@@ -1,7 +1,6 @@
 import Pedido from '../models/Pedido.js';
 import Producto from '../models/Producto.js';
 import Combo from '../models/Combo.js';
-import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
 import sendEmail from '../utils/sendEmail.js';
 import { getTransferenciaEmailHtml, getPagoAprobadoEmailHtml, getEnCaminoEmailHtml } from '../utils/emailTemplates.js';
 
@@ -166,13 +165,6 @@ const reponerStockPedido = async (pedido) => {
 };
 
 
-// @desc    Redirigir a frontend (utilizado para engañar regla de localhost de MP)
-export const successRedirect = (req, res) => {
-  const frontendUrl = (process.env.FRONTEND_URL || 'http://localhost:3000').trim().replace(/\/$/, '');
-  const query = new URLSearchParams(req.query).toString();
-  res.redirect(`${frontendUrl}/checkout-success?${query}`);
-};
-
 // @desc    Crear un nuevo pedido
 // @route   POST /api/pedidos
 // @access  Privado (Cliente)
@@ -268,55 +260,9 @@ export const crearPedido = async (req, res) => {
     });
 
     const createdPedido = await pedido.save();
-    let initPoint = null;
-
-    if (metodoPago === 'mercado_pago') {
-       try {
-         const client = new MercadoPagoConfig({ accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN || 'TEST-123' });
-         const preference = new Preference(client);
-         const frontendUrl = (process.env.FRONTEND_URL || '').trim().replace(/\/$/, '');
-         const isLocalhost = !frontendUrl || frontendUrl.includes('localhost') || frontendUrl.includes('127.0.0.1');
-
-         const body = {
-           items: items.map(item => ({
-             id: item.productoId ? item.productoId.toString() : 'item',
-             title: item.nombre, quantity: Number(item.cantidad),
-             unit_price: Number(item.precio), currency_id: 'ARS'
-           })),
-           payer: {
-             name: datosEntrega.nombre || '', surname: datosEntrega.apellido || '', email: datosEntrega.email
-           },
-           external_reference: createdPedido._id.toString()
-         };
-
-         // TRUCO: Usamos HTTPS Localtunnel para engañar a MP localmente y ganar auto_return
-         const successUrl = (isLocalhost && process.env.BACKEND_URL) 
-            ? `${process.env.BACKEND_URL}/api/pedidos/redirect/success`
-            : `${frontendUrl}/checkout-success`;
-
-         body.back_urls = {
-           success: successUrl,
-           failure: `${frontendUrl}/checkout-failure`,
-           pending: `${frontendUrl}/checkout-pending`
-         };
-         
-         body.auto_return = 'approved';
-
-         if (process.env.BACKEND_URL) {
-           body.notification_url = `${process.env.BACKEND_URL}/api/pedidos/webhook`;
-         }
-
-         const response = await preference.create({ body });
-         initPoint = response.init_point;
-       } catch (mpError) { console.error('Error al generar preferencia Mercado Pago:', mpError); }
-    }
-
     const pedidoResponse = createdPedido.toObject();
-    if (initPoint) {
-      pedidoResponse.init_point = initPoint;
-    }
 
-    // --- ENVÍO DE CORREO (Transferencia) ---
+    // --- ENVÍO DE CORREO ---
     if (metodoPago === 'transferencia' && datosEntrega.email) {
       sendEmail({
         email: datosEntrega.email,
@@ -462,68 +408,6 @@ export const subirComprobante = async (req, res) => {
   } catch (error) {
     console.error('Error uploading comprobante:', error);
     res.status(500).json({ message: 'Error del servidor al adjuntar comprobante' });
-  }
-};
-
-// @desc    Webhook para recibir validación de pagos asincrónica de Mercado Pago
-// @route   POST /api/pedidos/webhook
-// @access  Público
-export const webhookMercadoPago = async (req, res) => {
-  try {
-    // 1. Devolver 200 OK inmediatamente para evitar que MP nos marque como fallidos
-    res.status(200).send('OK');
-
-    // 2. Extraer el Payment ID de la notificación (Maneja tanto IPN como Webhooks)
-    const paymentId = req.query['data.id'] || req.query.id || req.body?.data?.id;
-    const type = req.query.type || req.query.topic || req.body?.type;
-
-    if (type === 'payment' && paymentId) {
-      console.log('Webhook MP recibido para paymentId:', paymentId);
-      
-      const client = new MercadoPagoConfig({ accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN || 'TEST-123' });
-      const paymentConfig = new Payment(client);
-      
-      // 3. Consultar la API de MP para ver el estado *real* del pago (por seguridad)
-      const paymentInfo = await paymentConfig.get({ id: paymentId });
-      
-      if (paymentInfo.external_reference) {
-        // 4. Buscar el pedido original en nuestra base de datos
-        const pedido = await Pedido.findById(paymentInfo.external_reference);
-        
-        if (pedido) {
-          // 5. Actualizar el estado de pago del Pedido
-          let sendApprovalEmail = false;
-          if (paymentInfo.status === 'approved') {
-            const eraAprobado = pedido.estadoPago === 'Aprobado';
-            if (!eraAprobado) sendApprovalEmail = true;
-            pedido.estadoPago = 'Aprobado';
-            
-            // 6. Descontar stock usando el helper (maneja duplicados con stockDescontado)
-            await descontarStockPedido(pedido);
-          } else if (paymentInfo.status === 'rejected' || paymentInfo.status === 'cancelled') {
-            if (pedido.estadoPago === 'Aprobado') await reponerStockPedido(pedido);
-            pedido.estadoPago = 'Rechazado';
-          } else if (paymentInfo.status === 'in_process' || paymentInfo.status === 'pending') {
-            if (pedido.estadoPago === 'Aprobado') await reponerStockPedido(pedido);
-            pedido.estadoPago = 'Pendiente';
-          }
-          await pedido.save();
-          
-          if (sendApprovalEmail && pedido.datosEntrega?.email) {
-            sendEmail({
-              email: pedido.datosEntrega.email,
-              subject: `Pago Confirmado #${pedido._id.toString().slice(-6).toUpperCase()} - Lé Pan`,
-              message: 'Tu pago por Mercado Pago ha sido aprobado.',
-              htmlMessage: getPagoAprobadoEmailHtml(pedido.toObject())
-            }).catch(err => console.error('Error al enviar correo de pago aprobado (webhook):', err));
-          }
-
-          console.log(`[MP] Pedido ${pedido._id} actualizado automáticamente a estado: ${pedido.estadoPago}`);
-        }
-      }
-    }
-  } catch (error) {
-    console.error('[MP] Error crítico procesando Webhook:', error);
   }
 };
 

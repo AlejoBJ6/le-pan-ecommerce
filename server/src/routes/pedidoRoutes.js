@@ -4,7 +4,6 @@ import {
   getMisPedidos,
   getAllPedidos,
   updateEstadoPedido,
-  webhookMercadoPago,
   subirComprobante,
   trackPedido,
   validarArrepentimiento
@@ -19,13 +18,6 @@ const router = express.Router();
 router.route('/')
   .post(optionalProtect, crearPedido)
   .get(protect, admin, getAllPedidos);
-
-// Webhook de Mercado Pago (sin protección — lo llama MP directamente)
-router.post('/webhook', webhookMercadoPago);
-
-// Redirect local para desarrollo con MP
-import { successRedirect } from '../controllers/pedidoController.js';
-router.get('/redirect/success', successRedirect);
 
 // Ruta para consulta de pedido (Track) - Público
 router.post('/track', trackPedido);
