@@ -9,7 +9,7 @@ const faqs = [
   },
   {
     pregunta: '¿Cuáles son los métodos de pago disponibles?',
-    respuesta: 'Aceptamos pagos a través de transferencia bancaria directa. Una vez confirmado tu pedido, recibirás los datos bancarios por email y tenés 48 horas para acreditar el pago.',
+    respuesta: 'Aceptamos pagos a través de MODO (billetera digital — escáneá el QR con tu app bancaria o la app MODO) y transferencia bancaria directa. Para transferencias, tenés 48 horas para acreditar el pago.',
   },
   {
     pregunta: '¿Cómo funciona el envío?',

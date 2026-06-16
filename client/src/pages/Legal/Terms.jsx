@@ -53,7 +53,7 @@ const Terms = () => {
           <ul>
             <li>Seleccione el/los producto(s) y agréguelos al carrito.</li>
             <li>Complete el formulario con sus datos de entrega.</li>
-            <li>Elija su método de pago (Transferencia Bancaria).</li>
+            <li>Elija su método de pago (MODO o Transferencia Bancaria).</li>
             <li>Al confirmar, recibirá un número de pedido y un correo de confirmación.</li>
             <li>Para transferencias, tiene <strong>48 horas</strong> para acreditar el pago; de lo contrario el pedido será cancelado automáticamente.</li>
           </ul>

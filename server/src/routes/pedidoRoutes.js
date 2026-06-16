@@ -6,7 +6,9 @@ import {
   updateEstadoPedido,
   subirComprobante,
   trackPedido,
-  validarArrepentimiento
+  validarArrepentimiento,
+  getModoStatus,
+  webhookModo
 } from '../controllers/pedidoController.js';
 import { protect, admin, optionalProtect } from '../middleware/authMiddleware.js';
 
@@ -25,10 +27,15 @@ router.post('/track', trackPedido);
 // Ruta para validación de arrepentimiento (Público)
 router.post('/validar-arrepentimiento', validarArrepentimiento);
 
+// MODO: Webhook de notificaciones asincrónicas (Público — lo llama MODO directamente)
+router.post('/modo-webhook', webhookModo);
+
 router.route('/mis-pedidos').get(protect, getMisPedidos);
 
 router.route('/:id/estado').put(protect, admin, updateEstadoPedido);
 // subirComprobante es público: cualquiera que tenga el ID del pedido puede subir el comprobante
 router.route('/:id/comprobante').put(subirComprobante);
+// MODO: Polling de estado del Payment Request (Público)
+router.get('/:id/modo-status', getModoStatus);
 
 export default router;

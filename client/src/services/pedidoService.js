@@ -51,6 +51,14 @@ const subirComprobante = async (id, comprobanteUrl) => {
     return response.data;
 };
 
+// Consultar estado de pago MODO (polling desde el frontend)
+const getModoStatus = async (pedidoId, paymentRequestId) => {
+    const response = await axios.get(
+        `${API_URL}/${pedidoId}/modo-status?payment_request_id=${paymentRequestId}`
+    );
+    return response.data;
+};
+
 // Consultar pedido (Invitados)
 const trackPedido = async (orderIdShort, email) => {
     const response = await axios.post(`${API_URL}/track`, { orderIdShort, email });
@@ -63,7 +71,8 @@ const pedidoService = {
     getAllPedidos,
     updateEstadoPedido,
     subirComprobante,
-    trackPedido
+    trackPedido,
+    getModoStatus
 };
 
 export default pedidoService;
