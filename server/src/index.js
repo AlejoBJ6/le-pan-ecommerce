@@ -37,7 +37,8 @@ app.use(helmet());
 const allowedOrigins = [
   'https://www.le-pan.com.ar',
   'https://le-pan.com.ar',
-  'http://localhost:5173', // Vite dev server
+  'http://localhost:5173', // Vite dev server (puerto por defecto)
+  'http://localhost:3001', // Vite dev server (puerto alternativo)
   'http://localhost:3000',
 ];
 
