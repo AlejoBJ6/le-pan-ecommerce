@@ -10,10 +10,13 @@ const CheckoutResult = () => {
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(location.search);
   
-  const status = location.pathname.includes('success') ? 'success' : 
-                 location.pathname.includes('failure') ? 'failure' : 'pending';
+  // Mobbex redirige con ?status=approved|rejected|pending&id=<checkoutId>
+  const mobbexStatus = searchParams.get('status') || '';
+  const status = mobbexStatus === 'approved' || location.pathname.includes('success') ? 'success' :
+                 mobbexStatus === 'rejected' || location.pathname.includes('failure') ? 'failure' : 'pending';
                  
   const orderId = searchParams.get('orderId') || searchParams.get('external_reference');
+  const paymentId = searchParams.get('id') || searchParams.get('payment_id') || null;
 
   const [orderData, setOrderData] = useState(null);
   const [loadingOrder, setLoadingOrder] = useState(false);

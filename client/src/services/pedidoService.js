@@ -51,11 +51,9 @@ const subirComprobante = async (id, comprobanteUrl) => {
     return response.data;
 };
 
-// Consultar estado de pago MODO (polling desde el frontend)
-const getModoStatus = async (pedidoId, paymentRequestId) => {
-    const response = await axios.get(
-        `${API_URL}/${pedidoId}/modo-status?payment_request_id=${paymentRequestId}`
-    );
+// Consultar estado del pedido tras el redirect de Mobbex
+const getMobbexStatus = async (pedidoId) => {
+    const response = await axios.get(`${API_URL}/${pedidoId}/mobbex-status`);
     return response.data;
 };
 
@@ -72,7 +70,8 @@ const pedidoService = {
     updateEstadoPedido,
     subirComprobante,
     trackPedido,
-    getModoStatus
+    getMobbexStatus
 };
 
 export default pedidoService;
+

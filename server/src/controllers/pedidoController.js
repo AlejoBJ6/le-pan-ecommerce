@@ -3,7 +3,7 @@ import Producto from '../models/Producto.js';
 import Combo from '../models/Combo.js';
 import sendEmail from '../utils/sendEmail.js';
 import { getTransferenciaEmailHtml, getPagoAprobadoEmailHtml, getEnCaminoEmailHtml } from '../utils/emailTemplates.js';
-import { createPaymentRequest, getPaymentStatus } from '../utils/modoService.js';
+import { createCheckout } from '../utils/mobbexService.js';
 
 /**
  * Helper para descontar stock de forma atómica y segura.
@@ -262,19 +262,28 @@ export const crearPedido = async (req, res) => {
     const createdPedido = await pedido.save();
     const pedidoResponse = createdPedido.toObject();
 
-    // --- MODO: Generar Payment Request (QR dinámico) ---
-    if (metodoPago === 'modo') {
+    // --- Mobbex: Generar sesión de Checkout (redirect) ---
+    if (metodoPago === 'mobbex') {
       try {
         const desc = `Pedido Le Pan #${createdPedido._id.toString().slice(-6).toUpperCase()}`;
-        const modoData = await createPaymentRequest(
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+        const backendUrl = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 5000}`;
+
+        // return_url: Mobbex añade ?status=approved|rejected|pending al redirigir
+        const returnUrl = `${frontendUrl}/checkout-result?orderId=${createdPedido._id}`;
+        const webhookUrl = `${backendUrl}/api/pedidos/mobbex-webhook`;
+
+        const mobbexData = await createCheckout(
           createdPedido._id.toString(),
           totales.total,
-          desc
+          desc,
+          returnUrl,
+          webhookUrl
         );
-        pedidoResponse.modo = modoData; // { payment_request_id, qr_data, deep_link, expiration }
-      } catch (modoError) {
-        console.error('[MODO] Error al crear Payment Request:', modoError?.response?.data || modoError.message);
-        // No bloqueamos el pedido si MODO falla: el admin puede aprobarlo manualmente
+        pedidoResponse.mobbex = mobbexData; // { checkoutId, checkoutUrl }
+      } catch (mobbexError) {
+        console.error('[Mobbex] Error al crear Checkout:', mobbexError?.response?.data || mobbexError.message);
+        // No bloqueamos el pedido si Mobbex falla: el admin puede aprobarlo manualmente
       }
     }
 
@@ -497,75 +506,71 @@ export const validarArrepentimiento = async (req, res) => {
   }
 };
 
-// @desc    Consultar estado del Payment Request de MODO para un pedido (polling)
-// @route   GET /api/pedidos/:id/modo-status
-// @access  Público (lo llama el frontend mientras espera el pago)
-export const getModoStatus = async (req, res) => {
+// @desc    Consultar estado de un pedido de Mobbex por su ID (usado tras el redirect)
+// @route   GET /api/pedidos/:id/mobbex-status
+// @access  Público
+export const getMobbexStatus = async (req, res) => {
   try {
     const pedido = await Pedido.findById(req.params.id);
     if (!pedido) {
       return res.status(404).json({ message: 'Pedido no encontrado' });
     }
-
-    const { payment_request_id } = req.query;
-    if (!payment_request_id) {
-      return res.status(400).json({ message: 'Se requiere payment_request_id' });
-    }
-
-    const modoStatus = await getPaymentStatus(payment_request_id);
-    const status = (modoStatus.status || '').toUpperCase();
-
-    // Mapear estados de MODO a los estados de nuestro sistema
-    let estadoPago = pedido.estadoPago;
-    if (status === 'APPROVED') estadoPago = 'Aprobado';
-    else if (['REJECTED', 'EXPIRED', 'CANCELLED'].includes(status)) estadoPago = 'Rechazado';
-
     res.json({
-      modo_status: status,
-      estadoPago,
+      estadoPago: pedido.estadoPago,
+      estadoEntrega: pedido.estadoEntrega,
       pedidoId: pedido._id,
     });
   } catch (error) {
-    console.error('[MODO] Error consultando estado:', error?.response?.data || error.message);
-    res.status(500).json({ message: 'Error consultando estado del pago MODO' });
+    console.error('[Mobbex] Error consultando estado:', error.message);
+    res.status(500).json({ message: 'Error consultando estado del pedido' });
   }
 };
 
-// @desc    Webhook de MODO para notificaciones asincrónicas de pago
-// @route   POST /api/pedidos/modo-webhook
-// @access  Público (lo llama MODO directamente)
-export const webhookModo = async (req, res) => {
+// @desc    Webhook de Mobbex para notificaciones asincrónicas de pago
+// @route   POST /api/pedidos/mobbex-webhook
+// @access  Público (lo llama Mobbex directamente)
+export const webhookMobbex = async (req, res) => {
   try {
-    // Responder inmediatamente 200 para que MODO no reintente
+    // Responder 200 de inmediato para que Mobbex no reintente
     res.status(200).send('OK');
 
-    const { external_intention_id, status, payment_request_id } = req.body || {};
+    // Mobbex envía el payload en req.body
+    // Estructura: { data: { payment: { reference, status, id, ... } } }
+    const payment = req.body?.data?.payment || req.body?.payment || req.body || {};
+    const reference = payment.reference || payment.external_reference;
+    const statusCode = Number(payment.status);
 
-    if (!external_intention_id || !status) {
-      console.warn('[MODO Webhook] Payload incompleto:', req.body);
+    if (!reference) {
+      console.warn('[Mobbex Webhook] Payload sin reference:', req.body);
       return;
     }
 
-    console.log(`[MODO Webhook] PR ${payment_request_id} → estado: ${status} | pedido: ${external_intention_id}`);
+    console.log(`[Mobbex Webhook] Pedido: ${reference} | Status: ${statusCode}`);
 
-    const pedido = await Pedido.findById(external_intention_id);
+    const pedido = await Pedido.findById(reference);
     if (!pedido) {
-      console.warn(`[MODO Webhook] Pedido ${external_intention_id} no encontrado`);
+      console.warn(`[Mobbex Webhook] Pedido ${reference} no encontrado`);
       return;
     }
 
-    const statusUpper = status.toUpperCase();
+    // Mobbex: status 200 = aprobado, resto = pendiente/rechazado
+    // https://mobbex.dev/checkout#webhook
     let sendApprovalEmail = false;
 
-    if (statusUpper === 'APPROVED') {
+    if (statusCode === 200) {
+      // Pago aprobado
       if (pedido.estadoPago !== 'Aprobado') {
         await descontarStockPedido(pedido);
         sendApprovalEmail = true;
       }
       pedido.estadoPago = 'Aprobado';
-    } else if (['REJECTED', 'EXPIRED', 'CANCELLED'].includes(statusUpper)) {
+    } else if (statusCode >= 400) {
+      // Pago rechazado o cancelado
       if (pedido.estadoPago === 'Aprobado') await reponerStockPedido(pedido);
       pedido.estadoPago = 'Rechazado';
+    } else {
+      // Pendiente (ej: status 100, 300 — en proceso)
+      pedido.estadoPago = 'Pendiente';
     }
 
     await pedido.save();
@@ -574,13 +579,13 @@ export const webhookModo = async (req, res) => {
       sendEmail({
         email: pedido.datosEntrega.email,
         subject: `Pago Confirmado #${pedido._id.toString().slice(-6).toUpperCase()} - Lé Pan`,
-        message: 'Tu pago con MODO ha sido aprobado.',
+        message: 'Tu pago con Mobbex ha sido aprobado.',
         htmlMessage: getPagoAprobadoEmailHtml(pedido.toObject())
-      }).catch(err => console.error('[MODO Webhook] Error enviando email:', err));
+      }).catch(err => console.error('[Mobbex Webhook] Error enviando email:', err));
     }
 
-    console.log(`[MODO Webhook] Pedido ${pedido._id} actualizado a: ${pedido.estadoPago}`);
+    console.log(`[Mobbex Webhook] Pedido ${pedido._id} actualizado a: ${pedido.estadoPago}`);
   } catch (error) {
-    console.error('[MODO Webhook] Error crítico:', error);
+    console.error('[Mobbex Webhook] Error crítico:', error);
   }
 };

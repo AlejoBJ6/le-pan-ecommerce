@@ -7,8 +7,7 @@ import StepIndicator from '../../components/StepIndicator/StepIndicator.jsx';
 import pedidoService from '../../services/pedidoService.js';
 import uploadService from '../../services/uploadService.js';
 import authService from '../../services/authService.js';
-import { QRCodeSVG } from 'qrcode.react';
-import { LuChevronRight, LuChevronLeft, LuShieldCheck, LuPhone, LuTruck, LuBuilding2, LuPackage, LuNotebook, LuUpload, LuCircleCheck, LuSearch, LuSmartphone, LuRefreshCw, LuXCircle } from 'react-icons/lu';
+import { LuChevronRight, LuChevronLeft, LuShieldCheck, LuPhone, LuTruck, LuBuilding2, LuPackage, LuNotebook, LuUpload, LuCircleCheck, LuSearch, LuCreditCard, LuRefreshCw } from 'react-icons/lu';
 import './Checkout.css';
 
 /* ─── STEP 1: Entrega ───────────────────────────────────── */
@@ -95,153 +94,9 @@ const StepEntrega = ({ data, onChange, onNext, onBack }) => {
   );
 };
 
-/* ─── STEP MODO: QR dinámico ────────────────────────────── */
-const MODO_QR_TIMEOUT_SEC = 300; // 5 minutos
-
-const StepModo = ({ modoData, pedidoId, onSuccess, onCancel }) => {
-  const [timeLeft, setTimeLeft] = useState(MODO_QR_TIMEOUT_SEC);
-  const [pollStatus, setPollStatus] = useState('CREATED'); // CREATED | IN_PROGRESS | APPROVED | REJECTED | EXPIRED
-  const pollingRef = useRef(null);
-
-  const formatTime = (secs) => {
-    const m = Math.floor(secs / 60).toString().padStart(2, '0');
-    const s = (secs % 60).toString().padStart(2, '0');
-    return `${m}:${s}`;
-  };
-
-  // Timer de cuenta regresiva
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTimeLeft(t => {
-        if (t <= 1) { clearInterval(interval); setPollStatus('EXPIRED'); return 0; }
-        return t - 1;
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Polling de estado cada 3 segundos
-  useEffect(() => {
-    if (!modoData?.payment_request_id || !pedidoId) return;
-    if (['APPROVED', 'REJECTED', 'EXPIRED', 'CANCELLED'].includes(pollStatus)) return;
-
-    pollingRef.current = setInterval(async () => {
-      try {
-        const result = await pedidoService.getModoStatus(pedidoId, modoData.payment_request_id);
-        const st = (result.modo_status || '').toUpperCase();
-        setPollStatus(st);
-        if (st === 'APPROVED') {
-          clearInterval(pollingRef.current);
-          setTimeout(() => onSuccess(), 1200); // Breve pausa para mostrar la animación
-        } else if (['REJECTED', 'EXPIRED', 'CANCELLED'].includes(st)) {
-          clearInterval(pollingRef.current);
-        }
-      } catch (err) {
-        console.error('[MODO Polling]', err);
-      }
-    }, 3000);
-
-    return () => clearInterval(pollingRef.current);
-  }, [modoData, pedidoId, pollStatus, onSuccess]);
-
-  const isExpiredOrFailed = ['REJECTED', 'EXPIRED', 'CANCELLED'].includes(pollStatus);
-  const isApproved = pollStatus === 'APPROVED';
-
-  return (
-    <div className="checkout-step" style={{ textAlign: 'center' }}>
-      <h2 className="checkout-step-title">Pagá con MODO</h2>
-
-      {isApproved ? (
-        /* Pago exitoso */
-        <div style={{ padding: '40px 20px' }}>
-          <div className="success-circle" style={{ margin: '0 auto 20px' }}>
-            <svg viewBox="0 0 52 52" className="checkmark-svg">
-              <circle cx="26" cy="26" r="25" fill="none" stroke="#25D366" strokeWidth="2" className="checkmark-circle" />
-              <path fill="none" stroke="#25D366" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" d="M14 26 l8 8 l16-16" className="checkmark-check" />
-            </svg>
-          </div>
-          <h3 style={{ color: '#2e7d32', fontSize: '1.5rem' }}>¡Pago aprobado!</h3>
-          <p style={{ color: '#555', marginTop: '8px' }}>Redirigiendo al resumen de tu pedido...</p>
-        </div>
-      ) : isExpiredOrFailed ? (
-        /* Pago fallido o expirado */
-        <div style={{ padding: '40px 20px' }}>
-          <LuXCircle size={56} color="#d32f2f" style={{ marginBottom: '16px' }} />
-          <h3 style={{ color: '#d32f2f' }}>{pollStatus === 'EXPIRED' || timeLeft === 0 ? 'El QR expiró' : 'Pago rechazado'}</h3>
-          <p style={{ color: '#555', marginBottom: '24px' }}>Podés intentarlo de nuevo o elegir otro método de pago.</p>
-          <button className="btn-checkout-back" onClick={onCancel} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', margin: '0 auto' }}>
-            <LuChevronLeft size={18} /> Volver al pago
-          </button>
-        </div>
-      ) : (
-        /* QR activo esperando escaneo */
-        <>
-          {/* Info de MODO */}
-          <div style={{
-            display: 'flex', alignItems: 'flex-start', gap: '12px',
-            backgroundColor: '#e8f4ff', border: '1px solid #90caf9',
-            borderRadius: '10px', padding: '14px 16px',
-            marginBottom: '24px', textAlign: 'left', fontSize: '0.88rem', color: '#1565c0'
-          }}>
-            <LuSmartphone size={22} style={{ flexShrink: 0, marginTop: '2px' }} />
-            <div>
-              <strong>Cómo pagar con MODO:</strong><br />
-              Abrí tu app bancaria o la app MODO, escáneá el código QR y confirmá el pago. El pedido se aprobará automáticamente.
-            </div>
-          </div>
-
-          {/* QR */}
-          <div style={{
-            display: 'inline-flex', flexDirection: 'column', alignItems: 'center',
-            border: '2px solid #1565c0', borderRadius: '16px',
-            padding: '20px', backgroundColor: '#fff',
-            boxShadow: '0 4px 20px rgba(21,101,192,0.15)',
-            marginBottom: '20px'
-          }}>
-            {modoData?.qr_data ? (
-              <QRCodeSVG
-                value={modoData.qr_data}
-                size={220}
-                level="M"
-                includeMargin={false}
-              />
-            ) : (
-              <div style={{ width: 220, height: 220, background: '#f0f4ff', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', color: '#666', fontSize: '0.85rem' }}>
-                QR no disponible<br/>(usar credenciales reales de MODO)
-              </div>
-            )}
-
-            {/* Logos de billeteras compatibles */}
-            <div style={{ marginTop: '14px', fontSize: '0.75rem', color: '#555', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <LuSmartphone size={14} />
-              Compatibe con Ualá, Mercado Pago app, app de tu banco y más
-            </div>
-          </div>
-
-          {/* Timer */}
-          <div style={{ marginBottom: '20px' }}>
-            <p style={{ fontSize: '0.85rem', color: timeLeft < 60 ? '#d32f2f' : '#555', fontWeight: timeLeft < 60 ? 700 : 400 }}>
-              {pollStatus === 'IN_PROGRESS' ? (
-                <><LuRefreshCw size={14} style={{ marginRight: 4, verticalAlign: 'middle' }} />Procesando pago...</>
-              ) : (
-                <>Expira en <strong>{formatTime(timeLeft)}</strong> — Esperando que escanees el QR...</>
-              )}
-            </p>
-          </div>
-
-          {/* Botón cancelar */}
-          <button className="btn-checkout-back" onClick={onCancel} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', margin: '0 auto', width: '100%' }}>
-            <LuChevronLeft size={18} /> Cancelar y volver al pago
-          </button>
-        </>
-      )}
-    </div>
-  );
-};
-
 /* ─── STEP 2: Pago ──────────────────────────────────────── */
 const StepPago = ({ cart, getCartTotal, onNext, onBack, loading }) => {
-  const [metodo, setMetodo] = useState('transferencia');
+  const [metodo, setMetodo] = useState('mobbex');
 
   const subtotal = getCartTotal();
   const envio = 0; // Envío siempre gratis según requerimiento del cliente
@@ -258,7 +113,7 @@ const StepPago = ({ cart, getCartTotal, onNext, onBack, loading }) => {
       {/* Method Tabs */}
       <div className="payment-method-tabs">
         {[
-          { key: 'modo', label: 'MODO', icon: <LuSmartphone size={20} /> },
+          { key: 'mobbex', label: 'Tarjeta / Billetera', icon: <LuCreditCard size={20} /> },
           { key: 'transferencia', label: 'Transferencia Bancaria', icon: <LuBuilding2 size={20} /> },
         ].map(m => (
           <button
@@ -272,19 +127,20 @@ const StepPago = ({ cart, getCartTotal, onNext, onBack, loading }) => {
         ))}
       </div>
 
-      {metodo === 'modo' && (
-        <div className="mp-info-box" style={{ borderColor: '#1565c0', backgroundColor: '#e8f4ff' }}>
+      {metodo === 'mobbex' && (
+        <div className="mp-info-box" style={{ borderColor: '#5c6bc0', backgroundColor: '#ede7f6' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-            <LuSmartphone size={28} color="#1565c0" />
+            <LuCreditCard size={28} color="#5c6bc0" />
             <div>
-              <strong style={{ color: '#1565c0', fontSize: '1rem' }}>Pagá con tu billetera digital</strong>
-              <p style={{ margin: 0, fontSize: '0.85rem', color: '#444', marginTop: '2px' }}>Escáneá el QR con tu app bancaria o con MODO. Rápido, seguro y sin salir del sitio.</p>
+              <strong style={{ color: '#5c6bc0', fontSize: '1rem' }}>Pagá con tarjeta o billetera digital</strong>
+              <p style={{ margin: 0, fontSize: '0.85rem', color: '#444', marginTop: '2px' }}>Al confirmar, te redirigimos a la página segura de Mobbex para completar el pago con tarjeta de crédito/débito, Ualá, Naranja X y más.</p>
             </div>
           </div>
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', fontSize: '0.8rem', color: '#1565c0' }}>
-            <span style={{ background: '#fff', border: '1px solid #90caf9', padding: '3px 10px', borderRadius: '20px' }}>🏦 App de tu banco</span>
-            <span style={{ background: '#fff', border: '1px solid #90caf9', padding: '3px 10px', borderRadius: '20px' }}>📱 App MODO</span>
-            <span style={{ background: '#fff', border: '1px solid #90caf9', padding: '3px 10px', borderRadius: '20px' }}>Ualá</span>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', fontSize: '0.8rem', color: '#5c6bc0' }}>
+            <span style={{ background: '#fff', border: '1px solid #b39ddb', padding: '3px 10px', borderRadius: '20px' }}>💳 Tarjeta de crédito</span>
+            <span style={{ background: '#fff', border: '1px solid #b39ddb', padding: '3px 10px', borderRadius: '20px' }}>💳 Débito</span>
+            <span style={{ background: '#fff', border: '1px solid #b39ddb', padding: '3px 10px', borderRadius: '20px' }}>Ualá</span>
+            <span style={{ background: '#fff', border: '1px solid #b39ddb', padding: '3px 10px', borderRadius: '20px' }}>Naranja X</span>
           </div>
         </div>
       )}
@@ -678,8 +534,6 @@ const Checkout = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [modoData, setModoData] = useState(null); // { payment_request_id, qr_data, deep_link }
-  const [showModoQR, setShowModoQR] = useState(false);
 
   // Mapeamos el parámetro de la URL (0, 1, 2)
   const pasoQuery = parseInt(searchParams.get('paso'), 10);
@@ -779,11 +633,11 @@ const Checkout = () => {
           localStorage.setItem('lepan_guest_last_email', createdOrder.datosEntrega?.email || '');
         }
 
-        // Si el pedido tiene datos de MODO, mostrar el QR en lugar de ir al resumen
-        if (createdOrder.modo?.qr_data || createdOrder.modo?.payment_request_id) {
-          setModoData(createdOrder.modo);
-          setShowModoQR(true);
-          window.scrollTo({ top: 0, behavior: 'smooth' });
+        // Si el pedido tiene datos de Mobbex, redirigir al checkout externo
+        if (createdOrder.mobbex?.checkoutUrl) {
+          // Guardar el carrito para limpiarlo al volver (la URL de retorno es /checkout-result)
+          clearCart();
+          window.location.href = createdOrder.mobbex.checkoutUrl;
           return;
         }
 
@@ -835,16 +689,8 @@ const Checkout = () => {
         {subStep === 0 && (
           <StepEntrega data={entrega} onChange={handleEntregaChange} onNext={advanceStep} onBack={backStep} />
         )}
-        {subStep === 1 && !showModoQR && (
+        {subStep === 1 && (
           <StepPago cart={cart} getCartTotal={getCartTotal} onNext={advanceStep} onBack={backStep} loading={loading} />
-        )}
-        {subStep === 1 && showModoQR && (
-          <StepModo
-            modoData={modoData}
-            pedidoId={finalOrderData?._id}
-            onSuccess={() => { clearCart(); setShowModoQR(false); setSubStep(2); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-            onCancel={() => { setShowModoQR(false); setModoData(null); }}
-          />
         )}
         {subStep === 2 && (
           <StepResumen finalOrderData={finalOrderData} />
