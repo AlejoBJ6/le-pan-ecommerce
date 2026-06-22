@@ -4,10 +4,11 @@ import {
   getMisPedidos,
   getAllPedidos,
   updateEstadoPedido,
-  webhookMercadoPago,
   subirComprobante,
   trackPedido,
-  validarArrepentimiento
+  validarArrepentimiento,
+  getMobbexStatus,
+  webhookMobbex
 } from '../controllers/pedidoController.js';
 import { protect, admin, optionalProtect } from '../middleware/authMiddleware.js';
 
@@ -20,23 +21,21 @@ router.route('/')
   .post(optionalProtect, crearPedido)
   .get(protect, admin, getAllPedidos);
 
-// Webhook de Mercado Pago (sin protección — lo llama MP directamente)
-router.post('/webhook', webhookMercadoPago);
-
-// Redirect local para desarrollo con MP
-import { successRedirect } from '../controllers/pedidoController.js';
-router.get('/redirect/success', successRedirect);
-
 // Ruta para consulta de pedido (Track) - Público
 router.post('/track', trackPedido);
 
 // Ruta para validación de arrepentimiento (Público)
 router.post('/validar-arrepentimiento', validarArrepentimiento);
 
+// Mobbex: Webhook de notificaciones asincrónicas (Público — lo llama Mobbex directamente)
+router.post('/mobbex-webhook', webhookMobbex);
+
 router.route('/mis-pedidos').get(protect, getMisPedidos);
 
 router.route('/:id/estado').put(protect, admin, updateEstadoPedido);
 // subirComprobante es público: cualquiera que tenga el ID del pedido puede subir el comprobante
 router.route('/:id/comprobante').put(subirComprobante);
+// Mobbex: Consultar estado del pedido tras el redirect (Público)
+router.get('/:id/mobbex-status', getMobbexStatus);
 
 export default router;

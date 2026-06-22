@@ -1,5 +1,5 @@
 
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect, useRef } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { CartContext } from '../../context/CartContext.jsx';
 import { AuthContext } from '../../context/AuthContext.jsx';
@@ -7,12 +7,8 @@ import StepIndicator from '../../components/StepIndicator/StepIndicator.jsx';
 import pedidoService from '../../services/pedidoService.js';
 import uploadService from '../../services/uploadService.js';
 import authService from '../../services/authService.js';
-import { LuChevronRight, LuChevronLeft, LuShieldCheck, LuPhone, LuTruck, LuCreditCard, LuBuilding2, LuPackage, LuNotebook, LuUpload, LuCircleCheck, LuSearch } from 'react-icons/lu';
-import { FaCcVisa, FaCcMastercard } from 'react-icons/fa';
-import { SiMercadopago } from 'react-icons/si';
+import { LuChevronRight, LuChevronLeft, LuShieldCheck, LuPhone, LuTruck, LuBuilding2, LuPackage, LuNotebook, LuUpload, LuCircleCheck, LuSearch, LuCreditCard, LuRefreshCw } from 'react-icons/lu';
 import './Checkout.css';
-
-const MP_GREEN = '#00a650';
 
 /* ─── STEP 1: Entrega ───────────────────────────────────── */
 const StepEntrega = ({ data, onChange, onNext, onBack }) => {
@@ -44,11 +40,11 @@ const StepEntrega = ({ data, onChange, onNext, onBack }) => {
         <div className="form-row">
           <div className="form-group">
             <label>Teléfono Principal *</label>
-            <input type="tel" placeholder="11 1234-5678" value={data.telefono} onChange={e => onChange('telefono', e.target.value.replace(/[^0-9+\-\s()]/g, ''))} required />
+            <input type="tel" placeholder="11 1234-5678" value={data.telefono} onChange={e => onChange('telefono', e.target.value.replace(/[^0-9+\-\s()]/g, '').slice(0, 15))} maxLength={15} required />
           </div>
           <div className="form-group">
             <label>Teléfono Alternativo <span style={{fontWeight: 'normal', color: '#888', fontSize: '0.85em', textTransform: 'none'}}>(Opcional)</span></label>
-            <input type="tel" placeholder="11 8765-4321" value={data.telefonoAlternativo} onChange={e => onChange('telefonoAlternativo', e.target.value.replace(/[^0-9+\-\s()]/g, ''))} />
+            <input type="tel" placeholder="11 8765-4321" value={data.telefonoAlternativo} onChange={e => onChange('telefonoAlternativo', e.target.value.replace(/[^0-9+\-\s()]/g, '').slice(0, 15))} maxLength={15} />
 
           </div>
         </div>
@@ -100,7 +96,7 @@ const StepEntrega = ({ data, onChange, onNext, onBack }) => {
 
 /* ─── STEP 2: Pago ──────────────────────────────────────── */
 const StepPago = ({ cart, getCartTotal, onNext, onBack, loading }) => {
-  const [metodo, setMetodo] = useState('mercado_pago');
+  const [metodo, setMetodo] = useState('mobbex');
 
   const subtotal = getCartTotal();
   const envio = 0; // Envío siempre gratis según requerimiento del cliente
@@ -117,7 +113,7 @@ const StepPago = ({ cart, getCartTotal, onNext, onBack, loading }) => {
       {/* Method Tabs */}
       <div className="payment-method-tabs">
         {[
-          { key: 'mercado_pago', label: 'Mercado Pago', icon: <LuCreditCard size={20} /> },
+          { key: 'mobbex', label: 'Tarjeta / Billetera', icon: <LuCreditCard size={20} /> },
           { key: 'transferencia', label: 'Transferencia Bancaria', icon: <LuBuilding2 size={20} /> },
         ].map(m => (
           <button
@@ -131,39 +127,21 @@ const StepPago = ({ cart, getCartTotal, onNext, onBack, loading }) => {
         ))}
       </div>
 
-      {metodo === 'mercado_pago' && (
-        <div className="mp-info-box">
-          <p className="mp-info-text">
-            Serás redirigido de forma segura a Mercado Pago para completar tu compra. Podrás abonar con:
-          </p>
-          <ul className="mp-methods-list">
-            <li>
-              <div className="mp-method-badge" style={{ gap: '12px', display: 'flex', alignItems: 'center' }}>
-                <span style={{ color: '#1a1f71', fontWeight: 900, fontSize: '1.2rem', fontStyle: 'italic', letterSpacing: '-0.5px' }} className="mp-visa-text">VISA</span>
-                <span style={{ display: 'flex', alignItems: 'center' }}>
-                  <span style={{ width: 14, height: 14, borderRadius: '50%', background: '#eb001b', display: 'inline-block' }}></span>
-                  <span style={{ width: 14, height: 14, borderRadius: '50%', background: '#f79e1b', display: 'inline-block', marginLeft: -5, opacity: 0.9 }}></span>
-                </span>
-              </div>
-              Tarjetas de crédito y débito
-            </li>
-            <li>
-              <div className="mp-method-badge" style={{ display: 'flex', alignItems: 'center' }}>
-                <span className="mp-logo-text" style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#009ee3', fontWeight: 800, fontSize: '0.85rem' }}>
-                  <SiMercadopago size={22} />
-                  mercado pago
-                </span>
-              </div>
-              Dinero en tu cuenta
-            </li>
-            <li>
-              <div className="mp-method-badge" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <img src="/images/logos/pagofacil.png" alt="Pago Fácil" height="15" style={{ objectFit: 'contain' }} />
-                <img src="/images/logos/rapipago.png" alt="Rapipago" height="13" style={{ objectFit: 'contain' }} />
-              </div>
-              Efectivo en Puntos de Pago
-            </li>
-          </ul>
+      {metodo === 'mobbex' && (
+        <div className="mp-info-box" style={{ borderColor: '#5c6bc0', backgroundColor: '#ede7f6' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+            <LuCreditCard size={28} color="#5c6bc0" />
+            <div>
+              <strong style={{ color: '#5c6bc0', fontSize: '1rem' }}>Pagá con tarjeta o billetera digital</strong>
+              <p style={{ margin: 0, fontSize: '0.85rem', color: '#444', marginTop: '2px' }}>Al confirmar, te redirigimos a la página segura de Mobbex para completar el pago con tarjeta de crédito/débito, Ualá, Naranja X y más.</p>
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', fontSize: '0.8rem', color: '#5c6bc0' }}>
+            <span style={{ background: '#fff', border: '1px solid #b39ddb', padding: '3px 10px', borderRadius: '20px' }}>💳 Tarjeta de crédito</span>
+            <span style={{ background: '#fff', border: '1px solid #b39ddb', padding: '3px 10px', borderRadius: '20px' }}>💳 Débito</span>
+            <span style={{ background: '#fff', border: '1px solid #b39ddb', padding: '3px 10px', borderRadius: '20px' }}>Ualá</span>
+            <span style={{ background: '#fff', border: '1px solid #b39ddb', padding: '3px 10px', borderRadius: '20px' }}>Naranja X</span>
+          </div>
         </div>
       )}
 
@@ -197,7 +175,7 @@ const StepPago = ({ cart, getCartTotal, onNext, onBack, loading }) => {
         <div className="checkout-order-row" style={{ flexDirection: 'column', gap: '4px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
             <span>Envío</span>
-            <span style={{ color: MP_GREEN, fontWeight: 'bold' }}>Gratis</span>
+          <span style={{ color: '#2e7d32', fontWeight: 'bold' }}>Gratis</span>
           </div>
           {/* Banner: coordinar envío por WhatsApp */}
           <div style={{
@@ -259,8 +237,6 @@ const StepPago = ({ cart, getCartTotal, onNext, onBack, loading }) => {
             <span style={{ width: 18, height: 18, borderRadius: '50%', background: '#eb001b', display: 'inline-block' }}></span>
             <span style={{ width: 18, height: 18, borderRadius: '50%', background: '#f79e1b', display: 'inline-block', marginLeft: -8 }}></span>
           </span>
-          {/* MercadoPago badge */}
-          <span style={{ display: 'inline-flex', alignItems: 'center', background: '#009ee3', color: '#fff', fontWeight: 800, fontSize: '0.65rem', letterSpacing: '0.5px', padding: '4px 8px', borderRadius: '5px' }}>MERCADO PAGO</span>
           {/* SSL badge */}
           <span style={{ fontSize: '0.7rem', fontWeight: 800, padding: '4px 10px', background: '#1a5276', color: '#fff', borderRadius: '4px', letterSpacing: '1px' }}>SSL SECURE</span>
         </div>
@@ -650,17 +626,18 @@ const Checkout = () => {
         };
         const createdOrder = await pedidoService.crearPedido(orderPayload);
         setFinalOrderData(createdOrder);
-        
-        // Persistencia para invitados (por si salen de la página sin anotar el ID)
+
+        // Persistencia para invitados
         if (createdOrder?._id) {
           localStorage.setItem('lepan_guest_last_order_id', createdOrder._id.slice(-6).toUpperCase());
           localStorage.setItem('lepan_guest_last_email', createdOrder.datosEntrega?.email || '');
         }
 
-        if (createdOrder.init_point) {
-          // Si es Mercado Pago, limpiamos carrito y redirigimos
+        // Si el pedido tiene datos de Mobbex, redirigir al checkout externo
+        if (createdOrder.mobbex?.checkoutUrl) {
+          // Guardar el carrito para limpiarlo al volver (la URL de retorno es /checkout-result)
           clearCart();
-          window.location.href = createdOrder.init_point;
+          window.location.href = createdOrder.mobbex.checkoutUrl;
           return;
         }
 

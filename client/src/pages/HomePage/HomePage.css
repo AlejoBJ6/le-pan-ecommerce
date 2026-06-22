@@ -28,17 +28,11 @@
   display: flex;
   overflow-x: auto;
   gap: 16px;
-  padding-bottom: 24px;
-  /* Espacio para la barra de scroll y sombra */
   padding-top: 8px;
-  /* Espacio para sombra superior si la hubiera */
+  padding-bottom: 24px;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
-  margin: 0 -10px;
-  /* Sacar un poco de margen para que no se corte cortante */
-  padding-left: 10px;
-  padding-right: 10px;
 }
 
 /* Ocultar barra de scroll o hacerla sutil */
@@ -96,6 +90,59 @@
   margin-top: 80px;
 }
 
+/* ── Carrusel navegable ─────────────────────────────────────── */
+.carrusel-wrapper {
+  position: relative;
+  /* Reserva espacio a los lados para los botones sin que se corten */
+  padding: 0 56px;
+}
+
+.carrusel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(226, 88, 34, 0.35);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.carrusel-btn:hover {
+  transform: translateY(-50%) scale(1.12);
+  box-shadow: 0 6px 20px rgba(226, 88, 34, 0.5);
+  background: #c94b1a;
+}
+
+.carrusel-btn--prev {
+  left: 4px;
+}
+
+.carrusel-btn--next {
+  right: 4px;
+}
+
+/* En mobile los botones se ocultan (el swipe táctil es suficiente) */
+@media (max-width: 640px) {
+  .carrusel-btn {
+    display: none;
+  }
+
+  .carrusel-wrapper {
+    padding: 0;
+  }
+}
+
 .home-section-header.secondary .section-title {
   font-size: 1.6rem;
 }
@@ -134,6 +181,34 @@
     margin-left: 0;
     font-size: 0.85rem;
   }
+}
+
+/* ── CTA Ver Todo el Catálogo ──────────────────────── */
+.ver-todo-container {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0 60px 0;
+}
+
+.btn-ver-todo {
+  display: inline-flex;
+  align-items: center;
+  padding: 14px 32px;
+  background-color: transparent;
+  color: var(--color-primary);
+  border: 2px solid var(--color-primary);
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 1.05rem;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.btn-ver-todo:hover {
+  background-color: var(--color-primary);
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(226, 88, 34, 0.3);
 }
 
 /* ── Sección Botón de Arrepentimiento ──────────────── */

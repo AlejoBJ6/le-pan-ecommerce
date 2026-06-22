@@ -51,9 +51,9 @@ const subirComprobante = async (id, comprobanteUrl) => {
     return response.data;
 };
 
-// Verificar pago manual (Failsafe para localtunnel)
-const forceWebhookVerify = async (paymentId) => {
-    const response = await axios.post(`${API_URL}/webhook?type=payment&data.id=${paymentId}`);
+// Consultar estado del pedido tras el redirect de Mobbex
+const getMobbexStatus = async (pedidoId) => {
+    const response = await axios.get(`${API_URL}/${pedidoId}/mobbex-status`);
     return response.data;
 };
 
@@ -69,8 +69,9 @@ const pedidoService = {
     getAllPedidos,
     updateEstadoPedido,
     subirComprobante,
-    forceWebhookVerify,
-    trackPedido
+    trackPedido,
+    getMobbexStatus
 };
 
 export default pedidoService;
+

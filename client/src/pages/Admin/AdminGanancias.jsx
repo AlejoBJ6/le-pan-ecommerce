@@ -48,7 +48,11 @@ const AdminGanancias = () => {
   const [pedidos, setPedidos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [mesFiltro, setMesFiltro] = useState('');
+  const getMesActual = () => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  };
+  const [mesFiltro, setMesFiltro] = useState(getMesActual());
 
   useEffect(() => {
     const fetchPedidos = async () => {

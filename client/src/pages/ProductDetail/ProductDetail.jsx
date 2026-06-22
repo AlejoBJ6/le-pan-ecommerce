@@ -146,7 +146,7 @@ const ProductDetail = () => {
           'error'
         );
       } else {
-        navigate(`/arma-combo?preselect=${producto._id}`);
+        navigate('/combos');
       }
     } catch (error) {
       console.error(error);
@@ -282,10 +282,6 @@ const ProductDetail = () => {
                         {Math.round((1 - (producto.precio || producto.precioFinal) / (producto.precioAnterior || producto.precioSinDescuento)) * 100)}% OFF
                       </span>
                     )}
-                  </div>
-                  <div className="payment-installments">
-                    <LuCreditCard size={20} className="mp-icon" />
-                    <span>Pagá en cuotas con <strong className="mp-text">Mercado Pago</strong></span>
                   </div>
                   <div className="price-transparency" style={{ fontSize: '0.85rem', color: '#888', marginTop: '4px' }}>
                     Precio final • IVA incluido
@@ -444,7 +440,7 @@ const ProductDetail = () => {
                       }
                     }}
                   >
-                    {isLoadingCombo ? 'Validando...' : 'Añadir al combo'}
+                    {isLoadingCombo ? 'Validando...' : 'Ver combos'}
                   </button>
                 )}
               </div>

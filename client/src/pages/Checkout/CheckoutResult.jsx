@@ -10,22 +10,16 @@ const CheckoutResult = () => {
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(location.search);
   
-  const status = location.pathname.includes('success') ? 'success' : 
-                 location.pathname.includes('failure') ? 'failure' : 'pending';
+  // Mobbex redirige con ?status=approved|rejected|pending&id=<checkoutId>
+  const mobbexStatus = searchParams.get('status') || '';
+  const status = mobbexStatus === 'approved' || location.pathname.includes('success') ? 'success' :
+                 mobbexStatus === 'rejected' || location.pathname.includes('failure') ? 'failure' : 'pending';
                  
   const orderId = searchParams.get('orderId') || searchParams.get('external_reference');
-  const paymentId = searchParams.get('payment_id');
+  const paymentId = searchParams.get('id') || searchParams.get('payment_id') || null;
 
   const [orderData, setOrderData] = useState(null);
   const [loadingOrder, setLoadingOrder] = useState(false);
-
-  // Failsafe para desarrollo local o bloqueos de Ngrok/Localtunnel:
-  useEffect(() => {
-    if (status === 'success' && paymentId) {
-      pedidoService.forceWebhookVerify(paymentId)
-        .catch(err => console.log('Silencioso: Webhook failsafe ya se ejecutó u ocurrió error', err));
-    }
-  }, [status, paymentId]);
 
   // Recuperar detalles de la orden para mostrar el botón de WhatsApp
   useEffect(() => {
@@ -66,7 +60,7 @@ const CheckoutResult = () => {
       `📋 *Pedido #${orderNum}*`,
       `${items}`,
       ``,
-      `💰 *Total pagado (MP):* ${new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(total)}`,
+      `💰 *Total pagado:* ${new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(total)}`,
       `📍 *Dirección:* ${dir}`,
       ``,
       `Me gustaría coordinar la entrega. ¡Gracias!`,
@@ -95,7 +89,7 @@ const CheckoutResult = () => {
               </div>
               <h2 style={{ fontSize: '2rem', marginBottom: '8px', color: 'var(--color-dark)' }}>¡Gracias por tu compra, {entrega.nombre}! 🎉</h2>
               <p style={{ fontSize: '1.1rem', color: '#555', marginBottom: '8px' }}>
-                Tu pago a través de Mercado Pago fue procesado con éxito.
+                Tu pago fue procesado con éxito.
               </p>
               <p style={{ fontSize: '1.05rem', color: 'var(--color-primary)', fontWeight: '600', marginBottom: '24px' }}>
                 📲 Te contactaremos por WhatsApp para coordinar la entrega.
@@ -107,7 +101,7 @@ const CheckoutResult = () => {
               }}>
                 <p className="order-number" style={{ margin: 0, fontSize: '0.9rem', color: '#888', textTransform: 'uppercase', letterSpacing: '1px' }}>Número de operación</p>
                 <strong style={{ fontSize: '1.8rem', color: 'var(--color-primary)', display: 'block', marginTop: '4px' }}>#{orderNum}</strong>
-                {paymentId && <p style={{ fontSize: '0.8rem', color: '#999', marginTop: '8px' }}>Ref MP: {paymentId}</p>}
+                {paymentId && <p style={{ fontSize: '0.8rem', color: '#999', marginTop: '8px' }}>Ref. de transacción: {paymentId}</p>}
               </div>
 
               {entrega.email && (
@@ -169,7 +163,7 @@ const CheckoutResult = () => {
               </div>
               <h2 style={{color: '#00a650'}}>¡Pago Aprobado!</h2>
               {orderId && <p className="order-number">Identificador del pedido: <strong>#{orderId.slice(-6).toUpperCase()}</strong></p>}
-              {paymentId && <p className="order-email">Nro de transacción de Mercado Pago: <strong>{paymentId}</strong></p>}
+              {paymentId && <p className="order-email">Nro de transacción: <strong>{paymentId}</strong></p>}
               <div className="resumen-actions" style={{ marginTop: '40px' }}>
                 <button className="btn-resumen-secondary" onClick={() => navigate('/perfil')}>Ver mis pedidos</button>
                 <button className="btn-resumen-primary" onClick={() => navigate('/productos')}>Seguir comprando</button>

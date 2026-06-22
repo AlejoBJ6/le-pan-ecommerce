@@ -11,7 +11,12 @@ const CombosPage = () => {
     const fetchCombos = async () => {
       try {
         const data = await comboService.obtenerCombos();
-        setCombos(data);
+        // Disponibles primero, agotados al final
+        const ordenados = [
+          ...data.filter(c => c.disponible !== false),
+          ...data.filter(c => c.disponible === false),
+        ];
+        setCombos(ordenados);
       } catch (error) {
         console.error("Error al cargar los combos", error);
       } finally {

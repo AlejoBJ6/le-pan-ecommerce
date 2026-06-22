@@ -117,8 +117,9 @@ const Contacto = () => {
                   id="telefono"
                   name="telefono"
                   value={formData.telefono}
-                  onChange={handleChange}
+                  onChange={(e) => setFormData(prev => ({ ...prev, telefono: e.target.value.replace(/[^0-9+\-\s()]/g, '').slice(0, 15) }))}
                   required
+                  maxLength={15}
                   placeholder="Ej: +54 9 11 1234-5678"
                   disabled={estado.loading}
                 />
@@ -136,14 +137,25 @@ const Contacto = () => {
                 />
               </div>
               <div className="form-group">
-                <label htmlFor="mensaje">Tu Mensaje</label>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '6px' }}>
+                  <label htmlFor="mensaje" style={{ margin: 0 }}>Tu Mensaje</label>
+                  <span style={{
+                    fontSize: '0.78rem',
+                    fontWeight: '600',
+                    color: formData.mensaje.length > 250 ? '#e53935' : '#aaa',
+                    transition: 'color 0.2s'
+                  }}>
+                    {formData.mensaje.length} / 300
+                  </span>
+                </div>
                 <textarea
                   id="mensaje"
                   name="mensaje"
                   rows="6"
                   value={formData.mensaje}
-                  onChange={handleChange}
+                  onChange={(e) => setFormData(prev => ({ ...prev, mensaje: e.target.value.slice(0, 300) }))}
                   required
+                  maxLength={300}
                   placeholder="Escribí aquí tus dudas..."
                   disabled={estado.loading}
                 ></textarea>

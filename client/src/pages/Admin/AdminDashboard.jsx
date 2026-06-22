@@ -205,6 +205,11 @@ const StatCard = ({ title, value, subtitle, icon, iconColor, iconBg, badge, spar
 );
 
 // ── Main Component ─────────────────────────────────────────────
+const getMesActual = () => {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+};
+
 const AdminDashboard = () => {
   const [productos, setProductos] = useState([]);
   const [pedidos, setPedidos] = useState([]);
@@ -212,6 +217,7 @@ const AdminDashboard = () => {
   const [combos, setCombos] = useState([]);
   const [mensajes, setMensajes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [mesFiltro, setMesFiltro] = useState(getMesActual());
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -250,9 +256,20 @@ const AdminDashboard = () => {
   const agotados = productos.filter(p => p.stock === 0);
   const pedidosPendientes = pedidos.filter(p => p.estadoEntrega === 'Pendiente' || p.estadoEntrega === 'En preparación');
   const mensajesNoLeidos = mensajes.filter(m => !m.leido);
-  const gananciasTotal = pedidos
-    .filter(p => p.estadoPago === 'Aprobado')
-    .reduce((acc, p) => acc + (p.totales?.total || 0), 0);
+
+  const normalizarMes = (dateStr) => {
+    const d = new Date(dateStr);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  };
+
+  const pedidosAprobados = pedidos.filter(p => p.estadoPago === 'Aprobado');
+  const mesesUnicos = [...new Set(pedidosAprobados.map(p => normalizarMes(p.createdAt)))].sort().reverse();
+
+  const pedidosFiltrados = mesFiltro
+    ? pedidosAprobados.filter(p => normalizarMes(p.createdAt) === mesFiltro)
+    : pedidosAprobados;
+
+  const gananciasTotal = pedidosFiltrados.reduce((acc, p) => acc + (p.totales?.total || 0), 0);
 
   const formatPrice = (val) =>
     new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(val);
@@ -352,19 +369,48 @@ const AdminDashboard = () => {
           e.currentTarget.style.boxShadow = '0 8px 32px rgba(226,88,34,0.25)';
         }}
       >
-        <div>
+        <div style={{ flex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
             <div style={{ padding: '8px', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '10px', color: '#fff', display: 'flex' }}>
               <IconTrendingUp />
             </div>
             <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.6px' }}>
-              Ganancias Totales (pagos aprobados)
+              Ganancias (pagos aprobados)
             </span>
           </div>
           <p style={{ margin: '0 0 6px 0', fontSize: '2.6rem', fontWeight: 800, color: '#fff', letterSpacing: '-1px' }}>
             {formatPrice(gananciasTotal)}
           </p>
           <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.82rem' }}>Ver detalle completo →</span>
+        </div>
+        <div onClick={e => e.stopPropagation()}>
+          <select
+            value={mesFiltro}
+            onChange={e => setMesFiltro(e.target.value)}
+            style={{
+              padding: '8px 12px',
+              borderRadius: '8px',
+              border: '1px solid rgba(255,255,255,0.3)',
+              background: 'rgba(255,255,255,0.15)',
+              color: '#fff',
+              fontSize: '0.85rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+              outline: 'none',
+              backdropFilter: 'blur(4px)',
+            }}
+          >
+            <option value="" style={{ background: '#333', color: '#fff' }}>Histórico (todos)</option>
+            {mesesUnicos.map(m => {
+              const date = new Date(`${m}-01T00:00:00`);
+              const nombre = date.toLocaleString('es-AR', { month: 'long', year: 'numeric' });
+              return (
+                <option key={m} value={m} style={{ background: '#333', color: '#fff' }}>
+                  {nombre.charAt(0).toUpperCase() + nombre.slice(1)}
+                </option>
+              );
+            })}
+          </select>
         </div>
       </div>
     </div>

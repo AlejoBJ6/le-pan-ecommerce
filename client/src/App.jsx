@@ -68,6 +68,7 @@ function App() {
               <Route path="/producto/:id" element={<ProductDetail />} />
               <Route path="/carrito" element={<Carrito />} />
               <Route path="/checkout" element={<Checkout />} />
+              <Route path="/checkout-result" element={<CheckoutResult />} />
               <Route path="/checkout-success" element={<CheckoutResult />} />
               <Route path="/checkout-failure" element={<CheckoutResult />} />
               <Route path="/checkout-pending" element={<CheckoutResult />} />
