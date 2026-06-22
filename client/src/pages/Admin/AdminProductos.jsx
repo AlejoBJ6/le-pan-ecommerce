@@ -73,6 +73,26 @@ const AdminProductos = () => {
     return matchBusqueda && matchCategoria && matchStock;
   });
 
+  // ── Paginación ──
+  const [paginaActual, setPaginaActual] = useState(1);
+  const itemsPorPagina = 10;
+
+  // Resetear a la página 1 cuando cambian los filtros
+  useEffect(() => {
+    setPaginaActual(1);
+  }, [busqueda, filtroCategoria, filtroStock, verPapelera]);
+
+  const indiceUltimoItem = paginaActual * itemsPorPagina;
+  const indicePrimerItem = indiceUltimoItem - itemsPorPagina;
+  const productosPaginados = productosFiltrados.slice(indicePrimerItem, indiceUltimoItem);
+  const totalPaginas = Math.ceil(productosFiltrados.length / itemsPorPagina);
+
+  const cambiarPagina = (numero) => {
+    if (numero >= 1 && numero <= totalPaginas) {
+      setPaginaActual(numero);
+    }
+  };
+
   if (loading) return <div>Cargando catálogo...</div>;
 
   return (
@@ -183,7 +203,7 @@ const AdminProductos = () => {
             </tr>
           </thead>
           <tbody>
-            {productosFiltrados.map(prod => {
+            {productosPaginados.map(prod => {
               // Lógica visual del badge de stock
               let stockBgColor = '#d4edda';
               let stockTextColor = '#155724';
@@ -276,6 +296,51 @@ const AdminProductos = () => {
             )}
           </tbody>
         </table>
+        
+        {/* Controles de Paginación */}
+        {totalPaginas > 1 && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px 20px', borderTop: '1px solid var(--color-gray-light)', backgroundColor: '#fafafa', borderBottomLeftRadius: '8px', borderBottomRightRadius: '8px' }}>
+            <span style={{ fontSize: '0.9rem', color: 'var(--color-gray)' }}>
+              Mostrando {indicePrimerItem + 1} a {Math.min(indiceUltimoItem, productosFiltrados.length)} de {productosFiltrados.length} productos
+            </span>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button 
+                onClick={() => cambiarPagina(paginaActual - 1)}
+                disabled={paginaActual === 1}
+                style={{ padding: '6px 12px', border: '1px solid #ced4da', backgroundColor: paginaActual === 1 ? '#e9ecef' : '#fff', color: paginaActual === 1 ? '#6c757d' : 'var(--color-dark)', borderRadius: '4px', cursor: paginaActual === 1 ? 'not-allowed' : 'pointer', transition: 'all 0.2s', fontWeight: 'bold' }}
+              >
+                Anterior
+              </button>
+              
+              <div style={{ display: 'flex', gap: '4px' }}>
+                {Array.from({ length: totalPaginas }, (_, i) => i + 1).map(num => (
+                  <button
+                    key={num}
+                    onClick={() => cambiarPagina(num)}
+                    style={{
+                      width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      border: '1px solid',
+                      borderColor: paginaActual === num ? 'var(--color-primary)' : '#ced4da',
+                      backgroundColor: paginaActual === num ? 'var(--color-primary)' : '#fff',
+                      color: paginaActual === num ? '#fff' : 'var(--color-dark)',
+                      borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', transition: 'all 0.2s'
+                    }}
+                  >
+                    {num}
+                  </button>
+                ))}
+              </div>
+
+              <button 
+                onClick={() => cambiarPagina(paginaActual + 1)}
+                disabled={paginaActual === totalPaginas}
+                style={{ padding: '6px 12px', border: '1px solid #ced4da', backgroundColor: paginaActual === totalPaginas ? '#e9ecef' : '#fff', color: paginaActual === totalPaginas ? '#6c757d' : 'var(--color-dark)', borderRadius: '4px', cursor: paginaActual === totalPaginas ? 'not-allowed' : 'pointer', transition: 'all 0.2s', fontWeight: 'bold' }}
+              >
+                Siguiente
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Modal de confirmación de eliminación */}
