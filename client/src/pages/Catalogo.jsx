@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import productoService from '../services/productoService';
 import categoriaService from '../services/categoriaService';
 import ProductCard from '../components/ProductCard';
@@ -7,8 +7,7 @@ import './Catalogo.css';
 
 const Catalogo = () => {
   const location = useLocation();
-  const navigate = useNavigate();
-  
+
   // Establecer estado inicial directamente desde la URL para evitar race conditions en el primer render
   const queryParams = new URLSearchParams(location.search);
   const initialCategoria = queryParams.get('categoria') || 'Todas';
@@ -23,17 +22,22 @@ const Catalogo = () => {
   const [busqueda, setBusqueda] = useState(initialBusqueda);
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState(initialCategoria);
 
+  // Ref para hacer scroll al área de filtros (no al top de la página)
+  const filtrosRef = useRef(null);
+
   // Sincronizar parámetro 'categoria' y 'busqueda' de la URL con el estado local
+  // Solo cuando la URL cambia por navegación externa (ej: link desde HomePage)
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const urlCategoria = searchParams.get('categoria') || 'Todas';
     const urlBusqueda = searchParams.get('busqueda') || '';
-    
+
     setCategoriaSeleccionada(urlCategoria);
     setBusqueda(urlBusqueda);
   }, [location.search]);
 
-  // Manejador para cuando se hace click en una pastilla de categoría local
+  // Manejador para cuando se hace click en una pastilla de categoría local.
+  // Usa replaceState en lugar de navigate() para NO disparar el scroll-to-top de React Router.
   const handleCategoryClick = (cat) => {
     const searchParams = new URLSearchParams(location.search);
     if (cat === 'Todas') {
@@ -41,10 +45,14 @@ const Catalogo = () => {
     } else {
       searchParams.set('categoria', cat);
     }
-    navigate({
-      pathname: location.pathname,
-      search: searchParams.toString()
-    });
+
+    const newUrl = `${location.pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
+
+    // Actualizar la URL sin navegación → sin scroll reset
+    window.history.replaceState(null, '', newUrl);
+
+    // Actualizar estado local directamente
+    setCategoriaSeleccionada(cat);
   };
 
 
@@ -59,7 +67,12 @@ const Catalogo = () => {
           }),
           categoriaService.obtenerCategorias()
         ]);
-        setProductos(productosData);
+        // Disponibles primero, agotados al final
+        const ordenados = [
+          ...productosData.filter(p => p.disponible && p.stock > 0),
+          ...productosData.filter(p => !p.disponible || p.stock <= 0),
+        ];
+        setProductos(ordenados);
         if (categoriasData && categoriasData.length > 0) {
           setCategoriasExtraidas(['Todas', ...categoriasData.map(c => c.nombre)]);
         }

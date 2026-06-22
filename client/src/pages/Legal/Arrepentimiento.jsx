@@ -161,13 +161,24 @@ const Arrepentimiento = () => {
               </small>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontWeight: 600, color: 'var(--color-dark)' }}>
-                Motivo (opcional)
-              </label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                <label style={{ fontWeight: 600, color: 'var(--color-dark)', margin: 0 }}>
+                  Motivo (opcional)
+                </label>
+                <span style={{
+                  fontSize: '0.78rem',
+                  fontWeight: '600',
+                  color: motivo.length > 160 ? '#e53935' : '#aaa',
+                  transition: 'color 0.2s'
+                }}>
+                  {motivo.length} / 200
+                </span>
+              </div>
               <textarea
                 rows={4}
                 value={motivo}
-                onChange={e => setMotivo(e.target.value)}
+                onChange={e => setMotivo(e.target.value.slice(0, 200))}
+                maxLength={200}
                 placeholder="Podés dejarlo en blanco — no es obligatorio expresar un motivo."
                 style={{ ...inputStyle, resize: 'vertical' }}
                 disabled={loading}

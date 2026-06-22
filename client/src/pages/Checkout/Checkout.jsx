@@ -40,11 +40,11 @@ const StepEntrega = ({ data, onChange, onNext, onBack }) => {
         <div className="form-row">
           <div className="form-group">
             <label>Teléfono Principal *</label>
-            <input type="tel" placeholder="11 1234-5678" value={data.telefono} onChange={e => onChange('telefono', e.target.value.replace(/[^0-9+\-\s()]/g, ''))} required />
+            <input type="tel" placeholder="11 1234-5678" value={data.telefono} onChange={e => onChange('telefono', e.target.value.replace(/[^0-9+\-\s()]/g, '').slice(0, 15))} maxLength={15} required />
           </div>
           <div className="form-group">
             <label>Teléfono Alternativo <span style={{fontWeight: 'normal', color: '#888', fontSize: '0.85em', textTransform: 'none'}}>(Opcional)</span></label>
-            <input type="tel" placeholder="11 8765-4321" value={data.telefonoAlternativo} onChange={e => onChange('telefonoAlternativo', e.target.value.replace(/[^0-9+\-\s()]/g, ''))} />
+            <input type="tel" placeholder="11 8765-4321" value={data.telefonoAlternativo} onChange={e => onChange('telefonoAlternativo', e.target.value.replace(/[^0-9+\-\s()]/g, '').slice(0, 15))} maxLength={15} />
 
           </div>
         </div>

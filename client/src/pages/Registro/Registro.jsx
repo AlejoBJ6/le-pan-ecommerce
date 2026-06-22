@@ -139,7 +139,8 @@ const Registro = () => {
                 id="telefono" 
                 placeholder="11 1234-5678" 
                 value={formData.telefono}
-                onChange={handleChange}
+                onChange={(e) => setFormData({ ...formData, telefono: e.target.value.replace(/[^0-9+\-\s()]/g, '').slice(0, 15) })}
+                maxLength={15}
                 required
               />
             </div>

@@ -202,7 +202,7 @@ const Perfil = () => {
         {mensaje && <div className="alert-success">{mensaje}</div>}
         {error && <div className="alert-error">{error}</div>}
 
-        <form onSubmit={submitHandler} className="profile-form">
+        <form onSubmit={submitHandler} className="profile-form" autoComplete="off">
           <div className="form-row-2col">
             <div className="form-group">
               <label>Nombre</label>
@@ -231,8 +231,10 @@ const Perfil = () => {
             <input 
               type="tel" 
               value={telefono} 
-              onChange={(e) => setTelefono(e.target.value)} 
+              onChange={(e) => setTelefono(e.target.value.replace(/[^0-9+\-\s()]/g, '').slice(0, 15))} 
               required 
+              maxLength={15}
+              placeholder="Ej: 11 1234-5678"
               className="form-input" 
             />
           </div>
@@ -257,6 +259,7 @@ const Perfil = () => {
                 onChange={(e) => setPassword(e.target.value)} 
                 placeholder="Dejar en blanco para conservar la actual" 
                 className="form-input"
+                autoComplete="new-password"
               />
               <button 
                 type="button" 
@@ -367,7 +370,7 @@ const Perfil = () => {
                       </Link>
                     </div>
                     
-                    {pedido.metodoPago === 'transferencia' && (
+                    {pedido.metodoPago === 'transferencia' && pedido.estadoPago !== 'Aprobado' && (
                       <div className="order-receipt-section" style={{ marginTop: '16px', padding: '12px', backgroundColor: '#f8f9fa', borderRadius: '8px', border: '1px solid #e9ecef' }}>
                         {pedido.comprobanteTransferencia ? (
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#2e7d32', fontSize: '0.9rem', fontWeight: '500' }}>

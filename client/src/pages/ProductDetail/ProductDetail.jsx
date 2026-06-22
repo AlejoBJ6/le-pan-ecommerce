@@ -146,7 +146,7 @@ const ProductDetail = () => {
           'error'
         );
       } else {
-        navigate(`/arma-combo?preselect=${producto._id}`);
+        navigate('/combos');
       }
     } catch (error) {
       console.error(error);
@@ -440,7 +440,7 @@ const ProductDetail = () => {
                       }
                     }}
                   >
-                    {isLoadingCombo ? 'Validando...' : 'Añadir al combo'}
+                    {isLoadingCombo ? 'Validando...' : 'Ver combos'}
                   </button>
                 )}
               </div>
